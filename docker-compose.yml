@@ -1,0 +1,47 @@
+services:
+  frontend-dev:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3001"
+    volumes:
+      - .:/app
+      - node_modules_cache:/app/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - public
+    depends_on:
+      - backend-dev
+
+  backend-dev:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports: 
+      - "3000:3000"
+    networks:
+      - public
+      - backend
+    depends_on:
+      - db-dev
+
+  db-dev:
+    image: postgres:16
+    volumes:
+      - jusstudy_postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=flavortown_development
+    networks:
+      - backend
+    ports:
+      - "5432:5432"
+
+networks:
+  public:
+  backend:
+volumes:
+  jusstudy_postgres_data:
