@@ -9,6 +9,9 @@ export const auth = betterAuth({
 		provider: "pg",
 		usePlural: true
 	}),
+	trustedOrigins: [
+		process.env.CORS_ORIGIN!,
+	],
 	plugins: [
 		genericOAuth({
 			config: [

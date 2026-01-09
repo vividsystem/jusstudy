@@ -11,7 +11,17 @@ const app = new Hono<{
 }>();
 
 
-app.use(cors())
+app.use(
+	"/api/auth/*", // or replace with "*" to enable cors for all routes
+	cors({
+		origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+		allowHeaders: ["Content-Type", "Authorization"],
+		allowMethods: ["POST", "GET", "OPTIONS"],
+		exposeHeaders: ["Content-Length"],
+		maxAge: 600,
+		credentials: true,
+	}),
+);
 app.use("*", async (c, next) => {
 	const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
