@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { text, timestamp, boolean, index, pgSchema, pgTable } from "drizzle-orm/pg-core";
+import { text, timestamp, boolean, index, pgTable } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
 	id: text("id").primaryKey(),
@@ -12,7 +12,13 @@ export const users = pgTable("users", {
 		.defaultNow()
 		.$onUpdate(() => /* @__PURE__ */ new Date())
 		.notNull(),
-});
+
+	yswsEligible: boolean("ysws_eligible").notNull(),
+	verificationStatus: text("verification_status").notNull(),
+	slackId: text("slack_id").notNull(),
+},
+	(table) => [index("users_slack_id_idx").on(table.slackId)],
+);
 
 export const sessions = pgTable(
 	"sessions",
