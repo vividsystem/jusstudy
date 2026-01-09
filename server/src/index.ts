@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import type { ApiResponse } from "shared/dist";
 import { auth } from "./auth";
+import { users } from "./routes/users";
+import { projects } from "./routes/projects";
 
 const app = new Hono<{
 	Variables: {
@@ -40,17 +41,11 @@ app.on(["POST", "GET"], "/api/auth/*", (c) => {
 	return auth.handler(c.req.raw)
 })
 
-app.get("/", (c) => {
-	return c.text("Hello Hono!");
+app.get("/status", (c) => {
+	return c.json({ message: "Up and running!" })
 })
 
-app.get("/hello", async (c) => {
-	const data: ApiResponse = {
-		message: "Hello BHVR!",
-		success: true,
-	};
-
-	return c.json(data, { status: 200 });
-});
+app.route("/projects", projects)
+app.route("/users", users)
 
 export default app
