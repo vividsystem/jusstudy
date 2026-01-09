@@ -7,7 +7,6 @@ services:
       - "3000:3001"
     volumes:
       - .:/app
-      - node_modules_cache:/app/node_modules
     environment:
       - NODE_ENV=development
     networks:
@@ -31,10 +30,7 @@ services:
     image: postgres:16
     volumes:
       - jusstudy_postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=pass
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=flavortown_development
+    env_file: ".env"
     networks:
       - backend
     ports:

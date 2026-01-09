@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import type { ApiResponse } from "shared/dist";
 import { auth } from "./auth";
+import { users } from "./routes/users";
+import { projects } from "./routes/projects";
 
 const app = new Hono<{
 	Variables: {
@@ -11,7 +12,17 @@ const app = new Hono<{
 }>();
 
 
-app.use(cors())
+app.use(
+	"/api/auth/*", // or replace with "*" to enable cors for all routes
+	cors({
+		origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+		allowHeaders: ["Content-Type", "Authorization"],
+		allowMethods: ["POST", "GET", "OPTIONS"],
+		exposeHeaders: ["Content-Length"],
+		maxAge: 600,
+		credentials: true,
+	}),
+);
 app.use("*", async (c, next) => {
 	const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
@@ -30,17 +41,11 @@ app.on(["POST", "GET"], "/api/auth/*", (c) => {
 	return auth.handler(c.req.raw)
 })
 
-app.get("/", (c) => {
-	return c.text("Hello Hono!");
+app.get("/status", (c) => {
+	return c.json({ message: "Up and running!" })
 })
 
-app.get("/hello", async (c) => {
-	const data: ApiResponse = {
-		message: "Hello BHVR!",
-		success: true,
-	};
-
-	return c.json(data, { status: 200 });
-});
+app.route("/projects", projects)
+app.route("/users", users)
 
 export default app
