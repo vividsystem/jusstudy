@@ -1,4 +1,4 @@
-# Jus'study 
+# Jus'STUDY
 A study focused [YSWS](https://ysws.hackclub.com/)
 
 
