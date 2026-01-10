@@ -18,6 +18,8 @@
     "build": "turbo build",
     "build:client": "turbo build --filter=client",
     "build:server": "turbo build --filter=server",
+		"deploy:server:cf": "cd server && bun run deploy:workers",
+		"deploy:client:cf": "cd client && bun run deploy:cf",
     "lint": "turbo lint",
     "type-check": "turbo type-check",
     "test": "turbo test",
