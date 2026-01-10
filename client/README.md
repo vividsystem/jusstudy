@@ -1,4 +1,41 @@
-# React + TypeScript + Vite
+# Frontend
+
+
+## Deploying
+### Cloudflare Pages
+#### via wrangler
+0. Login
+```bash
+bunx wrangler login
+```
+1. Build
+```bash
+bun run build:client
+bunx wrangler login
+```
+2. (Create Pages project)
+```bash
+bunx wrangler pages project create
+```
+3. Add env variables to [wrangler.jsonc](./wrangler.jsonc)
+```jsonc
+//...
+  "vars": {
+  	"VITE_CLIENT_URL": "my-variable",
+  	"VITE_SERVER_URL": "my-variable",
+  }
+//...
+```
+3. Deploy
+```bash
+bun run deploy:client:cf
+
+```
+#### via dashboard
+follow the [this guide](https://bhvr.dev/deployment/client/cloudflare-pages)
+
+
+## BHVR Boilerplate
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
@@ -7,7 +44,7 @@ Currently, two official plugins are available:
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
+### Expanding the ESLint configuration
 
 If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 

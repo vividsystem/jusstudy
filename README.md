@@ -43,20 +43,11 @@ bun run build:server  # Build the Hono backend
 ```
 
 ### Deployment
-(this section is still boilerplate while we figure out how to host this)
-
-Deploying each piece is very versatile and can be done numerous ways, and exploration into automating these will happen at a later date. Here are some references in the meantime.
-
 **Client**
-- [Orbiter](https://orbiter.host)
-- [GitHub Pages](https://vite.dev/guide/static-deploy.html#github-pages)
-- [Netlify](https://vite.dev/guide/static-deploy.html#netlify)
-- [Cloudflare Pages](https://vite.dev/guide/static-deploy.html#cloudflare-pages)
+see [client/README.md](./client/README.md)
 
 **Server**
-- [Cloudflare Worker](https://gist.github.com/stevedylandev/4aa1fc569bcba46b7169193c0498d0b3)
-- [Bun](https://hono.dev/docs/getting-started/bun)
-- [Node.js](https://hono.dev/docs/getting-started/nodejs)
+see [server/README.md](./server/README.md)
 
 ## Acknowledgments
 This is built upon the [bhvr](https://bhvr.dev) stack. It intern is built upon [bun](https://bun.sh), [hono](https://hono.dev), [vite](https://vitejs.dev) and [react](https://react.dev).
