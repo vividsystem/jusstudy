@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+		"deploy:cf": "bun run build && bunx wrangler pages deploy"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
