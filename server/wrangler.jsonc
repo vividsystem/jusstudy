@@ -7,6 +7,6 @@
   ],
   "compatibility_date": "2025-05-25",
   "vars": {
-  	"CORS_ORIGIN": "my-variable"
+  	"CORS_ORIGIN": "https://jusstudy.pages.dev"
   }
 }

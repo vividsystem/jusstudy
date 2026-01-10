@@ -1,11 +1,14 @@
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
+	"name": "jusstudy-frontend",
   "compatibility_flags": [
     "nodejs_compat" // to be able to continue using process.env and avoid vendor lockin
   ],
   "compatibility_date": "2025-05-25",
   "vars": {
-  	"VITE_CLIENT_URL": "my-variable",
-  	"VITE_SERVER_URL": "my-variable",
-  }
+  	"VITE_CLIENT_URL": "https://jusstudy.pages.dev",
+  	"VITE_SERVER_URL": "https://server.notrealbutnotobot.workers.dev",
+		"BUN_VERSION": "1.2.21"
+  },
+	"pages_build_output_dir": "./dist"
 }
