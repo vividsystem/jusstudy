@@ -9,11 +9,11 @@ const app = new Hono<{
 		user: typeof auth.$Infer.Session.user | null;
 		session: typeof auth.$Infer.Session.session | null
 	}
-}>();
+}>().basePath("/api");
 
 
 app.use(
-	"/api/auth/*", // or replace with "*" to enable cors for all routes
+	"/auth/*", // or replace with "*" to enable cors for all routes
 	cors({
 		origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
 		allowHeaders: ["Content-Type", "Authorization"],
@@ -37,7 +37,7 @@ app.use("*", async (c, next) => {
 	c.set("session", session.session);
 	await next();
 });
-app.on(["POST", "GET"], "/api/auth/*", (c) => {
+app.on(["POST", "GET"], "/auth/*", (c) => {
 	return auth.handler(c.req.raw)
 })
 

@@ -43,11 +43,26 @@ bun run build:server  # Build the Hono backend
 ```
 
 ### Deployment
-**Client**
-see [client/README.md](./client/README.md)
+#### Cloudflare
+1. Do this
+```bash
+openssl rand -base64 32 | bunx wrangler secret put BETTER_AUTH_SECRET
+bunx wrangler secret put HACKCLUB_AUTH_CLIENT_ID
+bunx wrangler secret put HACKCLUB_AUTH_CLIENT_SECRET
+bunx wrangler secret put DATABASE_URL
+bunx wrangler secret put HACKATIME_API_KEY
 
-**Server**
-see [server/README.md](./server/README.md)
+```
+2. Add env variables to [wrangler.jsonc](./wrangler.jsonc)
+```jsonc
+//...
+  "vars": {
+  	"VITE_CLIENT_URL": "my-variable",
+    "CORS_ORIGIN": "SAME AS VITE_CLIENT_URL"
+  }
+//...
+```
+NOTE: enviromental loading doesnt work correctly yet as environmental variables passed to the frontend via vite get bundled at compile time so cloudflare variables dont have any effect
 
 ## Acknowledgments
 This is built upon the [bhvr](https://bhvr.dev) stack. It intern is built upon [bun](https://bun.sh), [hono](https://hono.dev), [vite](https://vitejs.dev) and [react](https://react.dev).

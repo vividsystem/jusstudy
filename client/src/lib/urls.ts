@@ -4,6 +4,6 @@ export function clientURL(path: string | URL) {
 }
 
 export function serverURL(path: string | URL) {
-	const baseServerURL = import.meta.env.VITE_SERVER_URL!
+	const baseServerURL = clientURL("/api")
 	return new URL(path, baseServerURL)
 }
