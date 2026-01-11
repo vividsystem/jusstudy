@@ -14,6 +14,9 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 ### Creating a Feature Branch
 
+> [!NOTE]
+> You should have git pull set to rebase
+> `git config pull.rebase true`
 1. **Update main branch**:
    ```bash
    git checkout main
