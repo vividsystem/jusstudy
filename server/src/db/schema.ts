@@ -48,3 +48,4 @@ export const devlogsRelations = relations(devlogs, ({ one }) => ({
 		references: [projects.id]
 	})
 }))
+export * from "@server/db/schema-auth"
