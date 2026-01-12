@@ -34,3 +34,5 @@ export const devlogs = pgTable("project_devlogs", {
 	content: text().notNull(),
 	attachment: text()
 })
+
+export * from "@server/db/schema-auth"
