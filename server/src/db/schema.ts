@@ -1,13 +1,7 @@
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users } from "./schema-auth";
+import { relations } from "drizzle-orm";
 
-
-export const profiles = pgTable("profiles", {
-	id: uuid().defaultRandom().primaryKey(),
-	userId: text().notNull().references(() => users.id, { onDelete: "cascade" }).unique(),
-	hackatime_uid: text().notNull().unique(),
-	slack_uid: text().notNull().unique(),
-})
 
 export const projects = pgTable("projects", {
 	id: uuid().defaultRandom().primaryKey(),
@@ -17,14 +11,27 @@ export const projects = pgTable("projects", {
 	demoLink: text(),
 	repository: text(),
 	readmeLink: text(),
-	creatorId: uuid().references(() => profiles.id, { onDelete: "cascade" }).notNull()
+	creatorId: text().references(() => users.id, { onDelete: "cascade" }).notNull()
 })
+
+export const projectsRelations = relations(projects, ({ many }) => ({
+	hackatimeLinks: many(hackatimeProjectLinks),
+	devlogs: many(devlogs)
+}));
+
 
 export const hackatimeProjectLinks = pgTable("hackatime_project_links", {
 	projectId: uuid().references(() => projects.id, { onDelete: "cascade" }).notNull(),
 	createdAt: timestamp().defaultNow().notNull(),
 	hackatimeProjectId: text().unique().notNull()
 })
+
+export const hackatimeProjectLinksRelations = relations(hackatimeProjectLinks, ({ one }) => ({
+	project: one(projects, {
+		fields: [hackatimeProjectLinks.projectId],
+		references: [projects.id],
+	}),
+}));
 
 
 export const devlogs = pgTable("project_devlogs", {
@@ -34,3 +41,10 @@ export const devlogs = pgTable("project_devlogs", {
 	content: text().notNull(),
 	attachment: text()
 })
+
+export const devlogsRelations = relations(devlogs, ({ one }) => ({
+	project: one(projects, {
+		fields: [devlogs.projectId],
+		references: [projects.id]
+	})
+}))
