@@ -16,9 +16,20 @@ function Landing() {
 						<li>Earn prizes based on effort, creativity, and usefulness</li>
 					</ul>
 					<div className="2xl:text-5xl flex flex-row 2xl:gap-12 items-center justify-center">
-						<button className="bg-black text-white 2xl:px-20 2xl:py-8 rounded-lg shadow-gray-700 shadow-lg">RSVP / Join YSWS</button>
-						<button className="bg-white text-black 2xl:px-20 2xl:py-8 rounded-lg border-3 border-black shadow-gray-700 shadow-lg">See beginner guides</button>
-
+						<a
+							href="https://forms.fillout.com/t/aX86bHVxqkus"
+							target="_blank"
+							rel="noreferrer"
+							className="bg-black text-white 2xl:px-20 2xl:py-8 rounded-lg shadow-gray-700 shadow-lg flex items-center justify-center"
+						>
+							RSVP / Join YSWS
+						</a>
+						<a
+							href="/beginner"
+							className="bg-white text-black 2xl:px-20 2xl:py-8 rounded-lg border-3 border-black shadow-gray-700 shadow-lg flex items-center justify-center"
+						>
+							See beginner guides
+						</a>
 					</div>
 				</div>
 			</div>
