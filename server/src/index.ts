@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { auth } from "./auth";
 import { users } from "./routes/users";
-import { projects } from "./routes/projects";
+import { projectsRoute } from "./routes/projects";
 
 const app = new Hono<{
 	Variables: {
@@ -45,7 +45,7 @@ app.get("/status", (c) => {
 	return c.json({ message: "Up and running!" })
 })
 
-app.route("/projects", projects)
+app.route("/projects", projectsRoute)
 app.route("/users", users)
 
 export default app
