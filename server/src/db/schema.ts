@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, pgTable, smallint, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users } from "./schema-auth";
 import { relations } from "drizzle-orm";
 
@@ -23,13 +23,15 @@ export const projectsRelations = relations(projects, ({ many }) => ({
 export const hackatimeProjectLinks = pgTable("hackatime_project_links", {
 	projectId: uuid().references(() => projects.id, { onDelete: "cascade" }).notNull(),
 	createdAt: timestamp().defaultNow().notNull(),
-	hackatimeProjectId: text().unique().notNull()
+	hackatimeProjectId: text().notNull(),
+	creatorId: text().references(() => projects.creatorId, { onDelete: "cascade" })
+
 })
 
 export const hackatimeProjectLinksRelations = relations(hackatimeProjectLinks, ({ one }) => ({
 	project: one(projects, {
-		fields: [hackatimeProjectLinks.projectId],
-		references: [projects.id],
+		fields: [hackatimeProjectLinks.projectId, hackatimeProjectLinks.creatorId],
+		references: [projects.id, projects.creatorId],
 	}),
 }));
 
@@ -38,6 +40,8 @@ export const devlogs = pgTable("project_devlogs", {
 	id: uuid().defaultRandom().primaryKey(),
 	createdAt: timestamp().defaultNow().notNull(),
 	projectId: uuid().references(() => projects.id, { onDelete: "cascade" }).notNull(),
+	timeSpent: smallint().notNull(), // 0 to 10h per devlog
+	totalTimeSpent: integer().notNull(), // total amount of time spent up until that log
 	content: text().notNull(),
 	attachment: text()
 })
@@ -48,4 +52,5 @@ export const devlogsRelations = relations(devlogs, ({ one }) => ({
 		references: [projects.id]
 	})
 }))
+
 export * from "@server/db/schema-auth"
