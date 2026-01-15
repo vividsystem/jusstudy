@@ -3,6 +3,7 @@ import Landing from "./components/Landing";
 import { PrivateRoute } from "./components/PrivateRoute";
 import Home from "./components/Home";
 import Onboarding from "./components/Onboarding";
+import AppLayout from "./components/AppLayout";
 
 function App() {
 	return (
@@ -12,10 +13,12 @@ function App() {
 
 
 				<Route element={<PrivateRoute />}>
+					<Route element={<AppLayout />}>
 
-					<Route path="/home" element={<Home />} />
+						<Route path="/home" element={<Home />} />
 
-					<Route path="/onboarding" element={<Onboarding />} />
+						<Route path="/onboarding" element={<Onboarding />} />
+					</Route>
 				</Route>
 			</Routes>
 		</BrowserRouter>
