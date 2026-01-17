@@ -4,6 +4,9 @@ A study focused [YSWS](https://ysws.hackclub.com/)
 
 ## Installation
 1. Clone the repo (yeah obviously)
+```bash
+git clone https://github.com/vividsystem/jusstudy.git
+```
 
 2. Install dependencies
 ```bash
@@ -11,10 +14,38 @@ A study focused [YSWS](https://ysws.hackclub.com/)
 bun install
 ```
 
+3. Set up environment variables
+
+> Set up .env for the client
+```bash
+
+nano client/.env
+``` 
+And paste the following into the file:
+
+`VITE_CLIENT_URL=http://localhost:5173`
+
+> Set up .env for the server
+```bash
+
+nano server/.env
+``` 
+And paste the following into the file:
+
+```env
+CORS_ORIGIN=http://localhost:5173
+DATABASE_URL=your_database_url
+BETTER_AUTH_SECRET=your_secret
+HACKCLUB_AUTH_CLIENT_ID=your_client_id
+HACKCLUB_AUTH_CLIENT_SECRET=your_client_secret
+HACKATIME_API_KEY=your_api_key
+```
+
 ## Development
 
 ```bash
 # Run all workspaces in development mode with Turbo
+
 bun run dev
 
 # Or run individual workspaces directly
