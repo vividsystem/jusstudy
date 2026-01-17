@@ -1,9 +1,9 @@
 import { genericOAuthClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react"
-import { clientURL } from "./urls";
+import { serverURL } from "./urls";
 
 
-const SERVER_URL = clientURL("/api/auth").toString()
+const SERVER_URL = serverURL("/api/auth").toString()
 export const authClient = createAuthClient({
 	baseURL: SERVER_URL,
 	plugins: [
