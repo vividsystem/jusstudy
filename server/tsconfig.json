@@ -13,6 +13,7 @@
 
     // Output settings
     "declaration": true,
+		"declarationMap": true,
     "outDir": "dist",
     "noEmit": false,
     "emitDecoratorMetadata": true,
