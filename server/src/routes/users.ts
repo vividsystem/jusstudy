@@ -1,3 +1,3 @@
 import { Hono } from "hono";
 
-export const users = new Hono()
+export const usersRoutes = new Hono()
