@@ -1,17 +1,18 @@
 import { useNavigate } from "react-router"
 import { authClient } from "../lib/auth-client"
+import Button from "@client/components/Button"
 
 function Home() {
 	const navigate = useNavigate()
 	return (
 		<div className="max-w-xl mx-auto flex flex-col gap-6 items-center justify-center min-h-screen">
-			<button onClick={async (ev) => {
+			<Button onClick={async (ev) => {
 				ev.preventDefault()
 				await authClient.signOut()
 				navigate("/")
 			}}>
 				signout
-			</button >
+			</Button >
 			hi!
 		</div>
 	)
