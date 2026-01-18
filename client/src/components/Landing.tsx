@@ -1,6 +1,7 @@
 import { authClient } from "../lib/auth-client";
 import { clientURL } from "../lib/urls";
 import HackclubLogo from "./HackclubLogo";
+import Button from "./Button";
 
 function Landing() {
 	const login = async (ev: React.MouseEvent) => {
@@ -30,20 +31,18 @@ function Landing() {
 				</ul>
 				
 				<div className="flex flex-row flex-wrap gap-4 lg:gap-8 2xl:gap-10 text-lg lg:text-3xl 2xl:text-4xl justify-start items-center">
-					<a href="https://forms.fillout.com/t/aX86bHVxqkus" target="_blank" rel="noreferrer"
-						className="bg-black text-white px-4 py-2 lg:px-10 lg:py-4 2xl:px-12 2xl:py-6 rounded-[1.25rem] shadow-lg flex items-center justify-center whitespace-nowrap">
+					<Button href="https://forms.fillout.com/t/aX86bHVxqkus" target="_blank" rel="noreferrer" variant="yellow">
 						RSVP / Join YSWS
-					</a>
-					<a href="/beginner"
-						className="bg-white text-black px-4 py-2 lg:px-10 lg:py-4 2xl:px-12 2xl:py-6 rounded-[1.25rem] border-2 border-black shadow-lg flex items-center justify-center whitespace-nowrap">
+					</Button>
+					<Button href="/beginner" variant="red">
 						See Beginner Guides
-					</a>
+					</Button>
 				</div>
 			</main>
 
-			<button onClick={login} className="mt-10 opacity-50 hover:opacity-100 transition-opacity cursor-pointer">
+			<span onClick={login} className="mt-10 opacity-50 hover:opacity-100 transition-opacity cursor-pointer text-black">
 				Login
-			</button>
+			</span>
 		</div>
 	);
 }
