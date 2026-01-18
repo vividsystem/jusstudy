@@ -1,0 +1,1 @@
+ALTER TABLE "hackatime_project_links" ADD CONSTRAINT "hackatime_project_links_hackatimeProjectId_projectId_pk" PRIMARY KEY("hackatimeProjectId","projectId");

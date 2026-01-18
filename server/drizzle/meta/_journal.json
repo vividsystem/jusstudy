@@ -15,6 +15,13 @@
       "when": 1768675771006,
       "tag": "0001_blue_marten_broadcloak",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768766386417,
+      "tag": "0002_funny_spacker_dave",
+      "breakpoints": true
     }
   ]
 }

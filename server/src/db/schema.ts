@@ -1,4 +1,4 @@
-import { integer, pgTable, smallint, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, pgTable, primaryKey, smallint, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users } from "./schema-auth";
 import { relations } from "drizzle-orm";
 
@@ -24,7 +24,9 @@ export const hackatimeProjectLinks = pgTable("hackatime_project_links", {
 	projectId: uuid().references(() => projects.id, { onDelete: "cascade" }).notNull(),
 	createdAt: timestamp().defaultNow().notNull(),
 	hackatimeProjectId: text().notNull(),
-})
+}, (table) => [
+	primaryKey({ columns: [table.hackatimeProjectId, table.projectId] })
+])
 
 export const hackatimeProjectLinksRelations = relations(hackatimeProjectLinks, ({ one }) => ({
 	project: one(projects, {
