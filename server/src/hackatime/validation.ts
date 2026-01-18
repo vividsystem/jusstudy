@@ -2,11 +2,11 @@ import z from "zod"
 
 export const TimeableSchema = z.object({
 	name: z.string().nonempty(),
-	totalSeconds: z.number().positive(),
+	total_seconds: z.number().positive(),
 	text: z.string().nonempty(), // human readable time spend
 	hours: z.number().positive(),
 	minutes: z.number().positive(),
-	seconds: z.number().positive(),
+	percent: z.number().positive(),
 	digital: z.string().nonempty() // hh:mm:ss
 })
 
@@ -14,13 +14,24 @@ export const LanguageSchema = TimeableSchema.extend({})
 export const ProjectSchema = TimeableSchema.extend({})
 
 
-export const TrustFactorSchema = z.object({
-	trust_level: z.enum(["green", "blue", "red"]),
-	trust_value: z.number().positive()
+export const ProjectDetailsSchema = z.object({
+	name: z.string().nonempty(),
+	total_seconds: z.number().positive(),
+	languages: z.array(z.string()),
+	repo_url: z.string().nullable(),
+	total_heartbeats: z.number().positive(),
+	first_heartbeat: z.iso.datetime(),
+	last_heartbeat: z.iso.datetime(),
+}).omit({
 })
 
+// export const TrustFactorSchema = z.object({
+// 	trust_level: z.enum(["green", "blue", "red"]),
+// 	trust_value: z.number().nonnegative()
+// })
+
 export const StatsSchema = z.object({
-	user: z.string().nonempty(),
+	username: z.string().nonempty(),
 	user_id: z.string().nonempty(),
 	is_coding_activity_visible: z.boolean(),
 	is_other_usage_visible: z.boolean(),
@@ -35,10 +46,42 @@ export const StatsSchema = z.object({
 	human_readable_daily_average: z.string().nonempty(),
 	languages: z.optional(z.array(LanguageSchema)),
 	projects: z.optional(z.array(ProjectSchema)),
-	trust_factor: TrustFactorSchema
+	// trust_factor: TrustFactorSchema
 })
 
-export const StatsResponseSchema = z.discriminatedUnion('success', [
-	z.object({ success: z.literal(true), data: StatsSchema }),
-	z.object({ success: z.literal(false), error: z.string() })
-])
+
+const convertToUnion = (input: unknown, dataKey: string, errorKey: string = "error") => {
+	if (input && typeof input === "object") {
+		if (dataKey in input) {
+			return {
+				success: true,
+				...input
+			}
+		}
+
+		if (errorKey in input) {
+			return {
+				success: false,
+				...input
+			}
+		}
+	}
+
+	return input
+}
+
+
+export const ProjectDetailsResponseSchema = z.preprocess((input) => convertToUnion(input, "projects", "error"),
+	z.discriminatedUnion("success", [
+		z.object({ success: z.literal(true), projects: z.array(ProjectDetailsSchema) }),
+		z.object({ success: z.literal(false), error: z.string() })
+	])
+)
+
+
+export const StatsResponseSchema = z.preprocess((input) => convertToUnion(input, "data", "error"),
+	z.discriminatedUnion("success", [
+		z.object({ success: z.literal(true), data: StatsSchema }),
+		z.object({ success: z.literal(false), error: z.string() })
+	])
+)

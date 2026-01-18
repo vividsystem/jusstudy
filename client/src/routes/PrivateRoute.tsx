@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router";
 import { authClient } from "../lib/auth-client";
 
-export const PrivateRoute: React.FC = () => {
+const PrivateRoute: React.FC = () => {
 	const {
 		data: session,
 		isPending,
@@ -22,3 +22,4 @@ export const PrivateRoute: React.FC = () => {
 		/>
 	);
 };
+export default PrivateRoute

@@ -1,11 +1,13 @@
 import type { auth } from "@server/auth";
 import db from "@server/db";
 import { Hono } from "hono";
+import { zValidator } from "@hono/zod-validator"
 import hackatime from "@server/hackatime";
 import { hackatimeProjectLinks, projects } from "@server/db/schema";
 import { and, eq } from "drizzle-orm";
 import { HackatimeLinkRequestSchema, NewProjectRequestSchema } from "@server/validation/projects";
 
+const UpdateProjectRequestSchema = NewProjectRequestSchema.partial().strip()
 
 export const projectsRoute = new Hono<{
 	Variables: {
@@ -18,7 +20,6 @@ export const projectsRoute = new Hono<{
 	.get("/", async (c) => {
 		const user = c.get("user")
 
-
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 		const res = await db.query.projects.findMany({
@@ -29,12 +30,13 @@ export const projectsRoute = new Hono<{
 		})
 
 		const stats = await hackatime.userStats(user.slackId, {
-			startDate: new Date("2026-01-01"),
+			startDate: new Date(process.env.START_DATE!),
 			features: ["projects"]
 		})
 
 		if (!stats.success) {
 			console.log(stats.error)
+			console.log(JSON.stringify(stats))
 			return c.json({ message: "Something went wrong" }, 500)
 		}
 
@@ -46,7 +48,7 @@ export const projectsRoute = new Hono<{
 
 			// sum time spent up
 			stats.data.projects!.filter((p) => ids.includes(p.name)).forEach(p => (
-				timeRecord[project.id] = timeRecord[project.id] || 0 + p.totalSeconds
+				timeRecord[project.id] = timeRecord[project.id] || 0 + p.total_seconds
 			))
 
 		}
@@ -84,7 +86,13 @@ export const projectsRoute = new Hono<{
 		const user = c.get("user")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
-		const body = await c.req.json()
+		let body;
+		try {
+			body = await c.req.json()
+		} catch (e) {
+			return c.json({ message: "Bad request" }, 400)
+
+		}
 
 		const parsed = NewProjectRequestSchema.safeParse(body)
 		if (!parsed.success) {
@@ -101,58 +109,58 @@ export const projectsRoute = new Hono<{
 			return c.json({ message: "Something went wrong" }, 500)
 		}
 
-		return c.json({ message: "Project created", project: res[0] })
+		return c.json({ message: "Project created", project: res[0]! }, 201)
 	})
 
 
-const UpdateProjectRequestSchema = NewProjectRequestSchema.partial().strip()
-projectsRoute.patch("/:id", async (c) => {
-	const user = c.get("user")
-	if (!user) return c.json({ message: "Unauthorized" }, 401)
-
-	const id = c.req.param("id")
-	const body = await c.req.json()
-
-	const proj = await db
-		.select()
-		.from(projects)
-		.where(eq(projects.id, id))
-	if (proj.length == 0) {
-		return c.json({ message: "Ressource not found" }, 404)
-	}
-	const project = proj[0]!
-	if (project.creatorId != user.id) {
-		return c.json({ message: "Forbidden" }, 403)
-	}
-
-	const parsed = UpdateProjectRequestSchema.safeParse(body)
-	if (!parsed.success) {
-		return c.json({ message: "Bad request" }, 400)
-	}
-
-	// TODO: add auto readmeLink generation
-
-	const res = await db
-		.update(projects)
-		.set({
-			...parsed.data,
-		})
-		.where(eq(projects.id, id))
-		.returning()
-	if (res.length == 0) {
-		return c.json({ message: "Something went wrong" }, 500)
-	}
-
-	return c.json({ message: "Project updated", project: res[0] })
-})
-
-
-	//link a hackatime project
-	.post("/:id/link", async (c) => {
+	.patch("/:id", async (c) => {
 		const user = c.get("user")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 		const id = c.req.param("id")
+		const body = await c.req.json()
+
+		const proj = await db
+			.select()
+			.from(projects)
+			.where(eq(projects.id, id))
+		if (proj.length == 0) {
+			return c.json({ message: "Ressource not found" }, 404)
+		}
+		const project = proj[0]!
+		if (project.creatorId != user.id) {
+			return c.json({ message: "Forbidden" }, 403)
+		}
+
+		const parsed = UpdateProjectRequestSchema.safeParse(body)
+		if (!parsed.success) {
+			return c.json({ message: "Bad request" }, 400)
+		}
+
+		// TODO: add auto readmeLink generation
+
+		const res = await db
+			.update(projects)
+			.set({
+				...parsed.data,
+			})
+			.where(eq(projects.id, id))
+			.returning()
+		if (res.length == 0) {
+			return c.json({ message: "Something went wrong" }, 500)
+		}
+
+		return c.json({ message: "Project updated", project: res[0] })
+	})
+
+
+	//link a hackatime project
+	.post("/:id/link", zValidator("json", HackatimeLinkRequestSchema), async (c) => {
+		const user = c.get("user")
+		if (!user) return c.json({ message: "Unauthorized" }, 401)
+
+		const id = c.req.param("id")
+		const body = c.req.json()
 
 		const res = await db.select().from(projects).where(eq(projects.id, id))
 		if (res.length == 0) {
@@ -163,15 +171,11 @@ projectsRoute.patch("/:id", async (c) => {
 			return c.json({ message: "Forbidden" }, 403)
 		}
 
-		const body = c.req.json()
-		const parsed = HackatimeLinkRequestSchema.safeParse(body)
-		if (!parsed.success) {
-			return c.json({ message: "Bad request" }, 400)
-		}
+		const data = c.req.valid('json')
 
 		const alreadyExisting = await db.select().from(hackatimeProjectLinks).where(and(
-			eq(hackatimeProjectLinks.hackatimeProjectId, parsed.data.id),
-			eq(hackatimeProjectLinks.creatorId, user.id)
+			eq(hackatimeProjectLinks.hackatimeProjectId, data.id),
+			//add user eq?
 		))
 		if (alreadyExisting.length != 0) {
 			return c.json({ message: "This hackatime project has already been linked to another project!" }, 400)
@@ -179,8 +183,7 @@ projectsRoute.patch("/:id", async (c) => {
 
 		const newLink = await db.insert(hackatimeProjectLinks).values({
 			projectId: id,
-			creatorId: user.id,
-			hackatimeProjectId: parsed.data.id
+			hackatimeProjectId: data.id
 		}).returning()
 
 		return c.json({

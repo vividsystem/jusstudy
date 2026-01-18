@@ -24,14 +24,12 @@ export const hackatimeProjectLinks = pgTable("hackatime_project_links", {
 	projectId: uuid().references(() => projects.id, { onDelete: "cascade" }).notNull(),
 	createdAt: timestamp().defaultNow().notNull(),
 	hackatimeProjectId: text().notNull(),
-	creatorId: text().references(() => projects.creatorId, { onDelete: "cascade" })
-
 })
 
 export const hackatimeProjectLinksRelations = relations(hackatimeProjectLinks, ({ one }) => ({
 	project: one(projects, {
-		fields: [hackatimeProjectLinks.projectId, hackatimeProjectLinks.creatorId],
-		references: [projects.id, projects.creatorId],
+		fields: [hackatimeProjectLinks.projectId],
+		references: [projects.id],
 	}),
 }));
 

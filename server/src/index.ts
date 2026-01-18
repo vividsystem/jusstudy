@@ -12,12 +12,7 @@ const app = new Hono<{
 	}
 }>().basePath("/api")
 
-
-	.use("*", cors({
-		origin: process.env.CORS_ORIGIN || "http://localhost:5173",
-	}))
 	.use(
-		"/auth/*", // or replace with "*" to enable cors for all routes
 		cors({
 			origin: process.env.CORS_ORIGIN || "http://localhost:5173",
 			allowHeaders: ["Content-Type", "Authorization"],
@@ -27,20 +22,21 @@ const app = new Hono<{
 			credentials: true,
 		}),
 	)
-	.use("*", async (c, next) => {
-		const session = await auth.api.getSession({ headers: c.req.raw.headers });
+	.use(
+		async (c, next) => {
+			const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
-		if (!session) {
-			c.set("user", null);
-			c.set("session", null);
+			if (!session) {
+				c.set("user", null);
+				c.set("session", null);
+				await next();
+				return;
+			}
+
+			c.set("user", session.user);
+			c.set("session", session.session);
 			await next();
-			return;
-		}
-
-		c.set("user", session.user);
-		c.set("session", session.session);
-		await next();
-	})
+		})
 	.on(["POST", "GET"], "/auth/*", (c) => {
 		return auth.handler(c.req.raw)
 	})
@@ -48,7 +44,6 @@ const app = new Hono<{
 	.get("/status", (c) => {
 		return c.json({ message: "Up and running!" })
 	})
-
 	.route("/projects", projectsRoute)
 	.route("/users", usersRoutes);
 
