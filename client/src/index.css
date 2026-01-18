@@ -1,6 +1,56 @@
 @import url('https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Leckerli+One&display=swap');
 @import "tailwindcss";
 
+html, body {
+	min-height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	overflow-x: hidden;
+	-webkit-text-size-adjust: 100%;
+	-moz-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
+body {
+	background-color: #D1C4B9;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+}
+
+.bg-layer {
+	position: fixed;
+	inset: 0;
+	background-color: #D1C4B9;
+	z-index: -10;
+	pointer-events: none;
+}
+
+.bg-image-container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	min-height: 100vh;
+	z-index: -5;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.bg-image {
+	position: absolute;
+	top: 0;
+	left: 100%;
+	width: auto;
+	height: 100%;
+	min-height: 100vw;
+	object-fit: cover;
+	transform: rotate(90deg);
+	transform-origin: top left;
+	display: block;
+}
+
 * {
 	font-family: "Leckerli One", cursive;
 }
@@ -8,8 +58,7 @@
 .title-font {
 	font-family: "Averia Serif Libre", serif;
 }
+
 @theme {
 	--text-9-5xl: 9rem;
-	--text-10xl: 16rem;
-	--text-12xl: 24rem;
 }
