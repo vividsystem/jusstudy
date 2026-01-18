@@ -76,7 +76,10 @@ export const projectsRoute = new Hono<{
 			return c.json({ message: "Ressource not found" }, 404)
 		}
 
-		return c.json({ project: res[0] })
+
+		// TODO: single hackatime project api call for time spent
+
+		return c.json({ project: res[0] }, 200)
 	})
 
 

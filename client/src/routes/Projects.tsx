@@ -1,10 +1,12 @@
 import { client } from "@client/lib/api-client";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react"
+import { useNavigate } from "react-router";
 
 
 export default function Projects() {
-	const { isPending, error, data } = useQuery({
+	const navigate = useNavigate()
+	const { /*isPending, error,*/ data } = useQuery({
 		queryKey: ["userProjects"],
 		queryFn: async () => {
 			try {
@@ -29,13 +31,16 @@ export default function Projects() {
 				</a>
 			</div>
 
-			<div className="grid grid-cols-4">
+			<div className="grid grid-cols-4 gap-4">
 				{data?.projects.length == 0 ? (
 					"You don't have any projects yet"
 
 				) : ""}
 				{data?.projects.map((project) => (
-					<div>
+					<div className="p-4 border bg-white" onClick={(ev) => {
+						ev.preventDefault()
+						navigate(`/projects/${project.id}`)
+					}}>
 						{project.name}
 					</div>
 				))}

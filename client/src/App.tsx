@@ -6,6 +6,7 @@ import Onboarding from "./routes/Onboarding";
 import Home from "./routes/Home";
 import PrivateRoute from "./routes/PrivateRoute";
 import NewProjectPage from "./routes/NewProject";
+import ProjectDetails from "./routes/ProjectDetails";
 
 function App() {
 	return (
@@ -19,6 +20,7 @@ function App() {
 
 						<Route path="/home" element={<Home />} />
 						<Route path="/projects" element={<Projects />} />
+						<Route path="/projects/:projectId" element={<ProjectDetails />} />
 						<Route path="/projects/new" element={<NewProjectPage />} />
 
 						<Route path="/onboarding" element={<Onboarding />} />
