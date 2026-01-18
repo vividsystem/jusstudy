@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router";
-import Landing from "./components/Landing";
-import { PrivateRoute } from "./components/PrivateRoute";
-import Home from "./components/Home";
-import Onboarding from "./components/Onboarding";
-import AppLayout from "./components/AppLayout";
+import Landing from "./routes/Landing";
+import AppLayout from "./routes/AppLayout";
+import Projects from "./routes/Projects";
+import Onboarding from "./routes/Onboarding";
+import Home from "./routes/Home";
+import PrivateRoute from "./routes/PrivateRoute";
+import NewProjectPage from "./routes/NewProject";
 
 function App() {
 	return (
@@ -16,6 +18,8 @@ function App() {
 					<Route element={<AppLayout />}>
 
 						<Route path="/home" element={<Home />} />
+						<Route path="/projects" element={<Projects />} />
+						<Route path="/projects/new" element={<NewProjectPage />} />
 
 						<Route path="/onboarding" element={<Onboarding />} />
 					</Route>

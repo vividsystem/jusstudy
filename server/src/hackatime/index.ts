@@ -1,8 +1,17 @@
-import { StatsResponseSchema, StatsSchema } from "./validation"
-import type { StatsResponse } from "./types"
-import z from "zod"
+import { ProjectDetailsResponseSchema, StatsResponseSchema, StatsSchema } from "./validation"
+import type { ProjectDetailsResponse, StatsResponse } from "./types"
 
 export type Features = "projects" | "languages"
+
+
+interface BaseCfg {
+	startDate?: Date,
+	endDate?: Date
+}
+
+interface UserStatsCfg extends BaseCfg {
+	features?: Features[]
+}
 
 class HackatimeClient {
 	baseUrl: string
@@ -27,7 +36,33 @@ class HackatimeClient {
 		return url;
 	}
 
-	async userStats(user: string, cfg?: { startDate?: Date, endDate?: Date, features?: Features[] }): Promise<StatsResponse> {
+
+	async userProjectDetails(user: string, cfg?: BaseCfg): Promise<ProjectDetailsResponse> {
+		const url = this.constructUrl(`${this.baseUrl}/users/${user}/projects/details`, {
+			start_date: cfg?.startDate?.toISOString().slice(0, 10),
+			end_date: cfg?.endDate?.toISOString().slice(0, 10),
+		})
+
+		const res = await fetch(url, {
+			headers: {
+				"authorization": `bearer ${this.apiKey}`
+			}
+		})
+
+		const body = await res.json()
+
+		const parsed = ProjectDetailsResponseSchema.safeParse(body)
+		if (!parsed.success) {
+			console.log(JSON.stringify(body))
+			console.log(parsed.error)
+			return { success: false, error: "invalid response format" }
+		}
+
+		return parsed.data
+	}
+
+
+	async userStats(user: string, cfg?: UserStatsCfg): Promise<StatsResponse> {
 		const url = this.constructUrl(`${this.baseUrl}/users/${user}/stats`, {
 			start_date: cfg?.startDate?.toISOString().slice(0, 10),
 			end_date: cfg?.endDate?.toISOString().slice(0, 10),
@@ -35,7 +70,7 @@ class HackatimeClient {
 		})
 		const res = await fetch(url, {
 			headers: {
-				"Authorization": `Bearer ${this.apiKey}`
+				"authorization": `bearer ${this.apiKey}`
 			}
 		})
 
@@ -43,9 +78,10 @@ class HackatimeClient {
 
 		const parsed = StatsResponseSchema.safeParse(body)
 		if (!parsed.success) {
-			return { success: false, error: "Invalid response format" }
+			console.log(JSON.stringify(body))
+			console.log(parsed.error)
+			return { success: false, error: "invalid response format" }
 		}
-
 		return parsed.data
 	}
 
