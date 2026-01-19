@@ -23,13 +23,12 @@
 
 </head>
 
-<body>
-	<div class="bg-layer"></div>
-	<div class="bg-image-container">
-		<img src="/background.png" alt="" class="bg-image" />
+<body class="bg-[#D1C4B9] m-0 p-0">
+	<div class="absolute top-0 left-0 w-full -z-10 pointer-events-none overflow-visible">
+		<img src="/background.png" alt="" class="max-w-none h-[100vw] w-auto block rotate-90 origin-top-left translate-x-[100vw] scale-[1.01]" />
 	</div>
-	<div id="root"></div>
-	<script type="module" src="/src/main.tsx"></script>
-</body>
+ 	<div id="root" class="relative z-10"></div>
+ 	<script type="module" src="/src/main.tsx"></script>
+ </body>
 
 </html>
