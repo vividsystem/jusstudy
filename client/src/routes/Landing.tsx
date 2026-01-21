@@ -14,13 +14,23 @@ function Landing() {
 	};
 
 	return (
-		<div className="relative w-full min-height-screen flex flex-col items-center justify-start overflow-x-hidden pb-20">
+		<div className="relative w-full flex flex-col items-center justify-start pb-20">
 			{/* Background Layers */}
-			<div className="absolute top-0 left-0 w-full pointer-events-none z-0">
+			<div className="absolute top-0 left-0 w-full pointer-events-none -z-10">
 				<img
 					src="/ColorBanner_1.svg"
 					alt="Banner"
 					className="w-full h-auto block"
+				/>
+				<img
+					src="/ColorBanner_2.svg"
+					alt="Banner"
+					className="w-full h-auto block mt-[-5px]" 
+				/>
+				<img
+					src="/ColorBanner_3.svg"
+					alt="Banner"
+					className="w-full h-auto block mt-[-100px]" 
 				/>
 			</div>
 

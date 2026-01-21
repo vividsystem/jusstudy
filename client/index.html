@@ -23,11 +23,12 @@
 
 </head>
 
-<body class="bg-[#D1C4B9] m-0 p-0">
-	<div class="absolute top-0 left-0 w-full -z-10 pointer-events-none overflow-visible">
-		<img src="/background.png" alt="" class="max-w-none h-[100vw] w-auto block rotate-90 origin-top-left translate-x-[100vw] scale-[1.01]" />
-	</div>
- 	<div id="root" class="relative z-10"></div>
+<body class="bg-[#D1C4B9] m-0 p-0 overflow-x-hidden">
+ 	<div class="fixed inset-0 bg-[#D1C4B9] -z-20 pointer-events-none"></div>
+ 	<div class="absolute top-0 left-0 w-full -z-10 pointer-events-none">
+ 		<img src="/background.png" alt="" class="block h-[100vw] w-auto max-w-none rotate-90 origin-top-left translate-x-[100vw]" />
+ 	</div>
+ 	<div id="root"></div>
  	<script type="module" src="/src/main.tsx"></script>
  </body>
 
