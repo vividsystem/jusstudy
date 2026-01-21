@@ -23,14 +23,9 @@ function Landing() {
 					className="w-full h-auto block"
 				/>
 				<img
-					src="/ColorBanner_2.svg"
+					src="/ColorBanner2+3.svg"
 					alt="Banner"
-					className="w-full h-auto block mt-[-5px]" 
-				/>
-				<img
-					src="/ColorBanner_3.svg"
-					alt="Banner"
-					className="w-full h-auto block mt-[-100px]" 
+					className="hidden lg:block w-full h-auto block mt-[-5px]" 
 				/>
 			</div>
 
@@ -55,7 +50,7 @@ function Landing() {
 					A Hack Club <span>You Ship, We Ship</span> where students build projects that help with studying, focus, learning, or school life, and earn prizes for shipping real work.
 				</p>
 
-				<ul className="text-md lg:text-2xl 2xl:text-3xl list-disc list-inside space-y-2 lg:space-y-4">
+				<ul className="text-md lg:text-2xl 2xl:text-3xl list-disc list-inside space-y-2 lg:space-y-4 font-bold">
 					<li>Build apps, tools, hardware, or experiments related to something you're studying</li>
 					<li>Upload your project with a short write-up</li>
 					<li>Earn prizes based on effort, creativity, and usefulness</li>
@@ -76,6 +71,19 @@ function Landing() {
 					>
 						See Beginner Guides
 					</Button>
+				</div>
+
+				<p className="text-md lg:text-2xl 2xl:text-3xl font-bold opacity-80">
+					Run by students. Backed by <a href="https://hackclub.com" target="_blank" rel="noreferrer" className="underline hover:opacity-100 transition-opacity">Hack Club</a>
+				</p>
+
+				{/* Mobile Banner 2+3 */}
+				<div className="lg:hidden w-[117.6%] ml-[-8.8%] mt-8">
+					<img
+						src="/ColorBanner2+3.svg"
+						alt="Banner"
+						className="w-full h-auto block"
+					/>
 				</div>
 			</main>
 		</div>
