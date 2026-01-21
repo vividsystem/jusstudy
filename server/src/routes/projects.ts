@@ -3,8 +3,8 @@ import db from "@server/db";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator"
 import hackatime from "@server/hackatime";
-import { hackatimeProjectLinks, projects } from "@server/db/schema";
-import { and, eq } from "drizzle-orm";
+import { devlogs, hackatimeProjectLinks, projects, users } from "@server/db/schema";
+import { and, eq, getTableColumns, sum } from "drizzle-orm";
 import { HackatimeLinkRequestSchema, NewProjectRequestSchema } from "@server/validation/projects";
 
 const UpdateProjectRequestSchema = NewProjectRequestSchema.partial().strip()
@@ -64,11 +64,6 @@ export const projectsRoute = new Hono<{
 
 	// get project by id
 	.get("/:id", async (c) => {
-		//no auth required for now
-		// const user = c.get("user")
-		// if (!user) return c.json({ message: "Unauthorized" }, 401)
-		//
-		//
 		const id = c.req.param("id")
 
 		const res = await db.select().from(projects).where(eq(projects.id, id))
@@ -77,9 +72,46 @@ export const projectsRoute = new Hono<{
 		}
 
 
-		// TODO: single hackatime project api call for time spent
+		return c.json({ project: res[0]! }, 200)
+	})
+	.get("/:id/time", async (c) => {
+		const id = c.req.param("id")
 
-		return c.json({ project: res[0] }, 200)
+		const res = await db
+			.select({
+				projects: getTableColumns(projects),
+				timeLogged: sum(devlogs.timeSpent).mapWith(Number),
+				userSlackId: users.slackId,
+
+			})
+			.from(projects)
+			.leftJoin(users, eq(users.id, projects.creatorId))
+			.leftJoin(hackatimeProjectLinks, eq(hackatimeProjectLinks.projectId, projects.id))
+			.leftJoin(devlogs, eq(devlogs.projectId, projects.id))
+			.where(eq(projects.id, id))
+			.groupBy(projects.id, users.slackId)
+		if (res.length == 0) {
+			return c.json({ message: "Ressource not found" }, 404)
+		}
+
+		const stats = await hackatime.userProjectDetails(res[0]!.userSlackId!)
+		if (!stats.success) {
+			return c.json({ message: "Hackatime fetching went wrong" }, 500)
+		}
+
+		const links = await db
+			.select()
+			.from(hackatimeProjectLinks)
+			.where(eq(hackatimeProjectLinks.projectId, id))
+
+		const linksArray = links.map(l => l.hackatimeProjectId)
+
+		const projectStat = stats.projects.filter(p => linksArray.includes(p.name))
+		if (projectStat.length == 0) {
+			return c.json({ message: "Hackatime project not found" }, 400)
+		}
+
+		return c.json({ project: res[0]!.projects, timeSpent: projectStat[0]!.total_seconds, timeLogged: res[0]!.timeLogged }, 200)
 	})
 
 
@@ -116,12 +148,11 @@ export const projectsRoute = new Hono<{
 	})
 
 
-	.patch("/:id", async (c) => {
+	.patch("/:id", zValidator("json", UpdateProjectRequestSchema), async (c) => {
 		const user = c.get("user")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 		const id = c.req.param("id")
-		const body = await c.req.json()
 
 		const proj = await db
 			.select()
@@ -135,17 +166,15 @@ export const projectsRoute = new Hono<{
 			return c.json({ message: "Forbidden" }, 403)
 		}
 
-		const parsed = UpdateProjectRequestSchema.safeParse(body)
-		if (!parsed.success) {
-			return c.json({ message: "Bad request" }, 400)
-		}
+
+		const data = c.req.valid('json')
 
 		// TODO: add auto readmeLink generation
 
 		const res = await db
 			.update(projects)
 			.set({
-				...parsed.data,
+				...data,
 			})
 			.where(eq(projects.id, id))
 			.returning()

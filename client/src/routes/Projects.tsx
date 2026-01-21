@@ -1,11 +1,10 @@
 import { client } from "@client/lib/api-client";
+import { secondsToFormatTime } from "@client/lib/time";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react"
-import { useNavigate } from "react-router";
+import { BookOpen, Clock, Plus } from "lucide-react"
 
 
 export default function Projects() {
-	const navigate = useNavigate()
 	const { /*isPending, error,*/ data } = useQuery({
 		queryKey: ["userProjects"],
 		queryFn: async () => {
@@ -24,9 +23,9 @@ export default function Projects() {
 	})
 	return (
 		<main className="w-full">
-			<div className="flex flex-row items-center justify-between w-full">
-				<h1 className="text-9xl">Projects</h1>
-				<a href="/projects/new" className="w-fit">
+			<div className="flex flex-row items-center justify-between w-full py-4 text-dark-brown">
+				<h1 className="text-9xl">Your Projects</h1>
+				<a href="/projects/new" className="w-fit bg-light-brown rounded-4xl border-4">
 					<Plus className="size-24" />
 				</a>
 			</div>
@@ -37,12 +36,20 @@ export default function Projects() {
 
 				) : ""}
 				{data?.projects.map((project) => (
-					<div className="p-4 border bg-white" onClick={(ev) => {
-						ev.preventDefault()
-						navigate(`/projects/${project.id}`)
-					}}>
-						{project.name}
-					</div>
+					<a href={`/projects/${project.id}`} className="p-4 border-4 bg-dark-red text-egg-yellow text-4xl rounded-4xl">
+						<h2 className="text-5xl text-beige">{project.name}</h2>
+						{project.description && (
+							<span className="line-clamp-3">{project.description}</span>
+						)}
+						<div className="flex flex-items items-center gap-4">
+							<BookOpen className="size-8" />
+							<span>0 devlogs</span>
+						</div>
+						<div className="flex flex-items items-center gap-4">
+							<Clock className="size-8" />
+							<span>{secondsToFormatTime(project.timeSpent)}</span>
+						</div>
+					</a>
 				))}
 
 			</div>

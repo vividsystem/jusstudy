@@ -45,7 +45,7 @@ class HackatimeClient {
 
 		const res = await fetch(url, {
 			headers: {
-				"authorization": `bearer ${this.apiKey}`
+				"Authorization": `Bearer ${this.apiKey}`
 			}
 		})
 

@@ -1,3 +1,4 @@
+import Button from "@client/components/Button";
 import HackatimeProjectSelector from "@client/components/HackatimeProjectSelector";
 import { Input } from "@client/components/Input";
 import { client } from "@client/lib/api-client";
@@ -53,56 +54,58 @@ export default function NewProjectPage() {
 		}
 	})
 	return (
-		<main className="flex flex-col items-start text-4xl">
-			<h1 className="text-8xl">Create a new Project</h1>
-			<Input
-				type="text"
-				placeholder="Super duper great project name"
-				label={"Project name"}
-				name="name"
-				onInput={(name) => setForm({ ...form, name })}
-			/>
-			<Input
-				type="text"
-				placeholder="Solves the universes problems"
-				label={"Description"}
-				name="description"
-				onInput={(description) => setForm({ ...form, description })}
-			/>
+		<main className="flex flex-col items-center text-4xl text-egg-yellow w-full min-h-screen gap-16">
 
-			{/* TODO: add project banner upload */}
+			<h1 className="text-8xl bg-dark-red p-4 rounded-4xl">Create a new Project</h1>
+			<div className="flex flex-col bg-dark-red rounded-4xl p-4 gap-8 w-1/2">
+				<Input
+					type="text"
+					placeholder="Super duper great project name"
+					label={"Project name"}
+					name="name"
+					onInput={(name) => setForm({ ...form, name })}
+				/>
+				<Input
+					type="text"
+					placeholder="Solves the universes problems"
+					label={"Description"}
+					name="description"
+					onInput={(description) => setForm({ ...form, description })}
+				/>
 
-
-
-			<Input
-				type="url"
-				placeholder="https://jusstudy.super.studied.com"
-				label={"Demo link"}
-				name="demo-url"
-				onInput={(demoLink) => setForm({ ...form, demoLink })}
-			/>
-			<Input
-				type="url"
-				placeholder="https://github.com/vividsystem/jusstudy"
-				label={"Repository Link"}
-				name="repo-url"
-				onInput={(repository) => setForm({ ...form, repository })}
-			/>
+				{/* TODO: add project banner upload */}
 
 
-			<HackatimeProjectSelector onSelect={(inp) => setHackatimeProjects(prev => [...prev, inp])} />
+
+				<Input
+					type="url"
+					placeholder="https://jusstudy.super.studied.com"
+					label={"Demo link"}
+					name="demo-url"
+					onInput={(demoLink) => setForm({ ...form, demoLink })}
+				/>
+				<Input
+					type="url"
+					placeholder="https://github.com/vividsystem/jusstudy"
+					label={"Repository Link"}
+					name="repo-url"
+					onInput={(repository) => setForm({ ...form, repository })}
+				/>
 
 
-			<div className="flex flex-row-reverse justify-start gap-4">
-				<button onClick={(ev) => {
+				<HackatimeProjectSelector onSelect={(inp) => setHackatimeProjects(prev => [...prev, inp])} />
+			</div>
+
+			<div className="flex flex-row-reverse justify-start gap-4 w-1/2">
+				<Button onClick={(ev) => {
 					ev.preventDefault()
 					createProject()
-				}}>
+				}} className="bg-green-700">
 					Create Project
-				</button>
-				<button>
+				</Button>
+				<Button href="/projects" className="bg-dark-red">
 					Cancel
-				</button>
+				</Button>
 			</div>
 
 		</main>

@@ -27,10 +27,21 @@ export default function HackatimeProjectSelector(props: HackatimeProjectSelector
 		}
 	})
 	return (
-		<div className="flex flex-col">
-			<div className="">
+		<div className="flex flex-col w-full p-4 gap-4 bg-light-brown rounded-2xl">
+			<select name="projects" onChange={(ev) => {
+				const name = ev.currentTarget.value
+				setAlreadyUsed((prev) => [...prev, name])
+				props.onSelect(name)
+				ev.currentTarget.value = ""
+			}} defaultValue="" className="border-2 rounded-lg p-2 bg-dark-red">
+				<option value="">Select a project</option>
+				{data?.unused.filter(n => !alreadyUsed.includes(n)).map((name) => (
+					<option value={name}>{name}</option>
+				))}
+			</select>
+			<div className="w-full">
 				{alreadyUsed.map(name => (
-					<div className="border border-black p-2 flex flex-row items-center justify-between w-64">
+					<div className="border-2 rounded-lg p-2 flex flex-row items-center justify-between w-full bg-dark-brown">
 						{name}
 						<div onClick={() => {
 							setAlreadyUsed((prev) => prev.filter(n => n != name))
@@ -39,20 +50,7 @@ export default function HackatimeProjectSelector(props: HackatimeProjectSelector
 						</div>
 					</div>
 				))}
-
 			</div>
-			<select name="projects" onChange={(ev) => {
-				const name = ev.currentTarget.value
-				setAlreadyUsed((prev) => [...prev, name])
-				props.onSelect(name)
-				ev.currentTarget.value = ""
-			}} defaultValue="">
-				<option value="">Select a project</option>
-				{data?.unused.filter(n => !alreadyUsed.includes(n)).map((name) => (
-					<option value={name}>{name}</option>
-				))}
-			</select>
-
 		</div>
 	)
 }

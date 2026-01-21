@@ -4,9 +4,9 @@ export const TimeableSchema = z.object({
 	name: z.string().nonempty(),
 	total_seconds: z.number().positive(),
 	text: z.string().nonempty(), // human readable time spend
-	hours: z.number().positive(),
-	minutes: z.number().positive(),
-	percent: z.number().positive(),
+	hours: z.number().nonnegative(),
+	minutes: z.number().nonnegative(),
+	percent: z.number().nonnegative(),
 	digital: z.string().nonempty() // hh:mm:ss
 })
 
