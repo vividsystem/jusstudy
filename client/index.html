@@ -25,23 +25,10 @@
 
 <body class="bg-[#D1C4B9] m-0 p-0 overflow-x-hidden">
 	<div class="fixed inset-0 bg-[#D1C4B9] -z-20 pointer-events-none"></div>
-	<style>
-		.bg-rotated-repeat {
-			background-image: url('/background.png');
-			background-repeat: repeat-y;
-			background-size: 100vw auto;
-			/* We use a transform on the container to match your 90deg rotation logic without multiple img tags */
-			height: 1000%; /* Very long to cover all possible content */
-			width: 100%;
-			position: absolute;
-			top: 0;
-			left: 0;
-			transform: rotate(90deg) translate(0, -100%);
-			transform-origin: top left;
-			z-index: -10;
-		}
-	</style>
-	<div class="bg-rotated-repeat pointer-events-none select-none" oncontextmenu="return false;"></div>
+	<div class="absolute top-0 left-0 w-full -z-10 pointer-events-none select-none">
+		<img src="/background.png" alt="" class="absolute top-0 left-0 h-[100vw] w-auto max-w-none rotate-90 origin-top-left translate-x-[100vw]" oncontextmenu="return false;" />
+		<img src="/background.png" alt="" class="absolute top-[160vw] lg:top-[120vw] left-0 h-[100vw] w-auto max-w-none rotate-90 origin-top-left translate-x-[100vw]" oncontextmenu="return false;" />
+	</div>
 	<div id="root"></div>
  	<script type="module" src="/src/main.tsx"></script>
  </body>
