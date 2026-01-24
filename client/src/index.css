@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Leckerli+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Aladin&display=swap');
 @import "tailwindcss";
 
 html {
@@ -10,16 +11,41 @@ html {
 }
 
 body {
-	background-color: #D1C4B9;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	text-rendering: optimizeLegibility;
 	margin: 0;
 	padding: 0;
+	@apply bg-beige;
+}
+
+.bg-layer {
+	position: fixed;
+	inset: 0;
+	z-index: -10;
+	pointer-events: none;
+	@apply bg-beige;
+}
+
+.bg-image-container {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -5;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.bg-image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
 }
 
 * {
-	font-family: "Leckerli One", cursive;
+	font-family: "Aladin", system-ui;
 }
 
 .title-font {
@@ -28,4 +54,9 @@ body {
 
 @theme {
 	--text-9-5xl: 9rem;
+	--color-beige: #D1C4B9;
+	--color-egg-yellow: #FFE6A7;
+	--color-dark-red: #6F1D1B;
+	--color-dark-brown: #432818;
+	--color-light-brown: #99582A;
 }

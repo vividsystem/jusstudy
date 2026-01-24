@@ -24,15 +24,13 @@ const LandingContent = () => (
 				href="https://forms.fillout.com/t/aX86bHVxqkus"
 				target="_blank"
 				rel="noreferrer"
-				variant="yellow"
-				className="w-full sm:w-auto text-center"
+				className="w-full sm:w-auto text-center bg-dark-red text-egg-yellow border-4 border-egg-yellow"
 			>
 				RSVP / Join YSWS
 			</Button>
 			<Button
 				href="/beginner"
-				variant="red"
-				className="w-full sm:w-auto text-center"
+				className="w-full sm:w-auto text-center bg-dark-red text-egg-yellow border-4 border-egg-yellow"
 			>
 				See Beginner Guides
 			</Button>
