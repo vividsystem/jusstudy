@@ -52,21 +52,11 @@ const SponsorsBanner = () => (
 			className="w-full h-auto block min-h-[120px] sm:min-h-[200px] object-cover sm:object-fill"
 			onContextMenu={(e) => e.preventDefault()}
 		/>
-		<div className="absolute inset-0 flex flex-col lg:flex-row items-center justify-between px-[10%] lg:px-[15%] gap-1 lg:gap-0 pb-[2%] lg:pb-[5%]">
-			<div className="flex flex-col gap-0 lg:gap-1 text-center lg:text-left mt-2 lg:mt-0">
+		<div className="absolute inset-0 flex flex-col items-center justify-center px-[10%] lg:px-[15%] pb-[2%] lg:pb-[5%]">
+			<div className="flex flex-col gap-0 lg:gap-1 text-center mt-2 lg:mt-0">
 				<h2 className="text-base sm:text-2xl lg:text-4xl 2xl:text-6xl font-bold title-font text-[#FFE6A7] leading-tight">
 					Thanks to our sponsors!!!
 				</h2>
-			</div>
-			<div className="flex flex-col items-center gap-0 lg:gap-1 mb-2 lg:mb-0">
-				<a href="https://codecrafters.io" target="_blank" rel="noreferrer" className="hover:scale-110 transition-transform pointer-events-auto">
-					<img 
-						src="/CodeCrafters.png" 
-						alt="CodeCrafters" 
-						className="h-6 sm:h-12 lg:h-32 2xl:h-40 w-auto"
-					/>
-				</a>
-				<span className="text-[10px] sm:text-md lg:text-3xl font-bold text-[#FFE6A7] title-font">CodeCrafters</span>
 			</div>
 		</div>
 	</div>
