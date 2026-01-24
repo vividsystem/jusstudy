@@ -1,4 +1,4 @@
-import { integer, pgTable, primaryKey, smallint, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users } from "./schema-auth";
 import { relations } from "drizzle-orm";
 
@@ -40,7 +40,7 @@ export const devlogs = pgTable("project_devlogs", {
 	id: uuid().defaultRandom().primaryKey(),
 	createdAt: timestamp().defaultNow().notNull(),
 	projectId: uuid().references(() => projects.id, { onDelete: "cascade" }).notNull(),
-	timeSpent: smallint().notNull(), // 0 to 10h per devlog
+	timeSpent: integer().notNull(), // 0 to 10h per devlog
 	totalTimeSpent: integer().notNull(), // total amount of time spent up until that log
 	content: text().notNull(),
 	attachment: text()

@@ -4,8 +4,10 @@ import { Input } from "@client/components/Input";
 import { client } from "@client/lib/api-client";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 
 export default function NewProjectPage() {
+	const navigate = useNavigate()
 	const [form, setForm] = useState<{
 		name: string,
 		description?: string,
@@ -38,7 +40,7 @@ export default function NewProjectPage() {
 					}
 				})
 			}
-			return res
+			navigate("/projects")
 		}
 	})
 

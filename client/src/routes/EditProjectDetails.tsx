@@ -16,6 +16,9 @@ export default function EditProjectDetails() {
 
 	let { projectId } = useParams()
 	const navigate = useNavigate()
+	if (!projectId) {
+		return navigate("/projects")
+	}
 
 	const { isPending, isSuccess, /*error,*/ data } = useQuery({
 		queryKey: ["singleProject", projectId!],
@@ -29,24 +32,36 @@ export default function EditProjectDetails() {
 
 
 
-	const [_hackatimeProjects, setHackatimeProjects] = useState<string[]>([])
+	const [hackatimeProjects, setHackatimeProjects] = useState<string[]>([])
 	const { isError, isSuccess: isMutationSuccess, mutate: updateProject } = useMutation({
 		mutationFn: async () => {
 			console.log(form)
-			const res = await client.api.projects[":id"].$patch({
-				json: form,
-				param: {
-					id: projectId!
+			if (Object.values(form).some(value => value !== undefined)) {
+				const res = await client.api.projects[":id"].$patch({
+					json: form,
+					param: {
+						id: projectId!
+					}
+				})
+				if (!res.ok) {
+					const data = await res.json()
+					throw new Error(data.message)
 				}
-			})
-			if (!res.ok) {
-				const data = await res.json()
-				throw new Error(data.message)
+
+				// const data = await res.json()
 			}
 
-			const data = await res.json()
 
-			return data
+			for (let proj of hackatimeProjects) {
+				await client.api.projects[":id"].link.$post({
+					param: {
+						id: projectId,
+					},
+					json: {
+						id: proj
+					}
+				})
+			}
 		}
 	})
 
@@ -115,6 +130,7 @@ export default function EditProjectDetails() {
 						<Button onClick={(ev) => {
 							ev.preventDefault()
 							updateProject()
+							navigate("/projects")
 						}} className="bg-green-700">
 							Update Project
 						</Button>

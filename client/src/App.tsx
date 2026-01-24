@@ -8,6 +8,7 @@ import PrivateRoute from "./routes/PrivateRoute";
 import NewProjectPage from "./routes/NewProject";
 import ProjectDetails from "./routes/ProjectDetails";
 import EditProjectDetails from "./routes/EditProjectDetails";
+import NewDevlog from "./routes/NewDevlog";
 
 function App() {
 	return (
@@ -23,6 +24,7 @@ function App() {
 						<Route path="/projects" element={<Projects />} />
 						<Route path="/projects/:projectId" element={<ProjectDetails />} />
 						<Route path="/projects/:projectId/edit" element={<EditProjectDetails />} />
+						<Route path="/projects/:projectId/devlogs/new" element={<NewDevlog />} />
 						<Route path="/projects/new" element={<NewProjectPage />} />
 
 						<Route path="/onboarding" element={<Onboarding />} />

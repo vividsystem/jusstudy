@@ -6,6 +6,7 @@ import hackatime from "@server/hackatime";
 import { devlogs, hackatimeProjectLinks, projects, users } from "@server/db/schema";
 import { and, eq, getTableColumns, sum } from "drizzle-orm";
 import { HackatimeLinkRequestSchema, NewProjectRequestSchema } from "@server/validation/projects";
+import { devlogsRoute } from "./devlogs";
 
 const UpdateProjectRequestSchema = NewProjectRequestSchema.partial().strip()
 
@@ -106,12 +107,13 @@ export const projectsRoute = new Hono<{
 
 		const linksArray = links.map(l => l.hackatimeProjectId)
 
-		const projectStat = stats.projects.filter(p => linksArray.includes(p.name))
-		if (projectStat.length == 0) {
-			return c.json({ message: "Hackatime project not found" }, 400)
-		}
 
-		return c.json({ project: res[0]!.projects, timeSpent: projectStat[0]!.total_seconds, timeLogged: res[0]!.timeLogged }, 200)
+		let timeRecord = 0
+		const projectStat = stats.projects.filter(p => linksArray.includes(p.name)).forEach(p => {
+			timeRecord += p.total_seconds
+		})
+
+		return c.json({ project: res[0]!.projects, timeSpent: timeRecord, timeLogged: res[0]!.timeLogged }, 200)
 	})
 
 
@@ -247,5 +249,6 @@ export const projectsRoute = new Hono<{
 			old: deleted
 		})
 	})
+	.route("/:id/devlogs", devlogsRoute)
 
 export { projectsRoute as default }

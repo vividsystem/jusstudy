@@ -1,4 +1,5 @@
 import Button from "@client/components/Button";
+import DevlogTimeline from "@client/components/DevlogTimeline";
 import { fetchSingleProject } from "@client/lib/api-client";
 import { secondsToFormatTime } from "@client/lib/time";
 import { useQuery } from "@tanstack/react-query";
@@ -15,7 +16,7 @@ export default function ProjectDetails() {
 	})
 
 	return (
-		<main className="w-full text-4xl flex flex-col items-center">
+		<main className="w-full text-4xl flex flex-col items-center gap-4">
 			{data?.project && (
 				<div className="border-5 rounded-2xl bg-dark-red text-egg-yellow p-4 w-fit flex flex-col gap-4">
 					<div className="flex flex-row gap-16 justify-between items-center">
@@ -68,6 +69,8 @@ export default function ProjectDetails() {
 				</div>
 			)
 			}
+			<DevlogTimeline projectId={projectId!} />
+
 			<p className="text-sm">{projectId}</p>
 		</main >
 	)
