@@ -187,18 +187,6 @@ export const projectsRoute = new Hono<{
 		return c.json({ message: "Project updated", project: res[0] })
 	})
 
-		const proj = await db
-			.select()
-			.from(projects)
-			.where(eq(projects.id, id))
-		if (proj.length == 0) {
-			return c.json({ message: "Ressource not found" }, 404)
-		}
-		const project = proj[0]!
-		if (project.creatorId != user.id) {
-			return c.json({ message: "Forbidden" }, 403)
-		}
-
 	//link a hackatime project
 	.post("/:id/link", zValidator("json", HackatimeLinkRequestSchema), async (c) => {
 		const user = c.get("user")
