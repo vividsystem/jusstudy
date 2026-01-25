@@ -1,7 +1,7 @@
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
 	"name": "jusstudy", // Name of your project
-	"main": "./server/dist/index.js", // Path to worker
+	"main": "./server/dist/server/src/index.js", // Path to worker
   "compatibility_date": "2025-05-25",
 	"assets": {
 		"directory": "./client/dist", // Path to client build folder
@@ -11,7 +11,8 @@
   "vars": {
   	"CORS_ORIGIN": "https://jusstudy.notrealbutnotobot.workers.dev",
   	"VITE_CLIENT_URL": "https://jusstudy.notrealbutnotobot.workers.dev",
-		"BUN_VERSION": "1.2.21"
+		"BUN_VERSION": "1.2.21",
+		"START_DATE": "2026-01-01"
   },
 	"compatibility_flags": ["nodejs_compat"], // Enable node for Vite path features
 	"observability": {
