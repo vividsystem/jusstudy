@@ -23,7 +23,10 @@ nano client/.env
 ``` 
 And paste the following into the file:
 
-`VITE_CLIENT_URL=http://localhost:5173`
+```
+VITE_CLIENT_URL=http://localhost:5173
+VITE_SERVER_URL=http://localhost:3000
+```
 
 > Set up .env for the server
 ```bash
