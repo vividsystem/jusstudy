@@ -11,18 +11,20 @@ export default function Projects() {
 			try {
 				const res = await client.api.projects.$get()
 				if (!res.ok) {
-					return { projects: [] };
+					const data = await res.json();
+					throw new Error(data.message)
 				}
 
 				const data = await res.json();
 				return data
 			} catch (error) {
-				return { projects: [] }
+				throw error
 			}
-		}
+		},
+		throwOnError: true
 	})
 	return (
-		<main className="w-full">
+		<main className="w-full p-4">
 			<div className="flex flex-row items-center justify-between w-full py-4 text-dark-brown">
 				<h1 className="text-9xl">Your Projects</h1>
 				<a href="/projects/new" className="w-fit bg-light-brown rounded-4xl border-4">
@@ -30,7 +32,7 @@ export default function Projects() {
 				</a>
 			</div>
 
-			<div className="grid grid-cols-4 gap-4">
+			<div className="grid 2xl:grid-cols-5 grid-cols-3 gap-4">
 				{data?.projects.length == 0 ? (
 					"You don't have any projects yet"
 

@@ -6,25 +6,27 @@ import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { projectCategoryValues, type ProjectCategories } from "@server/db/schema";
+import { NewProjectRequestSchema } from "@shared/validation/projects";
+import z from "zod";
 
 export default function NewProjectPage() {
 	const navigate = useNavigate()
 	const [form, setForm] = useState<{
-		name: string,
+		name?: string,
 		description?: string,
 		demoLink?: string,
 		repository?: string,
 		category: ProjectCategories
-	}>({
-		name: "",
-		category: "CAD"
-	})
+	}>({ category: "CAD" })
 	const [hackatimeProjects, setHackatimeProjects] = useState<string[]>([])
 	const { isPending, isError, isSuccess, mutate: createProject } = useMutation({
 		mutationFn: async () => {
-			console.log(form)
+			const parsed = NewProjectRequestSchema.safeParse(form)
+			if (!parsed.success) {
+				throw z.prettifyError(parsed.error)
+			}
 			const res = await client.api.projects.$post({
-				json: form
+				json: parsed
 			})
 			if (!res.ok) {
 				const data = await res.json()
@@ -44,7 +46,8 @@ export default function NewProjectPage() {
 				})
 			}
 			navigate("/projects")
-		}
+		},
+		throwOnError: true
 	})
 
 
@@ -58,7 +61,7 @@ export default function NewProjectPage() {
 		}
 	})
 	return (
-		<main className="flex flex-col items-center text-4xl text-egg-yellow w-full min-h-screen gap-16">
+		<main className="flex flex-col items-center text-4xl text-egg-yellow w-full min-h-screen gap-16 p-4">
 
 			<h1 className="text-8xl bg-dark-red p-4 rounded-4xl">Create a new Project</h1>
 			<div className="flex flex-col bg-dark-red rounded-4xl p-4 gap-8 w-1/2">
