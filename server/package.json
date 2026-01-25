@@ -5,10 +5,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "bun --watch run src/index.ts & tsc --watch",
-    "dev:workers": "wrangler dev",
-    "deploy:workers": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+    "dev": "bun --watch run src/index.ts & tsc --watch"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.6",

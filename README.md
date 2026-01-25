@@ -93,6 +93,7 @@ bunx wrangler secret put HACKATIME_API_KEY
   "vars": {
   	"VITE_CLIENT_URL": "my-variable",
     "CORS_ORIGIN": "SAME AS VITE_CLIENT_URL"
+    "START_DATE": "2026-01-01" // the start date of the ysws
   }
 //...
 ```
