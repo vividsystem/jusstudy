@@ -1,3 +1,4 @@
+import { projectCategoryValues } from "@server/db/schema"
 import z from "zod"
 
 export const HackatimeLinkRequestSchema = z.object({
@@ -10,4 +11,5 @@ export const NewProjectRequestSchema = z.object({
 	demoLink: z.url().optional(),
 	repository: z.url().optional(),
 	readmeLink: z.url().optional(),
+	category: z.enum(projectCategoryValues)
 }).strip()

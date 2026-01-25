@@ -31,7 +31,7 @@ export default function ProjectDetails() {
 					<div className="flex flex-row gap-4 items-center text-beige">
 						<div className="flex flex-items items-center gap-4">
 							<BookOpen className="size-8" />
-							<span>0 devlogs</span>
+							<span>? devlogs</span>
 						</div>
 						<div className="flex flex-items items-center gap-4 ">
 							<Clock className="size-8" />
@@ -39,6 +39,7 @@ export default function ProjectDetails() {
 						</div>
 					</div>
 					<p>{data.project.description}</p>
+					<p className="text-beige">{data.project.category}</p>
 					{(data.project?.demoLink || data.project?.repository || data.project?.readmeLink) && (
 						<div className="flex flex-row mt-4 gap-4">
 							{data.project?.demoLink != null && (

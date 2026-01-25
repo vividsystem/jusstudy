@@ -2,6 +2,7 @@ import Button from "@client/components/Button";
 import HackatimeProjectSelector from "@client/components/HackatimeProjectSelector";
 import { Input } from "@client/components/Input";
 import { client, fetchSingleProject } from "@client/lib/api-client";
+import { projectCategoryValues, type ProjectCategories } from "@server/db/schema";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
@@ -12,6 +13,7 @@ export default function EditProjectDetails() {
 		description?: string,
 		demoLink?: string,
 		repository?: string,
+		category?: ProjectCategories
 	}>({})
 
 	let { projectId } = useParams()
@@ -24,16 +26,10 @@ export default function EditProjectDetails() {
 		queryKey: ["singleProject", projectId!],
 		queryFn: async () => await fetchSingleProject(projectId!)
 	})
-	useEffect(() => {
-		if (isMutationSuccess) {
-			navigate(`/projects/${projectId}`)
-		}
-	})
-
 
 
 	const [hackatimeProjects, setHackatimeProjects] = useState<string[]>([])
-	const { isError, isSuccess: isMutationSuccess, mutate: updateProject } = useMutation({
+	const { isError, isSuccess: _isMutationSuccess, mutate: updateProject } = useMutation({
 		mutationFn: async () => {
 			console.log(form)
 			if (Object.values(form).some(value => value !== undefined)) {
@@ -104,6 +100,15 @@ export default function EditProjectDetails() {
 
 
 
+						<div>
+							<label>Category</label>
+							<select className="border-2 border-egg-yellow p-4 w-full rounded-2xl" onChange={(ev) => setForm({ ...form, category: ev.currentTarget.value as ProjectCategories })} defaultValue={data?.project.category || undefined}>
+								{projectCategoryValues.map(category => (
+									<option>{category}</option>
+								))}
+							</select>
+						</div>
+
 						<Input
 							type="url"
 							placeholder="https://jusstudy.super.studied.com"
@@ -130,7 +135,7 @@ export default function EditProjectDetails() {
 						<Button onClick={(ev) => {
 							ev.preventDefault()
 							updateProject()
-							navigate("/projects")
+							navigate(`/projects/${projectId}`)
 						}} className="bg-green-700">
 							Update Project
 						</Button>
