@@ -16,7 +16,7 @@ export default function ProjectDetails() {
 	})
 
 	return (
-		<main className="w-full text-4xl flex flex-col items-center gap-4">
+		<main className="w-full text-4xl flex flex-col items-center gap-4 p-4">
 			{data?.project && (
 				<div className="border-5 rounded-2xl bg-dark-red text-egg-yellow p-4 w-fit flex flex-col gap-4">
 					<div className="flex flex-row gap-16 justify-between items-center">

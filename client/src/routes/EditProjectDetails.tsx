@@ -112,7 +112,7 @@ export default function EditProjectDetails() {
 							<label>Category</label>
 							<select className="border-2 border-egg-yellow p-4 w-full rounded-2xl" onChange={(ev) => setForm({ ...form, category: ev.currentTarget.value as ProjectCategories })} defaultValue={data?.project.category || undefined}>
 								{projectCategoryValues.map(category => (
-									<option>{category}</option>
+									<option value={category}>{category}</option>
 								))}
 							</select>
 						</div>
