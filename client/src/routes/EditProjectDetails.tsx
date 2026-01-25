@@ -3,9 +3,11 @@ import HackatimeProjectSelector from "@client/components/HackatimeProjectSelecto
 import { Input } from "@client/components/Input";
 import { client, fetchSingleProject } from "@client/lib/api-client";
 import { projectCategoryValues, type ProjectCategories } from "@server/db/schema";
+import { UpdateProjectRequestSchema } from "@shared/validation/projects";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
+import z from "zod";
 
 export default function EditProjectDetails() {
 	const [form, setForm] = useState<{
@@ -24,7 +26,8 @@ export default function EditProjectDetails() {
 
 	const { isPending, isSuccess, /*error,*/ data } = useQuery({
 		queryKey: ["singleProject", projectId!],
-		queryFn: async () => await fetchSingleProject(projectId!)
+		queryFn: async () => await fetchSingleProject(projectId!),
+		throwOnError: true
 	})
 
 
@@ -33,8 +36,12 @@ export default function EditProjectDetails() {
 		mutationFn: async () => {
 			console.log(form)
 			if (Object.values(form).some(value => value !== undefined)) {
+				const parsed = UpdateProjectRequestSchema.safeParse(form)
+				if (!parsed.success) {
+					throw z.prettifyError(parsed.error)
+				}
 				const res = await client.api.projects[":id"].$patch({
-					json: form,
+					json: parsed.data,
 					param: {
 						id: projectId!
 					}
@@ -58,7 +65,8 @@ export default function EditProjectDetails() {
 					}
 				})
 			}
-		}
+		},
+		throwOnError: true
 	})
 
 

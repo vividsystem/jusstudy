@@ -1,8 +1,10 @@
 import Button from "@client/components/Button"
 import { client } from "@client/lib/api-client"
+import { NewDevlogRequestSchema } from "@shared/validation/devlogs"
 import { useMutation } from "@tanstack/react-query"
 import { useState } from "react"
 import { Navigate, useNavigate, useParams } from "react-router"
+import z from "zod"
 
 export default function NewDevlog() {
 	const navigate = useNavigate()
@@ -12,14 +14,16 @@ export default function NewDevlog() {
 	}
 
 	const [form, setForm] = useState<{
-		content: string
-	}>({
-		content: ""
-	})
+		content?: string
+	}>({})
 	const { mutate: createProject } = useMutation({
 		mutationFn: async () => {
+			const parsed = NewDevlogRequestSchema.safeParse(form)
+			if (!parsed.success) {
+				throw z.prettifyError(parsed.error)
+			}
 			const res = await client.api.projects[":id"].devlogs.$post({
-				json: form,
+				json: parsed.data,
 				param: {
 					id: projectId
 				}
@@ -31,7 +35,8 @@ export default function NewDevlog() {
 
 			const data = await res.json()
 			return data
-		}
+		},
+		throwOnError: true
 	})
 	return (
 		<main className="p-4 w-full min-h-screen flex flex-col items-center gap-4">
