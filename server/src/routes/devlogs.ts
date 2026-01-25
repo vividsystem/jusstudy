@@ -3,7 +3,7 @@ import type { auth } from "@server/auth";
 import db from "@server/db";
 import { devlogs, hackatimeProjectLinks, projects } from "@server/db/schema";
 import hackatime from "@server/hackatime";
-import { NewDevlogRequestSchema } from "@server/validation/devlogs";
+import { NewDevlogRequestSchema } from "@shared/validation/devlogs";
 import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 
