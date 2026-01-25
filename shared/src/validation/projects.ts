@@ -13,3 +13,5 @@ export const NewProjectRequestSchema = z.object({
 	readmeLink: z.url().optional(),
 	category: z.enum(projectCategoryValues)
 }).strip()
+
+export const UpdateProjectRequestSchema = NewProjectRequestSchema.partial().strip()

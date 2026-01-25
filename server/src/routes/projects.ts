@@ -5,10 +5,9 @@ import { zValidator } from "@hono/zod-validator"
 import hackatime from "@server/hackatime";
 import { devlogs, hackatimeProjectLinks, projects, users } from "@server/db/schema";
 import { and, eq, getTableColumns, sum } from "drizzle-orm";
-import { HackatimeLinkRequestSchema, NewProjectRequestSchema } from "@server/validation/projects";
+import { HackatimeLinkRequestSchema, NewProjectRequestSchema, UpdateProjectRequestSchema } from "@shared/validation/projects";
 import { devlogsRoute } from "./devlogs";
 
-const UpdateProjectRequestSchema = NewProjectRequestSchema.partial().strip()
 
 export const projectsRoute = new Hono<{
 	Variables: {
@@ -36,8 +35,6 @@ export const projectsRoute = new Hono<{
 		})
 
 		if (!stats.success) {
-			console.log(stats.error)
-			console.log(JSON.stringify(stats))
 			return c.json({ message: "Something went wrong" }, 500)
 		}
 
@@ -59,7 +56,7 @@ export const projectsRoute = new Hono<{
 				const { hackatimeLinks, ...rest } = p
 				return { ...rest, timeSpent: timeRecord[rest.id] || 0 }
 			})
-		})
+		}, 200)
 	})
 
 
