@@ -13,5 +13,8 @@
   	"VITE_CLIENT_URL": "https://jusstudy.notrealbutnotobot.workers.dev",
 		"BUN_VERSION": "1.2.21"
   },
-	"compatibility_flags": ["nodejs_compat"] // Enable node for Vite path features
+	"compatibility_flags": ["nodejs_compat"], // Enable node for Vite path features
+	"observability": {
+		"enabled": true
+	}
 }
