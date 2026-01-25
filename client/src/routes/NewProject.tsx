@@ -26,7 +26,7 @@ export default function NewProjectPage() {
 				throw z.prettifyError(parsed.error)
 			}
 			const res = await client.api.projects.$post({
-				json: parsed
+				json: parsed.data
 			})
 			if (!res.ok) {
 				const data = await res.json()
@@ -88,7 +88,7 @@ export default function NewProjectPage() {
 					<label>Category</label>
 					<select className="border-2 border-egg-yellow p-4 w-full rounded-2xl" onChange={(ev) => setForm({ ...form, category: ev.currentTarget.value as ProjectCategories })}>
 						{projectCategoryValues.map(category => (
-							<option>{category}</option>
+							<option value={category}>{category}</option>
 						))}
 					</select>
 				</div>
