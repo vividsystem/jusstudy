@@ -54,7 +54,7 @@ export const devlogsRoute = new Hono<{
 		const linksArray = links.map(l => l.hackatimeProjectId)
 
 		let newTotalTime = 0
-		const projectStat = stats.projects.filter(p => linksArray.includes(p.name)).forEach(p => {
+		stats.projects.filter(p => linksArray.includes(p.name)).forEach(p => {
 			newTotalTime += p.total_seconds
 		})
 

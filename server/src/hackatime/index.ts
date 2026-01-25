@@ -1,4 +1,4 @@
-import { ProjectDetailsResponseSchema, StatsResponseSchema, StatsSchema } from "./validation"
+import { ProjectDetailsResponseSchema, StatsResponseSchema } from "./validation"
 import type { ProjectDetailsResponse, StatsResponse } from "./types"
 
 export type Features = "projects" | "languages"
