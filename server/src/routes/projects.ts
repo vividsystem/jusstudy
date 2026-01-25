@@ -7,6 +7,7 @@ import { devlogs, hackatimeProjectLinks, projects, users } from "@server/db/sche
 import { and, eq, getTableColumns, sum } from "drizzle-orm";
 import { HackatimeLinkRequestSchema, NewProjectRequestSchema, UpdateProjectRequestSchema } from "@shared/validation/projects";
 import { devlogsRoute } from "./devlogs";
+import z from "zod";
 
 
 export const projectsRoute = new Hono<{
@@ -124,13 +125,13 @@ export const projectsRoute = new Hono<{
 		try {
 			body = await c.req.json()
 		} catch (e) {
-			return c.json({ message: "Bad request" }, 400)
+			return c.json({ message: "Invalid request body" }, 400)
 
 		}
 
 		const parsed = NewProjectRequestSchema.safeParse(body)
 		if (!parsed.success) {
-			return c.json({ message: "Bad request" }, 400)
+			return c.json({ message: z.prettifyError(parsed.error) }, 400)
 		}
 
 		// TODO: add auto readmeLink generation
