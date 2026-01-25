@@ -5,6 +5,7 @@ import { client } from "@client/lib/api-client";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { projectCategoryValues, type ProjectCategories } from "@server/db/schema";
 
 export default function NewProjectPage() {
 	const navigate = useNavigate()
@@ -13,8 +14,10 @@ export default function NewProjectPage() {
 		description?: string,
 		demoLink?: string,
 		repository?: string,
+		category: ProjectCategories
 	}>({
 		name: "",
+		category: "CAD"
 	})
 	const [hackatimeProjects, setHackatimeProjects] = useState<string[]>([])
 	const { isPending, isError, isSuccess, mutate: createProject } = useMutation({
@@ -43,7 +46,6 @@ export default function NewProjectPage() {
 			navigate("/projects")
 		}
 	})
-
 
 
 	useEffect(() => {
@@ -78,6 +80,15 @@ export default function NewProjectPage() {
 				{/* TODO: add project banner upload */}
 
 
+
+				<div>
+					<label>Category</label>
+					<select className="border-2 border-egg-yellow p-4 w-full rounded-2xl" onChange={(ev) => setForm({ ...form, category: ev.currentTarget.value as ProjectCategories })}>
+						{projectCategoryValues.map(category => (
+							<option>{category}</option>
+						))}
+					</select>
+				</div>
 
 				<Input
 					type="url"

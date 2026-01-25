@@ -1,7 +1,11 @@
-import { integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users } from "./schema-auth";
 import { relations } from "drizzle-orm";
 
+export const projectCategoryValues = ["CAD", "Game Development", "Web Development", "PCB Design", "Art", "Music"] as const
+export const categoryEnum = pgEnum("category", projectCategoryValues)
+
+export type ProjectCategories = typeof categoryEnum.enumValues[number]
 
 export const projects = pgTable("projects", {
 	id: uuid().defaultRandom().primaryKey(),
@@ -11,6 +15,7 @@ export const projects = pgTable("projects", {
 	demoLink: text(),
 	repository: text(),
 	readmeLink: text(),
+	category: categoryEnum().notNull(),
 	creatorId: text().references(() => users.id, { onDelete: "cascade" }).notNull()
 })
 
