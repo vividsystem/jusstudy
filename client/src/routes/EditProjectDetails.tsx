@@ -4,7 +4,7 @@ import { Input } from "@client/components/Input";
 import { client, fetchSingleProject } from "@client/lib/api-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { Navigate, useNavigate, useParams } from "react-router";
 
 export default function EditProjectDetails() {
 	const [form, setForm] = useState<{
@@ -17,7 +17,7 @@ export default function EditProjectDetails() {
 	let { projectId } = useParams()
 	const navigate = useNavigate()
 	if (!projectId) {
-		return navigate("/projects")
+		return <Navigate to={"/projects"} />
 	}
 
 	const { isPending, isSuccess, /*error,*/ data } = useQuery({

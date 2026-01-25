@@ -109,7 +109,7 @@ export const projectsRoute = new Hono<{
 
 
 		let timeRecord = 0
-		const projectStat = stats.projects.filter(p => linksArray.includes(p.name)).forEach(p => {
+		stats.projects.filter(p => linksArray.includes(p.name)).forEach(p => {
 			timeRecord += p.total_seconds
 		})
 
@@ -193,7 +193,6 @@ export const projectsRoute = new Hono<{
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 		const id = c.req.param("id")
-		const body = c.req.json()
 
 		const res = await db.select().from(projects).where(eq(projects.id, id))
 		if (res.length == 0) {

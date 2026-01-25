@@ -2,13 +2,13 @@ import Button from "@client/components/Button"
 import { client } from "@client/lib/api-client"
 import { useMutation } from "@tanstack/react-query"
 import { useState } from "react"
-import { useNavigate, useParams } from "react-router"
+import { Navigate, useNavigate, useParams } from "react-router"
 
 export default function NewDevlog() {
 	const navigate = useNavigate()
 	const { projectId } = useParams()
 	if (!projectId) {
-		return navigate("/projects")
+		return <Navigate to={"/projects"} />
 	}
 
 	const [form, setForm] = useState<{
