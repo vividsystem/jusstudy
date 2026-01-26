@@ -3,6 +3,19 @@ import { authClient } from "../lib/auth-client";
 import { clientURL } from "../lib/urls";
 import Button from "@client/components/Button";
 
+const rewardImages = [
+	"/reward/book.png",
+	"/reward/chair.png",
+	"/reward/domain.png",
+	"/reward/laptop.png",
+	"/reward/notebook.png",
+	"/reward/rubberduck.png",
+	"/reward/stationary.png",
+	"/reward/stylus.png",
+	"/reward/tablet.png",
+	"/reward/codecraftersmember.png",
+] as const;
+
 const LandingContent = () => (
 	<>
 		<h1 className="text-4xl sm:text-6xl lg:text-9xl 2xl:text-9-5xl font-bold title-font text-[#282828] break-words">
@@ -88,7 +101,27 @@ function Landing() {
 				{/* The Image Stack - Dictates Height */}
 				<div className="flex flex-col w-full select-none pointer-events-none">
 					<img src="/ColorBanner_1.svg" alt="Banner" className="w-full h-auto block" onContextMenu={(e) => e.preventDefault()} />
-					<img src="/ColorBanner2+3.svg" alt="Banner" className="w-full h-auto block mt-[15rem] sm:mt-[25rem] lg:mt-[30rem] 2xl:mt-[40rem]" onContextMenu={(e) => e.preventDefault()} />
+					<div className="relative w-full mt-[15rem] sm:mt-[25rem] lg:mt-[30rem] 2xl:mt-[40rem]">
+						<img
+							src="/ColorBanner2+3.svg"
+							alt="Banner"
+							className="w-full h-auto block"
+							onContextMenu={(e) => e.preventDefault()}
+						/>
+						<div className="absolute inset-0 flex items-center justify-center px-[4%] pb-[6%]">
+							<div className="grid w-full grid-cols-5 gap-2 sm:gap-3 lg:gap-6">
+								{rewardImages.map((src) => (
+									<img
+										key={src}
+										src={src}
+										alt="the prizes of "
+										className="w-full h-auto max-h-16 sm:max-h-24 lg:max-h-70 2xl:max-h-80 object-contain"
+										onContextMenu={(e) => e.preventDefault()}
+									/>
+								))}
+							</div>
+						</div>
+					</div>
 					<SponsorsBanner />
 				</div>
 
