@@ -2,18 +2,20 @@ import HackclubLogo from "@client/components/HackclubLogo";
 import { authClient } from "../lib/auth-client";
 import { clientURL } from "../lib/urls";
 import Button from "@client/components/Button";
+import { useMemo } from "react";
+import RewardBox from "@client/components/RewardBox";
 
-const rewardImages = [
-	"/reward/book.png",
-	"/reward/chair.png",
-	"/reward/domain.png",
-	"/reward/laptop.png",
-	"/reward/notebook.png",
-	"/reward/rubberduck.png",
-	"/reward/stationary.png",
-	"/reward/stylus.png",
-	"/reward/tablet.png",
-	"/reward/codecraftersmember.png",
+const rewardItems = [
+	{ src: "/reward/book.png", label: "Book Grant" },
+	{ src: "/reward/chair.png", label: "Office Chair" },
+	{ src: "/reward/domain.png", label: "Domain Grant" },
+	{ src: "/reward/macbook.png", label: "Laptop Grant" },
+	{ src: "/reward/notebook.png", label: "Notebook" },
+	{ src: "/reward/rubberduck.png", label: "Rubber Duck" },
+	{ src: "/reward/stationary.png", label: "Stationary Grant" },
+	{ src: "/reward/apple-pencil.png", label: "Stylus Grant" },
+	{ src: "/reward/ipad.png", label: "Tablet Grant" },
+	{ src: "../public/codecrafters.png", label: "Code Crafters Membership" },
 ] as const;
 
 const LandingContent = () => (
@@ -74,6 +76,16 @@ const SponsorsBanner = () => (
 );
 
 function Landing() {
+	const rewardRotations = useMemo(
+		() =>
+			rewardItems.map(() => {
+				const magnitude = Math.floor(Math.random() * 5) + 2;
+				const sign = Math.random() < 0.5 ? -1 : 1;
+				return sign * magnitude;
+			}),
+		[]
+	);
+
 	const login = async (ev: React.MouseEvent) => {
 		ev.preventDefault();
 		await authClient.signIn.oauth2({
@@ -110,14 +122,10 @@ function Landing() {
 						/>
 						<div className="absolute inset-0 flex items-center justify-center px-[4%] pb-[6%]">
 							<div className="grid w-full grid-cols-5 gap-2 sm:gap-3 lg:gap-6">
-								{rewardImages.map((src) => (
-									<img
-										key={src}
-										src={src}
-										alt="the prizes of "
-										className="w-full h-auto max-h-16 sm:max-h-24 lg:max-h-70 2xl:max-h-80 object-contain"
-										onContextMenu={(e) => e.preventDefault()}
-									/>
+								{rewardItems.map((item, idx) => (
+									<div key={item.src} className="flex justify-center">
+										<RewardBox src={item.src} label={item.label} rotationDeg={rewardRotations[idx] ?? 0} />
+									</div>
 								))}
 							</div>
 						</div>
