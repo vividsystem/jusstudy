@@ -13,6 +13,7 @@ import Shop from "./routes/Shop";
 import BuyItem from "./routes/BuyItem";
 import NewAddress from "./routes/NewAddress";
 import ManageAddresses from "./routes/ManageAddresses";
+import ComingSoon from "./routes/ComingSoon";
 
 function App() {
 	return (
@@ -35,6 +36,8 @@ function App() {
 						<Route path="/shop/:itemId" element={<BuyItem />} />
 						<Route path="/addresses/new" element={<NewAddress />} />
 						<Route path="/addresses" element={<ManageAddresses />} />
+						<Route path="/explore" element={<ComingSoon />} />
+						<Route path="/guides" element={<ComingSoon />} />
 					</Route>
 				</Route>
 			</Routes>
