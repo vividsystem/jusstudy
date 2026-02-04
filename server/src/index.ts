@@ -4,6 +4,7 @@ import { auth } from "./auth";
 import { usersRoutes } from "./routes/users";
 import { projectsRoute } from "./routes/projects";
 import type { hc } from "hono/client";
+import { shopRoute } from "./routes/shop";
 
 const app = new Hono<{
 	Variables: {
@@ -46,6 +47,7 @@ const app = new Hono<{
 	})
 	.route("/projects", projectsRoute)
 	.route("/users", usersRoutes)
+	.route("/shop", shopRoute);
 
 
 
