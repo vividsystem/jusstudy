@@ -1,4 +1,4 @@
-import { betterAuth, type DBFieldAttribute } from "better-auth";
+import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { genericOAuth } from "better-auth/plugins";
 import db from "./db";
