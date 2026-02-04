@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
-import { text, timestamp, boolean, index, pgTable } from "drizzle-orm/pg-core";
+import { text, timestamp, boolean, index, pgTable, integer } from "drizzle-orm/pg-core";
+import { addresses, shopOrders } from "./schema";
 
 export const users = pgTable("users", {
 	id: text("id").primaryKey(),
@@ -16,6 +17,8 @@ export const users = pgTable("users", {
 	yswsEligible: boolean("ysws_eligible").notNull(),
 	verificationStatus: text("verification_status").notNull(),
 	slackId: text("slack_id").notNull(),
+	staff: boolean().default(false).notNull(),
+	coins: integer().notNull().default(0),
 },
 	(table) => [index("users_slack_id_idx").on(table.slackId)],
 );
@@ -82,6 +85,8 @@ export const verifications = pgTable(
 export const usersRelations = relations(users, ({ many }) => ({
 	sessions: many(sessions),
 	accounts: many(accounts),
+	addresses: many(addresses),
+	orders: many(shopOrders)
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({

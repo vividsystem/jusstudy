@@ -45,7 +45,7 @@ const app = new Hono<{
 		return c.json({ message: "Up and running!" })
 	})
 	.route("/projects", projectsRoute)
-	.route("/users", usersRoutes);
+	.route("/users", usersRoutes)
 
 
 

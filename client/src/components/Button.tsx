@@ -1,6 +1,7 @@
 interface BaseParentProps {
 	children: React.ReactNode;
 	className?: string;
+	disabled?: boolean
 }
 
 type ButtonProps = {
@@ -16,14 +17,14 @@ export default function Button(props: ButtonProps) {
 
 	if ("href" in props) {
 		return (
-			<a href={props.href} className={`${baseStyles} ${props.className}`} target={props.target} rel={props.rel}>
+			<a href={props.href} className={`${baseStyles} ${props.disabled ? "pointer-events-none" : ""} ${props.className}`} target={props.target} rel={props.rel}>
 				{props.children}
 			</a>
 		);
 	}
 
 	return (
-		<button onClick={props.onClick} className={`${baseStyles} ${props.className}`}>
+		<button onClick={props.onClick} className={`${baseStyles} ${props.className}`} disabled={props.disabled}>
 			{props.children}
 		</button>
 	);

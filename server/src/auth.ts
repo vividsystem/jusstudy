@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, type DBFieldAttribute } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { genericOAuth } from "better-auth/plugins";
 import db from "./db";
@@ -20,6 +20,7 @@ interface AuthProfile {
 	ysws_eligible: boolean,
 }
 
+const CORS_ORIGIN = process.env.CORS_ORIGIN!
 //default redirectUri: /api/auth/oauth2/callback/hackclub-auth
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
@@ -33,7 +34,7 @@ export const auth = betterAuth({
 		usePlural: true
 	}),
 	trustedOrigins: [
-		process.env.CORS_ORIGIN!,
+		CORS_ORIGIN,
 	],
 	plugins: [
 		genericOAuth({
@@ -57,9 +58,8 @@ export const auth = betterAuth({
 							image: undefined,
 							yswsEligible: profile.ysws_eligible,
 							verificationStatus: profile.verification_status,
-							slackId: profile.slack_id
+							slackId: profile.slack_id,
 						}
-
 					}
 				}
 			],
@@ -82,8 +82,20 @@ export const auth = betterAuth({
 				required: true,
 				input: false,
 				index: true
+			},
+			staff: {
+				type: "boolean",
+				required: true,
+				defaultValue: false,
+				input: false,
+			},
+			coins: {
+				type: "number",
+				required: true,
+				defaultValue: 0,
+				input: false
 			}
 		}
 	}
 })
-
+export type AuthType = typeof auth
