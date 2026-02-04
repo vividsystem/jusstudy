@@ -63,6 +63,10 @@ export default function BuyItem() {
 					addressId
 				}
 			})
+			if (!res.ok) {
+				const data = await res.json()
+				throw new Error(data.message)
+			}
 		},
 		throwOnError: true
 	})
