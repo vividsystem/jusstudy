@@ -22,6 +22,20 @@
       "when": 1768766386417,
       "tag": "0002_funny_spacker_dave",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1769448853536,
+      "tag": "0003_flat_yellow_claw",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1769454193626,
+      "tag": "0004_busy_vin_gonzales",
+      "breakpoints": true
     }
   ]
 }

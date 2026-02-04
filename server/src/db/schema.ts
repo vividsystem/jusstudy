@@ -58,4 +58,68 @@ export const devlogsRelations = relations(devlogs, ({ one }) => ({
 	})
 }))
 
+export const addresses = pgTable("addresses", {
+	id: uuid().defaultRandom().primaryKey(),
+	firstname: text().notNull(),
+	lastname: text().notNull(),
+	address_first_line: text().notNull(),
+	address_second_line: text(),
+	city: text().notNull(),
+	state: text().notNull(),
+	postal_code: text().notNull(),
+	country: text().notNull(),
+	userId: text().references(() => users.id).notNull()
+
+	//telephone number also part in hackclub auth?
+})
+
+export const addressesRelations = relations(addresses, ({ one, many }) => ({
+	user: one(users, {
+		fields: [addresses.userId],
+		references: [users.id]
+	}),
+	orders: many(shopOrders)
+}))
+
+export const shopItems = pgTable("shop_items", {
+	id: uuid().defaultRandom().primaryKey(),
+	createdAt: timestamp().defaultNow().notNull(),
+	quantity: integer(), // null means unlimited?
+	name: text().notNull(),
+	description: text().notNull(),
+	price: integer().notNull(),
+	image: text(),
+})
+
+export const shopItemRelations = relations(shopItems, ({ many }) => ({
+	orders: many(shopOrders)
+}))
+
+export const shopOrders = pgTable("shop_orders", {
+	id: uuid().defaultRandom().primaryKey(),
+	placedAt: timestamp().defaultNow().notNull(),
+	fulfilledAt: timestamp(),
+	itemId: uuid().references(() => shopItems.id).notNull(),
+	quantity: integer().notNull(),
+	addressId: uuid().references(() => addresses.id).notNull(), // address also contains buyer id
+	trackingId: text(),
+	orderNotes: text(),
+	userId: text().references(() => users.id).notNull()
+})
+
+export const shopOrderRelations = relations(shopOrders, ({ one }) => ({
+	item: one(shopItems, {
+		fields: [shopOrders.itemId],
+		references: [shopItems.id]
+	}),
+	address: one(addresses, {
+		fields: [shopOrders.addressId],
+		references: [addresses.id]
+	}),
+	user: one(users, {
+		fields: [shopOrders.userId],
+		references: [users.id]
+	})
+}))
+
 export * from "@server/db/schema-auth"
