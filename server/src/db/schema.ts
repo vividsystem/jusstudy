@@ -1,8 +1,8 @@
-import { integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { bigint, boolean, integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users } from "./schema-auth";
 import { relations } from "drizzle-orm";
 
-export const projectCategoryValues = ["CAD", "Game Development", "Web Development", "PCB Design", "Art", "Music"] as const
+export const projectCategoryValues = ["CAD", "Game Development", "Web Development", "PCB Design", "Art", "Music", "App Development", "Desktop App Development"] as const
 export const categoryEnum = pgEnum("category", projectCategoryValues)
 
 export type ProjectCategories = typeof categoryEnum.enumValues[number]
@@ -21,7 +21,8 @@ export const projects = pgTable("projects", {
 
 export const projectsRelations = relations(projects, ({ many }) => ({
 	hackatimeLinks: many(hackatimeProjectLinks),
-	devlogs: many(devlogs)
+	devlogs: many(devlogs),
+	ships: many(projectShips)
 }));
 
 
@@ -120,6 +121,39 @@ export const shopOrderRelations = relations(shopOrders, ({ one }) => ({
 		fields: [shopOrders.userId],
 		references: [users.id]
 	})
+}))
+
+export const reviewType = pgEnum("review_type", ["initial", "fraud"])
+export const projectReviews = pgTable("project_reviews", {
+	id: uuid().defaultRandom().primaryKey(),
+	type: reviewType().notNull(),
+	passed: boolean().default(false).notNull(),
+	shipId: uuid().references(() => projectShips.id, { onDelete: "cascade" }).notNull()
+})
+
+export const projectReviewRelations = relations(projectReviews, ({ one }) => ({
+	ship: one(projectShips, {
+		fields: [projectReviews.shipId],
+		references: [projectShips.id]
+	})
+}))
+
+export const shipStatus = pgEnum("ship_status", ["pre-initial", "voting", "pre-fraud", "failed", "finished"])
+export const projectShips = pgTable("project_ship", {
+	id: uuid().defaultRandom().primaryKey(),
+	createdAt: timestamp().defaultNow().notNull(),
+	totalTime: integer().notNull(),
+	loggedTime: integer().notNull(),
+	state: shipStatus().notNull().default("pre-initial").notNull(),
+	projectId: uuid().references(() => projects.id, { onDelete: "cascade" }).notNull()
+})
+
+export const projectShipRelations = relations(projectShips, ({ one, many }) => ({
+	project: one(projects, {
+		fields: [projectShips.projectId],
+		references: [projects.id]
+	}),
+	reviews: many(projectReviews)
 }))
 
 export * from "@server/db/schema-auth"
