@@ -8,6 +8,7 @@ import { and, eq, getTableColumns, sum } from "drizzle-orm";
 import { HackatimeLinkRequestSchema, NewProjectRequestSchema, UpdateProjectRequestSchema } from "@shared/validation/projects";
 import { devlogsRoute } from "./devlogs";
 import z from "zod";
+import { projectShipRoute } from "./ships";
 
 
 export const projectsRoute = new Hono<{
@@ -246,5 +247,6 @@ export const projectsRoute = new Hono<{
 		})
 	})
 	.route("/:id/devlogs", devlogsRoute)
+	.route("/:id/ships", projectShipRoute)
 
 export { projectsRoute as default }

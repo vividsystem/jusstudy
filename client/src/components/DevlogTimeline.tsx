@@ -23,14 +23,31 @@ export default function DevlogTimeline(props: DevlogTimelineProps) {
 			return data.devlogs
 		}
 	})
+	const { data: _ships } = useQuery({
+		queryKey: ["ships", props.projectId],
+		queryFn: async () => {
+			const res = await client.api.projects[":id"].ships.$get({
+				param: {
+					id: props.projectId
+				}
+			})
+			if (!res.ok) {
+				const data = await res.json()
+				throw new Error(data.message)
+			}
+
+			const data = await res.json()
+			return data.ships
+		}
+	})
 
 	return (
 		<>
 			{data?.map(devlog => (
 				<div className="p-4 bg-dark-red border-egg-yellow border-4 text-egg-yellow rounded-4xl w-1/2">
-					<p className="w-inherit break-all">
+					<pre className="w-inherit break-all">
 						{devlog.content}
-					</p>
+					</pre>
 				</div>
 			))}
 			<Button href={`/projects/${props.projectId}/devlogs/new`} className="bg-dark-red border-egg-yellow border-5 text-egg-yellow">

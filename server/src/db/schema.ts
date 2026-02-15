@@ -128,7 +128,9 @@ export const projectReviews = pgTable("project_reviews", {
 	id: uuid().defaultRandom().primaryKey(),
 	type: reviewType().notNull(),
 	passed: boolean().default(false).notNull(),
-	shipId: uuid().references(() => projectShips.id, { onDelete: "cascade" }).notNull()
+	shipId: uuid().references(() => projectShips.id, { onDelete: "cascade" }).notNull(),
+	comment: text().notNull(),
+	note: text()
 })
 
 export const projectReviewRelations = relations(projectReviews, ({ one }) => ({
@@ -138,10 +140,15 @@ export const projectReviewRelations = relations(projectReviews, ({ one }) => ({
 	})
 }))
 
-export const shipStatus = pgEnum("ship_status", ["pre-initial", "voting", "pre-fraud", "failed", "finished"])
+
+const shipStatusValues = ["pre-initial", "voting", "pre-fraud", "failed", "finished"] as const
+export const shipStatus = pgEnum("ship_status", shipStatusValues)
+export type ProjectShipStatus = typeof shipStatus.enumValues[number]
+
 export const projectShips = pgTable("project_ship", {
 	id: uuid().defaultRandom().primaryKey(),
 	createdAt: timestamp().defaultNow().notNull(),
+	timeSpent: integer().notNull(),
 	totalTime: integer().notNull(),
 	loggedTime: integer().notNull(),
 	state: shipStatus().notNull().default("pre-initial").notNull(),

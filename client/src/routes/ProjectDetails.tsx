@@ -1,18 +1,36 @@
 import Button from "@client/components/Button";
 import DevlogTimeline from "@client/components/DevlogTimeline";
-import { fetchSingleProject } from "@client/lib/api-client";
+import { client, fetchSingleProject } from "@client/lib/api-client";
 import { secondsToFormatTime } from "@client/lib/time";
-import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Clock, Pencil, Trash } from "lucide-react";
-import { useParams } from "react-router"
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { BookOpen, Clock, Pencil, Ship, Trash } from "lucide-react";
+import { Navigate, useParams } from "react-router"
 
 
 
 export default function ProjectDetails() {
 	let { projectId } = useParams()
+	if (!projectId) {
+		return <Navigate to={"/projects"} />
+	}
 	const { /*isPending, error,*/ data } = useQuery({
 		queryKey: ["singleProject", projectId!],
-		queryFn: async () => await fetchSingleProject(projectId!)
+		queryFn: async () => await fetchSingleProject(projectId!),
+		throwOnError: true
+	})
+	const { mutate: shipProject
+	} = useMutation({
+		mutationFn: async () => {
+			const res = await client.api.projects[":id"].ships.$post({
+				param: { id: projectId }
+			})
+			if (!res.ok) {
+				const data = await res.json()
+				throw new Error(data.message)
+			}
+
+		},
+		throwOnError: true
 	})
 
 	return (
@@ -70,6 +88,9 @@ export default function ProjectDetails() {
 				</div>
 			)
 			}
+			<Button onClick={() => {
+				shipProject()
+			}}><Ship /></Button>
 			<DevlogTimeline projectId={projectId!} />
 
 			<p className="text-sm">{projectId}</p>

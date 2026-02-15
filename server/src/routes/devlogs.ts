@@ -87,7 +87,7 @@ export const devlogsRoute = new Hono<{
 			return c.json({ message: "Bad request" }, 400)
 		}
 
-		const res = await db.select().from(devlogs).where(eq(devlogs.projectId, projectId))
+		const res = await db.select().from(devlogs).where(eq(devlogs.projectId, projectId)).orderBy(desc(devlogs.createdAt))
 
 
 		return c.json({
