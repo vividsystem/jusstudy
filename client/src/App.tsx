@@ -14,6 +14,7 @@ import BuyItem from "./routes/BuyItem";
 import NewAddress from "./routes/NewAddress";
 import ManageAddresses from "./routes/ManageAddresses";
 import ComingSoon from "./routes/ComingSoon";
+import ReviewPanel from "./routes/ReviewPanel";
 
 function App() {
 	return (
@@ -38,6 +39,7 @@ function App() {
 						<Route path="/addresses" element={<ManageAddresses />} />
 						<Route path="/explore" element={<ComingSoon />} />
 						<Route path="/guides" element={<ComingSoon />} />
+						<Route path="/reviews" element={<ReviewPanel />} />
 					</Route>
 				</Route>
 			</Routes>
