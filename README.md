@@ -104,5 +104,8 @@ This is built upon the [bhvr](https://bhvr.dev) stack. It intern is built upon [
 Everything is written in [typescript](https://www.typescriptlang.org/).
 The project also uses [drizzle](https://orm.drizzle.team/) as an orm and [better-auth](https://better-auth.com/) together with hackclub-auth to provide auth.
 
+## AI Disclosure
+This project is not vibe-coded. However I decided to make a part of the review-panel's UI using AI.
+
 ## LICENSE
 To see how this project is licensed see [LICENSE](,/LICENSE).
