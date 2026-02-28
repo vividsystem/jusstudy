@@ -15,6 +15,7 @@ import NewAddress from "./routes/NewAddress";
 import ManageAddresses from "./routes/ManageAddresses";
 import ComingSoon from "./routes/ComingSoon";
 import ReviewPanel from "./routes/ReviewPanel";
+import ProjectReview from "./routes/ProjectReview";
 
 function App() {
 	return (
@@ -40,6 +41,7 @@ function App() {
 						<Route path="/explore" element={<ComingSoon />} />
 						<Route path="/guides" element={<ComingSoon />} />
 						<Route path="/reviews" element={<ReviewPanel />} />
+						<Route path="/reviews/:id" element={<ProjectReview />} />
 					</Route>
 				</Route>
 			</Routes>

@@ -18,7 +18,7 @@ type ProjectShipState =
 	| "finished";
 
 type PendingReviewResponse = InferResponseType<
-	typeof client.api.projects["pending-review"]["$get"]
+	typeof client.api.reviews.pending["$get"]
 >
 type PendingProjectEntry = PendingReviewResponse["pendingProjects"][number]
 
@@ -36,8 +36,8 @@ const CATEGORY_META: Record<ProjectCategories, { color: string; dot: string }> =
 
 const STATE_META: Record<ProjectShipStatus, { label: string; color: string; bg: string }> = {
 	"voting": { label: "Voting", color: "text-emerald-400", bg: "bg-emerald-400" },
-	"pre-initial": { label: "Pending", color: "text-zinc-400", bg: "bg-zinc-400" },
-	"pre-fraud": { label: "Flagged", color: "text-amber-400", bg: "bg-amber-400" },
+	"pre-initial": { label: "T1", color: "text-zinc-400", bg: "bg-zinc-400" },
+	"pre-fraud": { label: "Fraud", color: "text-amber-400", bg: "bg-amber-400" },
 	"failed": { label: "Failed", color: "text-red-400", bg: "bg-red-400" },
 	"finished": { label: "Finished", color: "text-blue-400", bg: "bg-blue-400" },
 };
@@ -48,8 +48,8 @@ const ALL_STATES = ["All", ...Object.keys(STATE_META)] as const;
 type CategoryFilter = (typeof ALL_CATEGORIES)[number];
 type StateFilter = (typeof ALL_STATES)[number];
 
-function getReviewLink(projectId: string): string {
-	return clientURL(`/reviews/${projectId}`);
+function getReviewLink(shipId: string): string {
+	return clientURL(`/reviews/${shipId}`).toString();
 }
 
 function timeAgo(dateStr: string): string {
@@ -158,7 +158,7 @@ function ProjectCard({
 					<div className="flex-1 min-w-0">
 						<h3 className="text-base font-bold text-white leading-tight truncate font-display">{p.name}</h3>
 						<div className="flex items-center gap-1.5 mt-1 text-zinc-500 text-xs">
-							<Clock />
+							<Clock className="size-3" />
 							<span>{timeAgo(ship.createdAt)}</span>
 						</div>
 					</div>
@@ -188,7 +188,7 @@ function ProjectCard({
 
 			<div className="px-5 pb-5">
 				<Button
-					href={getReviewLink(entry.projects.id)}
+					href={getReviewLink(entry.project_ship.id)}
 					className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-zinc-900 font-semibold text-sm hover:bg-zinc-100 active:scale-95 transition-all duration-150 group-hover:shadow-lg group-hover:shadow-white/10"
 				>
 					Start Review

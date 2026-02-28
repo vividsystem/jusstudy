@@ -6,6 +6,7 @@ import { projectsRoute } from "./routes/projects";
 import type { hc } from "hono/client";
 import { shopRoute } from "./routes/shop";
 import { reviewsRoute } from "./routes/reviews";
+import { shipsRoute } from "./routes/ships";
 
 const app = new Hono<{
 	Variables: {
@@ -50,6 +51,7 @@ const app = new Hono<{
 	.route("/users", usersRoutes)
 	.route("/shop", shopRoute)
 	.route("/reviews", reviewsRoute)
+	.route("/ships", shipsRoute)
 
 
 
