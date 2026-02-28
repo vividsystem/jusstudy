@@ -2,8 +2,42 @@ import type { auth } from "@server/auth";
 import db from "@server/db";
 import { devlogs, hackatimeProjectLinks, projects, projectShips } from "@server/db/schema";
 import hackatime from "@server/hackatime";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, getTableColumns } from "drizzle-orm";
 import { Hono } from "hono";
+import { shipReviewsRoute } from "./reviews";
+
+
+export const shipsRoute = new Hono<{
+	Variables: {
+		user: typeof auth.$Infer.Session.user | null;
+		session: typeof auth.$Infer.Session.session | null
+	}
+}>()
+	.get("/:id", async (c) => {
+		const user = c.get("user")
+		if (!user) return c.json({ message: "Unauthorized" }, 401)
+
+		const id = c.req.param("id")
+
+		const res = await db.select({
+			ship: getTableColumns(projectShips),
+			creatorId: projects.creatorId
+		}).from(projectShips).where(eq(projectShips.id, id)).leftJoin(projects, eq(projects.id, projectShips.projectId))
+		if (res.length == 0) {
+			return c.json({ message: "Ship not found" }, 404)
+		} else if (res[0]!.creatorId == null) {
+			return c.json({ message: "Something went wrong" }, 500)
+		} else if (res[0]!.creatorId != user.id && !user.staff) {
+			return c.json({ message: "Forbidden" }, 403)
+		}
+
+
+		return c.json({ ship: res[0]!.ship }, 200)
+
+	})
+	.route("/:id/reviews", shipReviewsRoute)
+
+
 
 export const projectShipRoute = new Hono<{
 	Variables: {

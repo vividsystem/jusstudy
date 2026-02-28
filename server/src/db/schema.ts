@@ -1,4 +1,4 @@
-import { bigint, boolean, integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users } from "./schema-auth";
 import { relations } from "drizzle-orm";
 
@@ -123,25 +123,34 @@ export const shopOrderRelations = relations(shopOrders, ({ one }) => ({
 	})
 }))
 
-export const reviewType = pgEnum("review_type", ["initial", "fraud"])
+export const reviewTypeValues = ["pre-initial", "pre-fraud"] as const
+export const reviewType = pgEnum("review_type", reviewTypeValues)
+export type ReviewType = typeof reviewType.enumValues[number]
+
 export const projectReviews = pgTable("project_reviews", {
 	id: uuid().defaultRandom().primaryKey(),
+	createdAt: timestamp().defaultNow().notNull(),
 	type: reviewType().notNull(),
 	passed: boolean().default(false).notNull(),
 	shipId: uuid().references(() => projectShips.id, { onDelete: "cascade" }).notNull(),
 	comment: text().notNull(),
-	note: text()
+	note: text(),
+	reviewerId: uuid().references(() => users.id).notNull()
 })
 
 export const projectReviewRelations = relations(projectReviews, ({ one }) => ({
 	ship: one(projectShips, {
 		fields: [projectReviews.shipId],
-		references: [projectShips.id]
+		references: [projectShips.id],
+	}),
+	reviewer: one(users, {
+		fields: [projectReviews.reviewerId],
+		references: [users.id]
 	})
 }))
 
 
-const shipStatusValues = ["pre-initial", "voting", "pre-fraud", "failed", "finished"] as const
+export const shipStatusValues = ["pre-initial", "voting", "pre-fraud", "failed", "finished"] as const
 export const shipStatus = pgEnum("ship_status", shipStatusValues)
 export type ProjectShipStatus = typeof shipStatus.enumValues[number]
 

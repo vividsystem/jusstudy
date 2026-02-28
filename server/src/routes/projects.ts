@@ -9,6 +9,7 @@ import { HackatimeLinkRequestSchema, NewProjectRequestSchema, UpdateProjectReque
 import { devlogsRoute } from "./devlogs";
 import z from "zod";
 import { projectShipRoute } from "./ships";
+import { projectReviewsRoute } from "./reviews";
 
 
 export const projectsRoute = new Hono<{
@@ -17,7 +18,6 @@ export const projectsRoute = new Hono<{
 		session: typeof auth.$Infer.Session.session | null
 	}
 }>()
-
 	//get all projects
 	.get("/", async (c) => {
 		const user = c.get("user")
@@ -248,5 +248,6 @@ export const projectsRoute = new Hono<{
 	})
 	.route("/:id/devlogs", devlogsRoute)
 	.route("/:id/ships", projectShipRoute)
+	.route("/:id/reviews", projectReviewsRoute)
 
 export { projectsRoute as default }

@@ -9,17 +9,12 @@ const PrivateRoute: React.FC = () => {
 	const location = useLocation();
 
 	if (isPending) {
-		return <div>Loading authentication status…</div>;
+		return <div>loading...</div>
 	}
-
 	return session ? (
 		<Outlet />
 	) : (
-		<Navigate
-			to="/"
-			replace
-			state={{ from: location }}
-		/>
+		<Navigate to="/" replace state={{ from: location }} />
 	);
 };
 export default PrivateRoute
