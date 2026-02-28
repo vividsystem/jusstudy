@@ -135,7 +135,7 @@ export const projectReviews = pgTable("project_reviews", {
 	shipId: uuid().references(() => projectShips.id, { onDelete: "cascade" }).notNull(),
 	comment: text().notNull(),
 	note: text(),
-	reviewerId: uuid().references(() => users.id).notNull()
+	reviewerId: text().references(() => users.id).notNull()
 })
 
 export const projectReviewRelations = relations(projectReviews, ({ one }) => ({
