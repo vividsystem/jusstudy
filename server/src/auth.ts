@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { genericOAuth } from "better-auth/plugins";
 import db from "./db";
-import { accounts, sessions, users, verifications } from "./db/schema-auth";
+import { accounts, sessions, typeValues, users, verifications } from "./db/schema-auth";
 
 
 interface AuthProfile {
@@ -83,18 +83,20 @@ export const auth = betterAuth({
 				input: false,
 				index: true
 			},
-			staff: {
-				type: "boolean",
+			type: {
+				type: [...typeValues],
 				required: true,
-				defaultValue: false,
 				input: false,
 			},
 			coins: {
 				type: "number",
-				required: true,
 				defaultValue: 0,
+			},
+			banned: {
+				type: "boolean",
+				required: true,
 				input: false
-			}
+			},
 		}
 	}
 })

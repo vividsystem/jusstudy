@@ -1,6 +1,7 @@
 import { genericOAuthClient, inferAdditionalFields } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react"
 import { serverURL } from "./urls";
+import { typeValues } from "@server/db/schema-auth";
 
 
 const SERVER_URL = serverURL("/api/auth").toString()
@@ -37,7 +38,17 @@ export const authClient = createAuthClient({
 					required: true,
 					defaultValue: 0,
 					input: false
-				}
+				},
+				type: {
+					type: [...typeValues],
+					required: true,
+					input: false,
+				},
+				banned: {
+					type: "boolean",
+					required: true,
+					input: false
+				},
 			}
 		})
 	]

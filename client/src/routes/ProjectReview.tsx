@@ -345,7 +345,7 @@ export default function ProjectReview() {
 		return <Navigate to="/reviews" />;
 	}
 
-	if (session == null || !session.user.staff) {
+	if (session == null || session.user.type == "participant") {
 		return <Navigate to="/" />;
 	}
 

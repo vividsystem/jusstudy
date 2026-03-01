@@ -27,7 +27,7 @@ export const shipsRoute = new Hono<{
 			return c.json({ message: "Ship not found" }, 404)
 		} else if (res[0]!.creatorId == null) {
 			return c.json({ message: "Something went wrong" }, 500)
-		} else if (res[0]!.creatorId != user.id && !user.staff) {
+		} else if (res[0]!.creatorId != user.id && user.type == "participant") {
 			return c.json({ message: "Forbidden" }, 403)
 		}
 

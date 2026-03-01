@@ -1,7 +1,10 @@
 import { relations } from "drizzle-orm";
-import { text, timestamp, boolean, index, pgTable, integer } from "drizzle-orm/pg-core";
+import { text, timestamp, boolean, index, pgTable, integer, pgEnum } from "drizzle-orm/pg-core";
 import { addresses, projectShips, shopOrders } from "./schema";
 
+export const typeValues = ["participant", "reviewer", "fraud", "admin"] as const
+export const userType = pgEnum("user_types", typeValues)
+export type UserType = typeof userType.enumValues[number]
 export const users = pgTable("users", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
@@ -17,7 +20,8 @@ export const users = pgTable("users", {
 	yswsEligible: boolean("ysws_eligible").notNull(),
 	verificationStatus: text("verification_status").notNull(),
 	slackId: text("slack_id").notNull(),
-	staff: boolean().default(false).notNull(),
+	type: userType().default("participant").notNull(),
+	banned: boolean().default(false),
 	coins: integer().notNull().default(0),
 },
 	(table) => [index("users_slack_id_idx").on(table.slackId)],

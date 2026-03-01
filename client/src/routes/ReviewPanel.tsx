@@ -245,7 +245,7 @@ export default function ReviewPortal() {
 	});
 
 	// Auth guard — renders after hooks to satisfy Rules of Hooks
-	if (session == null || !session.user.staff) {
+	if (session == null || session.user.type == "participant") {
 		return <Navigate to="/" />;
 	}
 
