@@ -7,7 +7,7 @@ import { client } from "@client/lib/api-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ProjectCategories, ProjectShipStatus, ReviewType } from "@server/db/schema";
 import { type InferResponseType } from "hono/client";
-import { secondsToFormatTime } from "@client/lib/time";
+import { formatDate, secondsToFormatTime } from "@client/lib/time";
 
 // ── Inferred types from Hono client ───────────────────────────────────────
 type ReviewsResponse = InferResponseType<typeof client.api.projects[":id"]["reviews"]["$get"]>;
@@ -34,13 +34,6 @@ const STATE_META: Record<ProjectShipStatus, { label: string; color: string; bg: 
 	"failed": { label: "Failed", color: "text-red-400", bg: "bg-red-400" },
 	"finished": { label: "Finished", color: "text-blue-400", bg: "bg-blue-400" },
 };
-
-function formatDate(dateStr: string): string {
-	return new Date(dateStr).toLocaleDateString("en-US", {
-		month: "short", day: "numeric", year: "numeric",
-		hour: "2-digit", minute: "2-digit",
-	});
-}
 
 // function initials(name: string): string {
 // 	return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
@@ -166,7 +159,7 @@ function TimelineEntry({
 function ReviewForm({ reviewType, shipId }: { reviewType: ReviewType, shipId: string }) {
 	const [passed, setPassed] = useState(false);
 	const [comment, setComment] = useState("");
-	const [note, setNotes] = useState("");
+	const [note, setNotes] = useState<string | undefined>();
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -191,8 +184,8 @@ function ReviewForm({ reviewType, shipId }: { reviewType: ReviewType, shipId: st
 				throw new Error(data.message)
 			}
 
-			return await res.json()
 
+			navigate("/reviews")
 		},
 		throwOnError: true
 	})
@@ -204,7 +197,6 @@ function ReviewForm({ reviewType, shipId }: { reviewType: ReviewType, shipId: st
 			console.log(passed, comment, note, reviewType)
 			submitReview()
 			setSubmitting(false)
-			navigate("/reviews")
 		} catch (e: any) {
 			setSubmitting(false);
 			setError((e as Error).message)
