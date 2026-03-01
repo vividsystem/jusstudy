@@ -16,6 +16,7 @@ import ManageAddresses from "./routes/ManageAddresses";
 import ComingSoon from "./routes/ComingSoon";
 import ReviewPanel from "./routes/ReviewPanel";
 import ProjectReview from "./routes/ProjectReview";
+// import RSVP from "./routes/RSVP";
 
 function App() {
 	return (

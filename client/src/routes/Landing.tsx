@@ -44,7 +44,7 @@ const LandingContent = () => (
 				RSVP / Join YSWS
 			</Button>
 			<Button
-				href="/beginner"
+				href="/guides"
 				className="w-full sm:w-auto text-center bg-dark-red text-egg-yellow border-4 border-egg-yellow"
 			>
 				See Beginner Guides
@@ -100,12 +100,12 @@ function Landing() {
 			{/* Navigation Elements */}
 			<div className="relative z-50 w-full">
 				<HackclubLogo />
-				<span
+				<button
 					onClick={login}
 					className="fixed top-8 right-8 lg:top-12 lg:right-12 text-xl lg:text-3xl 2xl:text-4xl underline opacity-80 hover:opacity-100 transition-opacity cursor-pointer text-[#282828]"
 				>
 					Login
-				</span>
+				</button>
 			</div>
 
 			{/* UNIFIED LAYOUT (Stretched Desktop Scale) */}

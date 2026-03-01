@@ -28,7 +28,7 @@ export default function Shop() {
 			{isPending && (
 				<p>Loading shop items</p>
 			)}
-			<div className="grid grid-cols-2">
+			<div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-5 gap-4 items-center">
 				{shopItems && shopItems?.length != 0 ? shopItems.map(item => (
 					<ShopItemBox item={item} />
 

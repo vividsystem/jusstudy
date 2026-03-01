@@ -141,7 +141,7 @@ export const shipReviewsRoute = new Hono<{
 			return c.json({ message: "Forbidden" }, 403)
 		}
 
-		const _reviewRes = await db.insert(projectReviews).values({ ...data, shipId: id, reviewerId: user.id }).returning()
+		await db.insert(projectReviews).values({ ...data, shipId: id, reviewerId: user.id }).returning()
 		if (!data.passed) {
 			await db.update(projectShips).set({ state: "failed" }).where(eq(projectShips.id, id))
 		} else {
