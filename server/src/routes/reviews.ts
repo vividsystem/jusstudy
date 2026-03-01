@@ -137,6 +137,10 @@ export const shipReviewsRoute = new Hono<{
 			return c.json({ message: "Review type does not match ship state" }, 400)
 		}
 
+		if (data.type == "pre-fraud" && user.type != "fraud" && user.type != "admin") {
+			return c.json({ message: "Forbidden" }, 403)
+		}
+
 		const _reviewRes = await db.insert(projectReviews).values({ ...data, shipId: id, reviewerId: user.id }).returning()
 		if (!data.passed) {
 			await db.update(projectShips).set({ state: "failed" }).where(eq(projectShips.id, id))

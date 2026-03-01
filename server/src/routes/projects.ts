@@ -222,30 +222,31 @@ export const projectsRoute = new Hono<{
 		}, 201)
 	})
 
-	.delete("/:id", async (c) => {
-		const user = c.get("user")
-		if (!user) return c.json({ message: "Unauthorized" }, 401)
-
-		const id = c.req.param("id")
-
-		const res = await db.select().from(projects).where(eq(projects.id, id))
-		if (res.length == 0) {
-			return c.json({ message: "Ressource not found" }, 404)
-		}
-		const project = res[0]!
-		if (project.creatorId != user.id) {
-			return c.json({ message: "Forbidden" }, 403)
-		}
-
-		const deleted = await db.delete(projects).where(and(
-			eq(projects.id, id)
-		))
-
-		return c.json({
-			message: "Project deleted",
-			old: deleted
-		})
-	})
+	// disabled to prevent fraud
+	// .delete("/:id", async (c) => {
+	// 	const user = c.get("user")
+	// 	if (!user) return c.json({ message: "Unauthorized" }, 401)
+	//
+	// 	const id = c.req.param("id")
+	//
+	// 	const res = await db.select().from(projects).where(eq(projects.id, id))
+	// 	if (res.length == 0) {
+	// 		return c.json({ message: "Ressource not found" }, 404)
+	// 	}
+	// 	const project = res[0]!
+	// 	if (project.creatorId != user.id) {
+	// 		return c.json({ message: "Forbidden" }, 403)
+	// 	}
+	//
+	// 	const deleted = await db.delete(projects).where(and(
+	// 		eq(projects.id, id)
+	// 	))
+	//
+	// 	return c.json({
+	// 		message: "Project deleted",
+	// 		old: deleted
+	// 	})
+	// })
 	.route("/:id/devlogs", devlogsRoute)
 	.route("/:id/ships", projectShipRoute)
 	.route("/:id/reviews", projectReviewsRoute)

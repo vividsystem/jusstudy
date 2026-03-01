@@ -16,7 +16,7 @@ export const shopRoute = new Hono<{
 	.post("/items", zValidator("json", NewShopItemRequest), async (c) => {
 		const user = c.get("user")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
-		if (user.type == "participant") return c.json({ message: "Forbidden" }, 403)
+		if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
 
 		const data = c.req.valid("json")
 
@@ -46,6 +46,7 @@ export const shopRoute = new Hono<{
 	.post("/orders", zValidator("json", PlaceOrderRequest), async (c) => {
 		const user = c.get("user")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
+		if (user.banned) return c.json({ message: "Forbidden" }, 403)
 
 		const data = c.req.valid("json")
 

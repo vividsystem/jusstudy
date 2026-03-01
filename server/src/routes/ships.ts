@@ -48,6 +48,8 @@ export const projectShipRoute = new Hono<{
 	.post("/", async (c) => {
 		const user = c.get("user")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
+		if (user.banned) return c.json({ message: "Forbidden" }, 403)
+		if (!user.yswsEligible) return c.json({ message: "You need to be YSWS eligible" }, 403)
 
 		const id = c.req.param("id")
 		if (!id) {
