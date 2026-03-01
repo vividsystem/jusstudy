@@ -1,9 +1,9 @@
 import { zValidator } from "@hono/zod-validator";
 import type { auth } from "@server/auth";
 import db from "@server/db";
-import { addresses, hackatimeProjectLinks, projects } from "@server/db/schema";
+import { addresses, hackatimeProjectLinks, projects, shopOrders, users } from "@server/db/schema";
 import hackatime from "@server/hackatime";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { Hono } from "hono";
 import { NewAddressSchema } from "@shared/validation/addresses"
 
@@ -67,4 +67,24 @@ export const usersRoutes = new Hono<{
 		const res = await db.select().from(addresses).where(eq(addresses.userId, user.id))
 
 		return c.json({ addresses: res }, 200)
+	})
+	.post("/:id/ban", async (c) => {
+		const user = c.get("user")
+		if (!user) return c.json({ message: "Unauthorized" }, 401)
+		if (user.type != "fraud" && user.type != "admin") return c.json({ message: "Forbidden" }, 403)
+
+		const { id } = c.req.param()
+
+		await db.update(users).set({ banned: true, type: "participant", coins: 0 }).where(eq(users.id, id))
+		await db.delete(shopOrders).where(and(
+			eq(shopOrders.userId, id),
+			isNull(shopOrders.fulfilledAt)
+		))
+
+		const alreadyFulfilled = db.select().from(shopOrders).where(and(
+			eq(shopOrders.userId, id),
+			isNotNull(shopOrders.fulfilledAt)
+		))
+
+		return c.json({ message: "User successfully banned!", alreadyFulfilledOrders: alreadyFulfilled })
 	})
