@@ -27,7 +27,7 @@ export default function AppLayout() {
 						<Link className="rotate-4" route="/guides" name="Guides" />
 						<Link className="-rotate-5" route="/shop" name="Shop" />
 						<Link className="" route="/rankings" name="Rankings" />
-						{data.user.staff && (
+						{data.user.type != "participant" && (
 							<Link className="" route="/reviews" name="Reviews" />
 						)}
 					</ul>

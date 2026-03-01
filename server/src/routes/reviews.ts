@@ -45,12 +45,12 @@ export const projectReviewsRoute = new Hono<{
 			return c.json({ message: "Ressource not found" }, 404)
 		}
 		const project = res[0]!
-		if (project.creatorId != user.id && !user.staff) {
+		if (project.creatorId != user.id && user.type == "participant") {
 			return c.json({ message: "Forbidden" }, 403)
 		}
 
 		const { note, ...reviewCols } = getTableColumns(projectReviews)
-		if (user.staff) {
+		if (user.type != "participant") {
 			const reviews = (await db.select({
 				review: {
 					...reviewCols,
@@ -100,10 +100,10 @@ export const shipReviewsRoute = new Hono<{
 			return c.json({ message: "Ship not found" }, 404)
 		} else if (res[0]!.creatorId == null) {
 			return c.json({ message: "Something went wrong" }, 500)
-		} else if (res[0]!.creatorId != user.id && !user.staff) {
+		} else if (res[0]!.creatorId != user.id && user.type == "participant") {
 			return c.json({ message: "Forbidden" }, 403)
 		}
-		const staff = user.staff /*&& res[0]!.creatorId != user.id*/
+		const staff = user.type != "participant" /*&& res[0]!.creatorId != user.id*/
 		const { note, ...reviewCols } = getTableColumns(projectReviews)
 		const reviews = await db.select({
 			...(staff ? { note } : {}),
@@ -125,7 +125,7 @@ export const shipReviewsRoute = new Hono<{
 			return c.json({ message: "Ship not found" }, 404)
 		}
 		const ship = res[0]!
-		const staff = user.staff /*&& res[0]!.creatorId != user.id*/
+		const staff = user.type != "participant" /*&& res[0]!.creatorId != user.id*/
 
 		if (!staff) {
 			return c.json({ message: "Forbidden" }, 403)
