@@ -12,7 +12,7 @@ export const fetchSingleProject = async (id: string) => {
 	try {
 		const res = await client.api.projects[":id"].time.$get({
 			param: {
-				id: id!
+				id: id
 			}
 		})
 		if (!res.ok) {
@@ -21,8 +21,45 @@ export const fetchSingleProject = async (id: string) => {
 		}
 
 		const data = await res.json();
-		console.log(data.timeLogged)
 		return data
+	} catch (error) {
+		throw error
+	}
+}
+
+export const fetchProjectDevlogs = async (projectId: string) => {
+	try {
+		const res = await client.api.projects[":id"].devlogs.$get({
+			param: {
+				id: projectId
+			}
+		})
+		if (!res.ok) {
+			const data = await res.json()
+			throw new Error(data.message)
+		}
+
+		const data = await res.json();
+		return data.devlogs
+	} catch (error) {
+		throw error
+	}
+}
+
+export const fetchProjectShips = async (projectId: string) => {
+	try {
+		const res = await client.api.projects[":id"].ships.$get({
+			param: {
+				id: projectId
+			}
+		})
+		if (!res.ok) {
+			const data = await res.json()
+			throw new Error(data.message)
+		}
+
+		const data = await res.json();
+		return data.ships
 	} catch (error) {
 		throw error
 	}
