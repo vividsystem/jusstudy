@@ -51,6 +51,20 @@ body {
 .title-font {
 	font-family: "Averia Serif Libre", serif;
 }
+@keyframes marquee-left {
+  from   { transform: translateX(0%); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  from   { transform: translateX(-50%); }
+  to { transform: translateX(0%); }
+}
+
+@theme {
+  --animate-marquee-left: marquee-left 10s linear infinite;
+  --animate-marquee-right: marquee-right 10s linear infinite;
+}
 
 @theme {
 	--text-9-5xl: 9rem;
@@ -59,4 +73,6 @@ body {
 	--color-dark-red: #6F1D1B;
 	--color-dark-brown: #432818;
 	--color-light-brown: #99582A;
+  --animate-marquee-left: marquee-left 20s linear infinite;
+  --animate-marquee-right: marquee-right 20s linear infinite;
 }

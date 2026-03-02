@@ -109,3 +109,4 @@ This project is not vibe-coded. However I decided to make a part of the review-p
 
 ## LICENSE
 To see how this project is licensed see [LICENSE](,/LICENSE).
+The license extends to all the code but not to the image of the staff signatures.
