@@ -1,5 +1,5 @@
-import { boolean, integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { users } from "./schema-auth";
+import { boolean, integer, pgEnum, pgTable, primaryKey, real, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { users } from "./auth";
 import { relations } from "drizzle-orm";
 
 export const projectCategoryValues = ["CAD", "Game Development", "Web Development", "PCB Design", "Art", "Music", "App Development", "Desktop App Development"] as const
@@ -171,5 +171,3 @@ export const projectShipRelations = relations(projectShips, ({ one, many }) => (
 	}),
 	reviews: many(projectReviews)
 }))
-
-export * from "@server/db/schema-auth"
