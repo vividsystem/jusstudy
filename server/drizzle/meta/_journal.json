@@ -50,6 +50,13 @@
       "when": 1772562736197,
       "tag": "0006_green_anthem",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1772565449668,
+      "tag": "0007_colorful_jean_grey",
+      "breakpoints": true
     }
   ]
 }

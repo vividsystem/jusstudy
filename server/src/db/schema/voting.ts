@@ -1,4 +1,4 @@
-import { pgTable, uuid, integer, text, timestamp, real, primaryKey, check } from "drizzle-orm/pg-core"
+import { pgTable, uuid, integer, text, timestamp, real, primaryKey, check, boolean } from "drizzle-orm/pg-core"
 import { users } from "./auth"
 import { projects, projectShips } from "./main"
 import { relations, sql } from "drizzle-orm"
@@ -19,10 +19,10 @@ export const votingGroups = pgTable("voting_groups", {
 
 export const votingGroupShips = pgTable("voting_group_ships", {
 	groupId: uuid().references(() => votingGroups.id).notNull(),
-	shipId: uuid().references(() => projectShips.id).notNull(),
+	projectId: text().references(() => projects.id).notNull(),
 	position: integer().notNull() // display order -> maybe a bias?
 }, (t) => [
-	primaryKey({ columns: [t.groupId, t.shipId] }),
+	primaryKey({ columns: [t.groupId, t.projectId] }),
 	check("position_range", sql`${t.position} BETWEEN 1 AND 4`),
 ])
 
@@ -32,13 +32,13 @@ export const ratings = pgTable("ratings", {
 	updatedAt: timestamp().defaultNow().notNull(),
 	sessionId: uuid().references(() => votingSessions.id).notNull(),
 	groupId: uuid().references(() => votingGroups.id).notNull(),
-	shipId: uuid().references(() => projectShips.id).notNull(),
+	projectId: text().references(() => projects.id).notNull(),
 	technicality: integer().notNull().default(0),
 	documentation: integer().notNull().default(0),
 	creativity: integer().notNull().default(0),
 	implementation: integer().notNull().default(0),
 }, (t) => [
-	primaryKey({ columns: [t.sessionId, t.shipId] })
+	primaryKey({ columns: [t.sessionId, t.projectId] })
 	//maybe add a rating category >= 0 check in the future?
 ])
 
@@ -58,13 +58,13 @@ export const votingGroupsRelations = relations(votingGroups, ({ one, many }) => 
 
 export const votingGroupShipsRelations = relations(votingGroupShips, ({ one }) => ({
 	group: one(votingGroups, { fields: [votingGroupShips.groupId], references: [votingGroups.id] }),
-	ship: one(projectShips, { fields: [votingGroupShips.shipId], references: [projectShips.id] }),
+	project: one(projects, { fields: [votingGroupShips.projectId], references: [projects.id] }),
 }));
 
 export const ratingsRelations = relations(ratings, ({ one }) => ({
 	session: one(votingSessions, { fields: [ratings.sessionId], references: [votingSessions.id] }),
 	group: one(votingGroups, { fields: [ratings.groupId], references: [votingGroups.id] }),
-	ship: one(projectShips, { fields: [ratings.shipId], references: [projectShips.id] }),
+	project: one(projects, { fields: [ratings.projectId], references: [projects.id] }),
 }));
 
 export const projectStats = pgTable("project_stats", {
@@ -74,6 +74,7 @@ export const projectStats = pgTable("project_stats", {
 	mu: real("mu").notNull().default(25),
 	// confidence -> resets per ship
 	// used to determine if ships need more votes
+	isSettled: boolean().default(false).notNull(), // stats above SIGMA_TRESHOLD
 	sigma: real("sigma").notNull().default(8.333),
 	ordinal: real("ordinal").notNull().default(0),
 	matchups: integer().notNull().default(0),
