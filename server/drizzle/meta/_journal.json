@@ -57,6 +57,13 @@
       "when": 1772565449668,
       "tag": "0007_colorful_jean_grey",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1772649819902,
+      "tag": "0008_heavy_azazel",
+      "breakpoints": true
     }
   ]
 }
