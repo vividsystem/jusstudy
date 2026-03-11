@@ -16,7 +16,7 @@ const rewardItems = [
 	{ src: "/reward/stationary.png", label: "Stationary Grant" },
 	{ src: "/reward/apple-pencil.png", label: "Stylus Grant" },
 	{ src: "/reward/ipad.png", label: "Tablet Grant" },
-	{ src: "../public/codecrafters.png", label: "Code Crafters Membership" },
+	{ src: "/reward/codecrafters.png", label: "Code Crafters Membership" },
 ] as const;
 
 const LandingContent = () => (
@@ -133,8 +133,8 @@ function FAQ() {
 					Jus'STUDY is a YSWS event organized by high schoolers for high schoolers. It is focused specifically on improving the way we learn. Whether it's a software app to track your grades or a hardware device to keep your desk organised, if it helps you study, it belongs here.
 				</p>)} />
 				<FAQSection question="How much does it cost?" answer={(<p>100% free - all the prizes are donated to us or paid for by us! (customs might occur)</p>)} />
-				<FAQSection question="Am I eligible to participate?" answer={(<p>Jus'Study is for highschoolers! You need to be 13-18 years old to participate.</p>)} />
-				<FAQSection question="When will this end?" answer={(<p>Jus'Study will run until the 20th of April 2026</p>)} />
+				<FAQSection question="Am I eligible to participate?" answer={(<p>Jus'STUDY is for highschoolers! You need to be 13-18 years old to participate.</p>)} />
+				<FAQSection question="When will this end?" answer={(<p>Jus'STUDY will run until the 20th of April 2026</p>)} />
 				<FAQSection question="I am a beginner can I still participate?" answer={(<p>Yes! We also have guides available to help you learn new topics</p>)} />
 				<FAQSection question="How will I track my time?" answer={(<div>We use <a href="https://hackatime.hackclub.com/" className="underline underline-offset-2">Hackatime</a>.</div>)} />
 				<FAQSection question="What is HackClub?" answer={(<p>Hack Club is a 501(c)(3) nonprofit and network of 60k+ technical high schoolers.</p>)} />
