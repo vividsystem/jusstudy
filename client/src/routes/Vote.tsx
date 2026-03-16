@@ -9,7 +9,6 @@ import type { InferResponseType } from "hono"
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react"
 import { useState } from "react"
 import { DevlogCard } from "./ProjectDetails"
-import { useNavigate } from "react-router"
 
 
 type Votes = Extract<InferResponseType<typeof client.api.vote.rounds.$post>, { round: unknown }>
@@ -55,17 +54,11 @@ export default function VotePage() {
 			return data
 		},
 	})
-	if (isPending || !data) {
-		//replace with skeleton
-		return <p>loading</p>
-	}
-
-	const sorted = data.projects.sort((a, b) => a.position - b.position);
 
 	const { mutate: submitRatings } = useMutation({
 		mutationFn: async () => {
 			const res = await client.api.vote.rounds[":id"].rate.$post({
-				param: { id: data.round.id },
+				param: { id: data!.round.id },
 				json: {
 					ratings: sorted.map(p => ({
 						...(votes[p.position]!),
@@ -82,9 +75,14 @@ export default function VotePage() {
 			return
 		}
 	})
+	if (isPending || !data) {
+		//replace with skeleton
+		return <p>loading</p>
+	}
+
+	const sorted = data.projects.sort((a, b) => a.position - b.position);
 
 	const startNew = () => {
-
 		refetch()
 		setVotes({})
 		setIndex(0)
