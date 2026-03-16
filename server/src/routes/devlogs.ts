@@ -2,7 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import type { auth } from "@server/auth";
 import db from "@server/db";
 import { devlogs, hackatimeProjectLinks, projects } from "@server/db/schema";
-import hackatime from "@server/hackatime";
+import { singleProjectTime } from "@server/hackatime/client";
 import { NewDevlogRequestSchema } from "@shared/validation/devlogs";
 import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
@@ -44,32 +44,25 @@ export const devlogsRoute = new Hono<{
 			.limit(1)
 		const offsetTime = offsetTimeRes[0]?.totalTime || 0
 
-		const stats = await hackatime.userProjectDetails(user.slackId)
-		if (!stats.success) {
+		const links = await db.select().from(hackatimeProjectLinks).where(eq(hackatimeProjectLinks.projectId, projectId))
+
+		const stats = await singleProjectTime(user.slackId, links)
+		if (!stats.ok) {
 			return c.json({ message: "Hackatime fetching went wrong" }, 500)
 		}
 
-		const links = await db.select().from(hackatimeProjectLinks).where(eq(hackatimeProjectLinks.projectId, projectId))
-
-		const linksArray = links.map(l => l.hackatimeProjectId)
-
-		let newTotalTime = 0
-		stats.projects.filter(p => linksArray.includes(p.name)).forEach(p => {
-			newTotalTime += p.total_seconds
-		})
-
-		if (newTotalTime <= offsetTime) {
+		if (stats.time <= offsetTime) {
 			return c.json({ message: "No time that could be logged" }, 400)
 		}
 
-		const diffTotalTime = (newTotalTime - offsetTime)
+		const diffTotalTime = (stats.time - offsetTime)
 
 
 
 		const res = await db.insert(devlogs).values({
 			...data,
 			projectId: projectId,
-			totalTimeSpent: newTotalTime,
+			totalTimeSpent: stats.time,
 			timeSpent: diffTotalTime < 10 * 3600 ? diffTotalTime : 10 * 3600, // constrain time per log to 10h
 		}).returning()
 		if (res.length == 0) {

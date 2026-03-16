@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { genericOAuth } from "better-auth/plugins";
 import db from "./db";
-import { accounts, sessions, typeValues, users, verifications } from "./db/schema-auth";
+import { accounts, sessions, typeValues, users, verifications } from "./db/schema";
 
 
 interface AuthProfile {

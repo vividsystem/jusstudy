@@ -241,7 +241,6 @@ export default function ReviewPortal() {
 			const data = await res.json();
 			return data;
 		},
-		throwOnError: true,
 	});
 
 	// Auth guard — renders after hooks to satisfy Rules of Hooks

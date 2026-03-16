@@ -1,4 +1,4 @@
-import { pgTable, uuid, integer, text, timestamp, real, primaryKey, check, boolean } from "drizzle-orm/pg-core"
+import { pgTable, uuid, integer, text, timestamp, real, primaryKey, check } from "drizzle-orm/pg-core"
 import { users } from "./auth"
 import { projects } from "./main"
 import { relations, sql } from "drizzle-orm"
@@ -57,10 +57,8 @@ export const projectStats = pgTable("project_stats", {
 	mu: real("mu").notNull().default(25),
 	// confidence -> resets per ship
 	// used to determine if ships need more votes
-	isSettled: boolean().default(false).notNull(), // stats above SIGMA_TRESHOLD
-	sigma: real("sigma").notNull().default(8.333),
+	sigma: real("sigma").notNull().default(25 / 3),
 	ordinal: real("ordinal").notNull().default(0),
 	matchups: integer().notNull().default(0),
 	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
-

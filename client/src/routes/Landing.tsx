@@ -16,7 +16,7 @@ const rewardItems = [
 	{ src: "/reward/stationary.png", label: "Stationary Grant" },
 	{ src: "/reward/apple-pencil.png", label: "Stylus Grant" },
 	{ src: "/reward/ipad.png", label: "Tablet Grant" },
-	{ src: "../public/codecrafters.png", label: "Code Crafters Membership" },
+	{ src: "../CodeCrafters.png", label: "Code Crafters Membership" },
 ] as const;
 
 const LandingContent = () => (
@@ -63,6 +63,20 @@ const SponsorsBanner = () => (
 		<h2 className="text-base sm:text-2xl lg:text-4xl 2xl:text-6xl font-bold title-font text-[#FFE6A7] leading-tight">
 			Thanks to our sponsors!!!
 		</h2>
+		<div className="flex flex-row justify-start p-4 gap-4">
+			<a href="https://hackclub.com" className="flex flex-col items-center justify-between gap-4">
+				<div className="flex items-center justify-center h-full">
+					<img src="https://assets.hackclub.com/icon-rounded.svg" className="" />
+				</div>
+				<h3 className="2xl:text-6xl text-light-brown">Hackclub</h3>
+			</a>
+			<a href="https://codecrafters.io" className="flex flex-col items-center justify-between gap-4">
+				<div className="flex items-center justify-center h-full">
+					<img src="/CodeCrafters.png" className="" />
+				</div>
+				<h3 className="2xl:text-6xl text-light-brown">CodeCrafters</h3>
+			</a>
+		</div>
 	</div>
 );
 const rewardItemsWithRotations = rewardItems.map((item) => {
@@ -148,14 +162,12 @@ function FAQ() {
 function Footer() {
 	return (
 		<footer className="relative h-fit w-full">
-
-			<img src="/ColorBanner_5.svg" alt="Banner" className="w-full h-auto block -z-10 absolute top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} />
-			<div className="px-4 py-16 md:py-32 lg:py-64 2xl:py-128">
-				<h2 className="text-white lg:text-5xl">Our staff</h2>
+			<img src="/ColorBanner_5.svg" alt="Banner" className="w-full h-auto block z-10 top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} />
+			<div className="absolute z-10 flex flex-col justify-center px-12 w-full h-full inset-0 py-8">
+				<h2 className="text-white lg:text-5xl py-2">Our staff</h2>
+				<img src="/signatures.png" className="max-h-1/2 w-auto object-contain self-start" />
 			</div>
-
 		</footer>
-
 	)
 }
 function Landing() {
@@ -174,12 +186,14 @@ function Landing() {
 			<div className="max-h-screen mb-40">
 				<img src="/ColorBanner_1.svg" alt="Banner" className="w-full h-auto block -z-10 absolute top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} />
 				<HackclubLogo />
-				<button
-					onClick={login}
-					className="fixed top-8 right-8 lg:top-12 lg:right-12 text-xl lg:text-3xl 2xl:text-4xl underline opacity-80 hover:opacity-100 transition-opacity cursor-pointer text-[#282828]"
-				>
-					Login
-				</button>
+				{import.meta.env.VITE_HIDE_LOGIN !== "yes" && (
+					<button
+						onClick={login}
+						className="fixed top-8 right-8 lg:top-12 lg:right-12 text-xl lg:text-3xl 2xl:text-4xl underline opacity-80 hover:opacity-100 transition-opacity cursor-pointer text-[#282828]"
+					>
+						Login
+					</button>
+				)}
 
 				<div className="left-0 w-full pointer-events-none">
 					<div className="pointer-events-auto flex flex-col w-5/6 mx-auto mt-32 sm:mt-48 lg:mt-64 2xl:mt-80 gap-6 lg:gap-8 2xl:gap-10">

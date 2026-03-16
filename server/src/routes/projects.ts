@@ -2,7 +2,6 @@ import type { auth } from "@server/auth";
 import db from "@server/db";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator"
-import hackatime from "@server/hackatime";
 import { devlogs, hackatimeProjectLinks, projects, users } from "@server/db/schema";
 import { and, eq, getTableColumns, sum } from "drizzle-orm";
 import { HackatimeLinkRequestSchema, NewProjectRequestSchema, UpdateProjectRequestSchema } from "@shared/validation/projects";
@@ -10,6 +9,7 @@ import { devlogsRoute } from "./devlogs";
 import z from "zod";
 import { projectShipRoute } from "./ships";
 import { projectReviewsRoute } from "./reviews";
+import { singleProjectTime, sortedUserProjectTimes } from "@server/hackatime/client";
 
 
 export const projectsRoute = new Hono<{
@@ -31,32 +31,16 @@ export const projectsRoute = new Hono<{
 			}
 		})
 
-		const stats = await hackatime.userStats(user.slackId, {
-			startDate: new Date(process.env.START_DATE!),
-			features: ["projects"]
-		})
-
-		if (!stats.success) {
+		const hackatimeRes = await sortedUserProjectTimes(user.slackId, res)
+		if (!hackatimeRes.ok) {
 			return c.json({ message: "Something went wrong" }, 500)
 		}
 
 
-		// to calc logged time in the future maybe make an aggregate function to sum up time each devlog
-		let timeRecord: Record<string, number> = {}
-		for (let project of res) {
-			const ids = project.hackatimeLinks.map((l) => l.hackatimeProjectId)
-
-			// sum time spent up
-			stats.data.projects!.filter((p) => ids.includes(p.name)).forEach(p => (
-				timeRecord[project.id] = timeRecord[project.id] || 0 + p.total_seconds
-			))
-
-		}
-
 		return c.json({
 			projects: res.map(p => {
 				const { hackatimeLinks, ...rest } = p
-				return { ...rest, timeSpent: timeRecord[rest.id] || 0 }
+				return { ...rest, timeSpent: hackatimeRes.timeRec[rest.id] || 0 }
 			})
 		}, 200)
 	})
@@ -79,7 +63,7 @@ export const projectsRoute = new Hono<{
 
 		const res = await db
 			.select({
-				projects: getTableColumns(projects),
+				project: getTableColumns(projects),
 				timeLogged: sum(devlogs.timeSpent).mapWith(Number),
 				userSlackId: users.slackId,
 
@@ -94,25 +78,17 @@ export const projectsRoute = new Hono<{
 			return c.json({ message: "Ressource not found" }, 404)
 		}
 
-		const stats = await hackatime.userProjectDetails(res[0]!.userSlackId!)
-		if (!stats.success) {
-			return c.json({ message: "Hackatime fetching went wrong" }, 500)
-		}
-
 		const links = await db
 			.select()
 			.from(hackatimeProjectLinks)
 			.where(eq(hackatimeProjectLinks.projectId, id))
 
-		const linksArray = links.map(l => l.hackatimeProjectId)
+		const stats = await singleProjectTime(res[0]!.userSlackId!, links)
+		if (!stats.ok) {
+			return c.json({ message: "Hackatime fetching went wrong" }, 500)
+		}
 
-
-		let timeRecord = 0
-		stats.projects.filter(p => linksArray.includes(p.name)).forEach(p => {
-			timeRecord += p.total_seconds
-		})
-
-		return c.json({ project: res[0]!.projects, timeSpent: timeRecord, timeLogged: res[0]!.timeLogged }, 200)
+		return c.json({ project: res[0]!.project, timeSpent: stats.time, timeLogged: res[0]!.timeLogged }, 200)
 	})
 
 

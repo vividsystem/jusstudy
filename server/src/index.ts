@@ -7,6 +7,7 @@ import type { hc } from "hono/client";
 import { shopRoute } from "./routes/shop";
 import { reviewsRoute } from "./routes/reviews";
 import { shipsRoute } from "./routes/ships";
+import { voteRoute } from "./routes/vote";
 
 const app = new Hono<{
 	Variables: {
@@ -52,7 +53,12 @@ const app = new Hono<{
 	.route("/shop", shopRoute)
 	.route("/reviews", reviewsRoute)
 	.route("/ships", shipsRoute)
+	.route("/vote", voteRoute)
 
+app.onError((err, c) => {
+	console.error(`${err}`)
+	return c.json({ message: "Something went wrong" }, 500)
+})
 
 
 export type Client = ReturnType<typeof hc<AppType>>;

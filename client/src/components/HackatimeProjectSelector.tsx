@@ -1,4 +1,5 @@
 import { client } from "@client/lib/api-client";
+import { useErrors } from "@client/lib/context/ErrorContext";
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useState } from "react";
@@ -9,21 +10,19 @@ interface HackatimeProjectSelectorProps {
 
 export default function HackatimeProjectSelector(props: HackatimeProjectSelectorProps) {
 	const [alreadyUsed, setAlreadyUsed] = useState<string[]>([])
+	const { pushError } = useErrors()
 	const { data } = useQuery({
 		queryKey: ["userHackatimeProjects"],
 		queryFn: async () => {
-			try {
-				const res = await client.api.users["hackatime-projects"].$get()
-				if (!res.ok) {
-					const data = await res.json();
-					throw new Error(data.message);
-				}
-
+			const res = await client.api.users["hackatime-projects"].$get()
+			if (!res.ok) {
 				const data = await res.json();
-				return data
-			} catch (error) {
-				throw error
+				pushError(data.message);
+				throw new Error(data.message);
 			}
+
+			const data = await res.json();
+			return data
 		}
 	})
 	return (

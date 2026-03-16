@@ -16,37 +16,42 @@ import ManageAddresses from "./routes/ManageAddresses";
 import ComingSoon from "./routes/ComingSoon";
 import ReviewPanel from "./routes/ReviewPanel";
 import ProjectReview from "./routes/ProjectReview";
+import VotePage from "./routes/Vote";
+import { ErrorProvider } from "./lib/context/ErrorContext";
 // import RSVP from "./routes/RSVP";
 
 function App() {
 	return (
-		<BrowserRouter>
-			<Routes>
-				<Route path="/" element={<Landing />} />
+		<ErrorProvider>
+			<BrowserRouter>
+				<Routes>
+					<Route path="/" element={<Landing />} />
 
 
-				<Route element={<PrivateRoute />}>
-					<Route element={<AppLayout />}>
-						<Route path="/home" element={<Home />} />
-						<Route path="/projects" element={<Projects />} />
-						<Route path="/projects/:projectId" element={<ProjectDetails />} />
-						<Route path="/projects/:projectId/edit" element={<EditProjectDetails />} />
-						<Route path="/projects/:projectId/devlogs/new" element={<NewDevlog />} />
-						<Route path="/projects/new" element={<NewProjectPage />} />
+					<Route element={<PrivateRoute />}>
+						<Route element={<AppLayout />}>
+							<Route path="/home" element={<Home />} />
+							<Route path="/projects" element={<Projects />} />
+							<Route path="/projects/:projectId" element={<ProjectDetails />} />
+							<Route path="/projects/:projectId/edit" element={<EditProjectDetails />} />
+							<Route path="/projects/:projectId/devlogs/new" element={<NewDevlog />} />
+							<Route path="/projects/new" element={<NewProjectPage />} />
 
-						<Route path="/onboarding" element={<Onboarding />} />
-						<Route path="/shop" element={<Shop />} />
-						<Route path="/shop/:itemId" element={<BuyItem />} />
-						<Route path="/addresses/new" element={<NewAddress />} />
-						<Route path="/addresses" element={<ManageAddresses />} />
-						<Route path="/explore" element={<ComingSoon />} />
-						<Route path="/guides" element={<ComingSoon />} />
-						<Route path="/reviews" element={<ReviewPanel />} />
-						<Route path="/reviews/:id" element={<ProjectReview />} />
+							<Route path="/onboarding" element={<Onboarding />} />
+							<Route path="/shop" element={<Shop />} />
+							<Route path="/shop/:itemId" element={<BuyItem />} />
+							<Route path="/addresses/new" element={<NewAddress />} />
+							<Route path="/addresses" element={<ManageAddresses />} />
+							<Route path="/explore" element={<ComingSoon />} />
+							<Route path="/guides" element={<ComingSoon />} />
+							<Route path="/reviews" element={<ReviewPanel />} />
+							<Route path="/reviews/:id" element={<ProjectReview />} />
+							<Route path="/vote" element={<VotePage />} />
+						</Route>
 					</Route>
-				</Route>
-			</Routes>
-		</BrowserRouter>
+				</Routes>
+			</BrowserRouter>
+		</ErrorProvider>
 	);
 }
 

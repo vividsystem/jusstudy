@@ -1,6 +1,7 @@
 import Button from "@client/components/Button";
 import { Input } from "@client/components/Input";
 import { client } from "@client/lib/api-client";
+import { useErrors } from "@client/lib/context/ErrorContext";
 import { NewAddressSchema } from "@shared/validation/addresses";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
@@ -9,12 +10,14 @@ import z from "zod";
 
 export default function NewAddress() {
 	const navigate = useNavigate()
+	const { pushError } = useErrors()
 	const [form, setForm] = useState<Partial<z.infer<typeof NewAddressSchema>>>({})
 	const { mutate } = useMutation({
 		mutationFn: async () => {
 			const parsed = NewAddressSchema.safeParse(form)
 			if (!parsed.success) {
-				throw z.formatError(parsed.error)
+				pushError(z.formatError(parsed.error).toString())
+				throw parsed.error
 			}
 			const res = await client.api.users.addresses.$post({
 				json: {
@@ -23,11 +26,11 @@ export default function NewAddress() {
 			})
 			if (!res.ok) {
 				const data = await res.json()
-				throw data.message
+				pushError(data.message)
+				throw new Error(data.message)
 			}
 			return res
 		},
-		throwOnError: true
 	})
 	return (
 		<main className="flex flex-col gap-4">

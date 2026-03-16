@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query"
 import { Navigate } from "react-router"
 
 export default function Shop() {
-
 	const { data } = authClient.useSession()
 	if (data == null) {
 		return <Navigate to={"/"} />
@@ -16,8 +15,7 @@ export default function Shop() {
 			const res = await client.api.shop.items.$get()
 			const data = await res.json()
 			return data.shopItems
-		},
-		throwOnError: true
+		}
 	})
 	return (
 		<main className="w-full min-h-screen p-4">

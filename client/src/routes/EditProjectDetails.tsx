@@ -1,7 +1,8 @@
 import Button from "@client/components/Button";
 import HackatimeProjectSelector from "@client/components/HackatimeProjectSelector";
 import { Input } from "@client/components/Input";
-import { client, fetchSingleProject } from "@client/lib/api-client";
+import { client } from "@client/lib/api-client";
+import { useErrors } from "@client/lib/context/ErrorContext";
 import { projectCategoryValues, type ProjectCategories } from "@server/db/schema";
 import { UpdateProjectRequestSchema } from "@shared/validation/projects";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -20,14 +21,28 @@ export default function EditProjectDetails() {
 
 	let { projectId } = useParams()
 	const navigate = useNavigate()
+	const { pushError } = useErrors()
 	if (!projectId) {
 		return <Navigate to={"/projects"} />
 	}
 
 	const { isPending, isSuccess, /*error,*/ data } = useQuery({
-		queryKey: ["singleProject", projectId!],
-		queryFn: async () => await fetchSingleProject(projectId!),
-		throwOnError: true
+		queryKey: ["singleProject", projectId],
+		queryFn: async () => {
+			const res = await client.api.projects[":id"].time.$get({
+				param: {
+					id: projectId
+				}
+			})
+			if (!res.ok) {
+				const data = await res.json()
+				pushError(data.message)
+				throw new Error(data.message)
+			}
+
+			const data = await res.json();
+			return data
+		}
 	})
 
 
@@ -38,7 +53,11 @@ export default function EditProjectDetails() {
 			if (Object.values(form).some(value => value !== undefined)) {
 				const parsed = UpdateProjectRequestSchema.safeParse(form)
 				if (!parsed.success) {
-					throw z.prettifyError(parsed.error)
+
+					const e = z.prettifyError(parsed.error).toString()
+					pushError(e.toString())
+
+					throw e
 				}
 				const res = await client.api.projects[":id"].$patch({
 					json: parsed.data,
@@ -48,6 +67,8 @@ export default function EditProjectDetails() {
 				})
 				if (!res.ok) {
 					const data = await res.json()
+
+					pushError(data.message)
 					throw new Error(data.message)
 				}
 
@@ -66,7 +87,6 @@ export default function EditProjectDetails() {
 				})
 			}
 		},
-		throwOnError: true
 	})
 
 

@@ -1,10 +1,10 @@
 import type { auth } from "@server/auth";
 import db from "@server/db";
-import { devlogs, hackatimeProjectLinks, projects, projectShips } from "@server/db/schema";
-import hackatime from "@server/hackatime";
+import { devlogs, hackatimeProjectLinks, projects, projectShips, projectStats } from "@server/db/schema";
 import { desc, eq, getTableColumns } from "drizzle-orm";
 import { Hono } from "hono";
 import { shipReviewsRoute } from "./reviews";
+import { singleProjectTime } from "@server/hackatime/client";
 
 
 export const shipsRoute = new Hono<{
@@ -87,32 +87,36 @@ export const projectShipRoute = new Hono<{
 		const loggedTime = (lastDevlog[0]?.timeSpent || 0) - (lastShip[0]?.loggedTime || 0)
 
 
-		const stats = await hackatime.userProjectDetails(user.slackId)
-		if (!stats.success) {
+		const links = await db.select().from(hackatimeProjectLinks).where(eq(hackatimeProjectLinks.projectId, id))
+		const stats = await singleProjectTime(user.slackId, links)
+		if (!stats.ok) {
 			return c.json({ message: "Hackatime fetching went wrong" }, 500)
 		}
 
-		const links = await db.select().from(hackatimeProjectLinks).where(eq(hackatimeProjectLinks.projectId, id))
-		const linksArray = links.map(l => l.hackatimeProjectId)
-
-		let newTotalTime = 0
-		stats.projects.filter(p => linksArray.includes(p.name)).forEach(p => {
-			newTotalTime += p.total_seconds
-		})
-
-		const timeSpent = newTotalTime - timeAlreadyShipped
+		const timeSpent = stats.time - timeAlreadyShipped
+		if (timeSpent <= 0) {
+			return c.json({ message: "No new time to be logged" }, 400)
+		}
 
 		const ship = await db
 			.insert(projectShips)
 			.values({
 				timeSpent,
-				totalTime: newTotalTime,
+				totalTime: stats.time,
 				loggedTime,
 				projectId: id,
 				state: "pre-initial"
 			}).returning()
 		if (ship.length == 0) {
 			return c.json({ message: "Something went wrong" }, 500)
+		}
+
+		const pStats = await db.select().from(projectStats).where(eq(projectStats.projectId, id))
+		if (pStats.length == 0) {
+			await db.insert(projectStats).values({ projectId: id })
+		} else {
+			//reset uncertainty -> multiplier instead of full-reset doesn't make sense as projects can only be reshipped once already below treshold and would therefore collapse to roughly the same sigma
+			await db.update(projectStats).set({ sigma: 25 / 3, ordinal: pStats[0]!.mu - 3 * (25 / 3) }).where(eq(projectStats.projectId, id))
 		}
 
 

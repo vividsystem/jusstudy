@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { text, timestamp, boolean, index, pgTable, integer, pgEnum } from "drizzle-orm/pg-core";
-import { addresses, projectReviews, projectShips, shopOrders } from "./main";
+import { addresses, projectReviews, shopOrders } from "./main";
 
 export const typeValues = ["participant", "reviewer", "fraud", "admin"] as const
 export const userType = pgEnum("user_types", typeValues)

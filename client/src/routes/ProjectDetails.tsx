@@ -1,9 +1,11 @@
 import Button from "@client/components/Button";
-import { client, fetchProjectDevlogs, fetchProjectShips, fetchSingleProject } from "@client/lib/api-client";
+import ProjectCard from "@client/components/ProjectCard";
+import { client } from "@client/lib/api-client";
+import { useErrors } from "@client/lib/context/ErrorContext";
 import { formatDate, secondsToFormatTime } from "@client/lib/time";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { InferResponseType } from "hono";
-import { BookOpen, Clock, Pencil, Ship } from "lucide-react";
+import { Ship } from "lucide-react";
 import { Navigate, useParams } from "react-router"
 
 type DevlogResponse = InferResponseType<typeof client.api.projects[":id"]["devlogs"]["$get"]>
@@ -66,26 +68,70 @@ export function ShipCard({ ship }: { ship: Ships[number] }) {
 
 
 export default function ProjectDetails() {
-	let { projectId } = useParams()
+	const { projectId } = useParams()
+	const { pushError } = useErrors()
 	if (!projectId) {
 		return <Navigate to={"/projects"} />
 	}
 	const { /*isPending, error,*/ data: project } = useQuery({
 		queryKey: ["singleProject", projectId],
-		queryFn: async () => await fetchSingleProject(projectId),
-		throwOnError: true
+		queryFn: async () => {
+			const res = await client.api.projects[":id"].time.$get({
+				param: {
+					id: projectId
+				}
+			})
+			if (!res.ok) {
+				const data = await res.json()
+				pushError(data.message)
+				throw new Error(data.message)
+			}
+
+			const data = await res.json();
+			return data
+		},
 	})
 
 	const { /*isPending, error,*/ data: devlogs } = useQuery({
 		queryKey: ["projectDevlogs", projectId],
-		queryFn: async () => await fetchProjectDevlogs(projectId),
-		throwOnError: true
+		queryFn: async () => {
+
+
+			const res = await client.api.projects[":id"].devlogs.$get({
+				param: {
+					id: projectId
+				}
+			})
+			if (!res.ok) {
+				const data = await res.json()
+				pushError(data.message)
+
+				throw new Error(data.message)
+			}
+
+			const data = await res.json();
+			return data.devlogs
+		},
 	})
 
 	const { /*isPending, error,*/ data: ships } = useQuery({
 		queryKey: ["projectShips", projectId],
-		queryFn: async () => await fetchProjectShips(projectId),
-		throwOnError: true
+		queryFn: async () => {
+			const res = await client.api.projects[":id"].ships.$get({
+				param: {
+					id: projectId
+				}
+			})
+			if (!res.ok) {
+				const data = await res.json()
+				pushError(data.message)
+
+				throw new Error(data.message)
+			}
+
+			const data = await res.json();
+			return data.ships
+		},
 	})
 	const { mutate: shipProject
 	} = useMutation({
@@ -95,65 +141,18 @@ export default function ProjectDetails() {
 			})
 			if (!res.ok) {
 				const data = await res.json()
+				pushError(data.message)
+
 				throw new Error(data.message)
 			}
 
 		},
-		throwOnError: true
 	})
 
 	return (
 		<main className="w-full text-4xl flex flex-col items-center gap-4 p-4 relative">
 			{project?.project && (
-				<div className="border-5 rounded-2xl bg-dark-red text-egg-yellow p-4 w-fit flex flex-col gap-4">
-					<div className="flex flex-row gap-16 justify-between items-center">
-						<h1 className="text-6xl w-fit">{project.project.name}</h1>
-						<div className="flex flex-row gap-4">
-							<a href={`/projects/${projectId}/edit`}>
-								<Pencil className="size-8" />
-							</a>
-						</div>
-					</div>
-					<div className="flex flex-row gap-4 items-center text-beige">
-						<div className="flex flex-items items-center gap-4">
-							<BookOpen className="size-8" />
-							<span>? devlogs</span>
-						</div>
-						<div className="flex flex-items items-center gap-4 ">
-							<Clock className="size-8" />
-							<span>{secondsToFormatTime(project.timeSpent || 0)} ({secondsToFormatTime(project.timeLogged || 0)} logged)</span>
-						</div>
-					</div>
-					<p>{project.project.description}</p>
-					<p className="text-beige">{project.project.category}</p>
-					{(project.project?.demoLink || project.project?.repository || project.project?.readmeLink) && (
-						<div className="flex flex-row mt-4 gap-4">
-							{project.project?.demoLink != null && (
-								<Button
-									className="bg-dark-brown border-4 border-light-brown"
-									href={project.project!.demoLink!}
-									target="_blank"
-								>Demo</Button>
-							)}
-							{project.project?.repository != null && (
-								<Button
-									className="bg-dark-brown border-4 border-light-brown"
-									href={project.project!.repository!}
-									target="_blank"
-								>Repository</Button>
-							)}
-							{project.project?.readmeLink != null && (
-
-								<Button
-									className="bg-dark-brown border-4 border-light-brown"
-									href={project.project!.readmeLink!}
-									target="_blank"
-								>Readme</Button>
-							)}
-
-						</div>
-					)}
-				</div>
+				<ProjectCard {...project!} editable={true} nDevlogs={devlogs?.length || 0} />
 			)
 			}
 			<Button onClick={() => {

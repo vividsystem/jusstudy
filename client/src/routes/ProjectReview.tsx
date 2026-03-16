@@ -8,6 +8,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ProjectCategories, ProjectShipStatus, ReviewType } from "@server/db/schema";
 import { type InferResponseType } from "hono/client";
 import { formatDate, secondsToFormatTime } from "@client/lib/time";
+import { useErrors } from "@client/lib/context/ErrorContext";
 
 // ── Inferred types from Hono client ───────────────────────────────────────
 type ReviewsResponse = InferResponseType<typeof client.api.projects[":id"]["reviews"]["$get"]>;
@@ -161,12 +162,13 @@ function ReviewForm({ reviewType, shipId }: { reviewType: ReviewType, shipId: st
 	const [comment, setComment] = useState("");
 	const [note, setNotes] = useState<string | undefined>();
 	const [submitting, setSubmitting] = useState(false);
-	const [error, setError] = useState<string | null>(null);
 
 	const navigate = useNavigate()
+	const { pushError } = useErrors()
 
 	const { mutate: submitReview } = useMutation({
 		mutationFn: async () => {
+			setSubmitting(true);
 			const res = await client.api.ships[":id"].reviews.$post({
 				param: {
 					id: shipId
@@ -181,28 +183,16 @@ function ReviewForm({ reviewType, shipId }: { reviewType: ReviewType, shipId: st
 
 			if (!res.ok) {
 				const data = await res.json()
+				pushError(data.message)
+				setSubmitting(false);
 				throw new Error(data.message)
 			}
 
 
+			setSubmitting(false);
 			navigate("/reviews")
 		},
-		throwOnError: true
 	})
-
-	async function handleSubmit() {
-		setError(null);
-		setSubmitting(true);
-		try {
-			console.log(passed, comment, note, reviewType)
-			submitReview()
-			setSubmitting(false)
-		} catch (e: any) {
-			setSubmitting(false);
-			setError((e as Error).message)
-			throw e
-		}
-	}
 
 	return (
 		<div className="space-y-5">
@@ -265,14 +255,12 @@ function ReviewForm({ reviewType, shipId }: { reviewType: ReviewType, shipId: st
 				/>
 			</div>
 
-			{error && (
-				<p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-lg">
-					{error}
-				</p>
-			)}
-
 			<button
-				onClick={handleSubmit}
+				onClick={(e) => {
+					e.preventDefault()
+					submitReview()
+
+				}}
 				className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${passed
 					? "bg-emerald-500 hover:bg-emerald-400 text-white active:scale-[0.98] shadow-lg shadow-emerald-500/20"
 					: "bg-red-500 hover:bg-red-400 text-white active:scale-[0.98] shadow-lg shadow-red-500/20"
@@ -340,6 +328,7 @@ function PageSkeleton() {
 export default function ProjectReview() {
 	const { data: session } = authClient.useSession();
 	const { id } = useParams();
+	const { pushError } = useErrors()
 
 	if (!id) {
 		return <Navigate to="/reviews" />;
@@ -355,28 +344,30 @@ export default function ProjectReview() {
 			const shipRes = await client.api.ships[":id"].$get({ param: { id } });
 			if (!shipRes.ok) {
 				const err = await shipRes.json();
-				throw new Error(err.message);
+				pushError(err.message);
+				throw new Error(err.message)
 			}
 			const { ship } = await shipRes.json();
 
 			const projectRes = await client.api.projects[":id"].$get({ param: { id: ship.projectId } });
 			if (!projectRes.ok) {
 				const err = await projectRes.json();
-				throw new Error(err.message);
+				pushError(err.message);
+				throw new Error(err.message)
 			}
 			const { project } = await projectRes.json();
 
 			const reviewsRes = await client.api.projects[":id"].reviews.$get({ param: { id: project.id } });
 			if (!reviewsRes.ok) {
 				const err = await reviewsRes.json();
-				throw new Error(err.message);
+				pushError(err.message);
+				throw new Error(err.message)
 			}
 			const { reviews } = await reviewsRes.json();
 
 			// Return everything so the component can use it
 			return { ship, project, reviews };
 		},
-		throwOnError: true,
 	});
 
 

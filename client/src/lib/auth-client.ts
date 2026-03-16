@@ -1,7 +1,7 @@
 import { genericOAuthClient, inferAdditionalFields } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react"
 import { serverURL } from "./urls";
-import { typeValues } from "@server/db/schema-auth";
+import { typeValues } from "@server/db/schema";
 
 
 const SERVER_URL = serverURL("/api/auth").toString()

@@ -2,6 +2,7 @@ import Button from "@client/components/Button"
 import { Input } from "@client/components/Input"
 import { client } from "@client/lib/api-client"
 import { authClient } from "@client/lib/auth-client"
+import { useErrors } from "@client/lib/context/ErrorContext"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { Navigate, useParams, useNavigate } from "react-router"
@@ -15,6 +16,7 @@ export default function BuyItem() {
 	const { itemId } = useParams()
 	const [quantity, setQuantity] = useState(1)
 	const [addressId, setAddressId] = useState("")
+	const { pushError } = useErrors()
 	if (!itemId) {
 		return <Navigate to={"/shop"} />
 	}
@@ -25,17 +27,17 @@ export default function BuyItem() {
 				param: { itemId }
 			})
 			if (!res.ok) {
+				const data = await res.json()
+				pushError(data.message)
 				if (res.status == 404) {
 					navigate("/shop")
 				}
-				const data = await res.json()
 				throw new Error(data.message)
 			}
 
 			const data = await res.json()
 			return data.item
 		},
-		throwOnError: true
 	})
 	const { data: addresses } = useQuery({
 		queryKey: ["address"],
@@ -43,18 +45,19 @@ export default function BuyItem() {
 			const res = await client.api.users.addresses.$get()
 			if (!res.ok) {
 				const data = await res.json()
+				pushError(data.message)
 				throw new Error(data.message)
 			}
 			const data = await res.json()
 			return data.addresses
 		},
-		throwOnError: true
 	})
 
 	const { isError: _isMutationError, isSuccess: _isMutationSuccess, mutate: buyItem } = useMutation({
 		mutationFn: async () => {
 			if (addressId == "") {
-				throw new Error("Select a valid address")
+				pushError("Select a valid address")
+			throw new Error("Select a valid address")
 			}
 			const res = await client.api.shop.orders.$post({
 				json: {
@@ -65,10 +68,10 @@ export default function BuyItem() {
 			})
 			if (!res.ok) {
 				const data = await res.json()
-				throw new Error(data.message)
+				pushError(data.message)
+			throw new Error(data.message)
 			}
 		},
-		throwOnError: true
 	})
 
 	return (

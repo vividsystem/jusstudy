@@ -3,11 +3,12 @@ import HackatimeProjectSelector from "@client/components/HackatimeProjectSelecto
 import { Input } from "@client/components/Input";
 import { client } from "@client/lib/api-client";
 import { useMutation } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { projectCategoryValues, type ProjectCategories } from "@server/db/schema";
 import { NewProjectRequestSchema } from "@shared/validation/projects";
 import z from "zod";
+import { useErrors } from "@client/lib/context/ErrorContext";
 
 export default function NewProjectPage() {
 	const navigate = useNavigate()
@@ -19,18 +20,23 @@ export default function NewProjectPage() {
 		category: ProjectCategories
 	}>({ category: "CAD" })
 	const [hackatimeProjects, setHackatimeProjects] = useState<string[]>([])
-	const { isPending, isError, isSuccess, mutate: createProject } = useMutation({
+	const { pushError } = useErrors()
+	const { mutate: createProject } = useMutation({
 		mutationFn: async () => {
 			const parsed = NewProjectRequestSchema.safeParse(form)
 			if (!parsed.success) {
-				throw z.prettifyError(parsed.error)
+				const e = z.prettifyError(parsed.error)
+				pushError(e.toString())
+				throw e;
 			}
 			const res = await client.api.projects.$post({
 				json: parsed.data
 			})
 			if (!res.ok) {
 				const data = await res.json()
-				throw new Error(data.message)
+				pushError(data.message)
+
+				throw new Error(data.message);
 			}
 
 			const data = await res.json()
@@ -47,19 +53,8 @@ export default function NewProjectPage() {
 			}
 			navigate("/projects")
 		},
-		throwOnError: true
 	})
 
-
-	useEffect(() => {
-		if (isPending) {
-			console.log("pending")
-		} else if (isError) {
-			console.log("error")
-		} else if (isSuccess) {
-			console.log("success")
-		}
-	})
 	return (
 		<main className="flex flex-col items-center text-4xl text-egg-yellow w-full min-h-screen gap-16 p-4">
 

@@ -1,27 +1,26 @@
 import { client } from "@client/lib/api-client";
+import { useErrors } from "@client/lib/context/ErrorContext";
 import { secondsToFormatTime } from "@client/lib/time";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, Clock, Plus } from "lucide-react"
 
 
 export default function Projects() {
+	const { pushError } = useErrors()
 	const { /*isPending, error,*/ data } = useQuery({
 		queryKey: ["userProjects"],
 		queryFn: async () => {
-			try {
-				const res = await client.api.projects.$get()
-				if (!res.ok) {
-					const data = await res.json();
-					throw new Error(data.message)
-				}
-
+			const res = await client.api.projects.$get()
+			if (!res.ok) {
 				const data = await res.json();
-				return data
-			} catch (error) {
-				throw error
+				pushError(data.message)
+
+				throw new Error(data.message);
 			}
+
+			const data = await res.json();
+			return data
 		},
-		throwOnError: true
 	})
 	return (
 		<main className="w-full p-4">

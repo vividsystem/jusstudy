@@ -1,19 +1,21 @@
 import { client } from "@client/lib/api-client"
+import { useErrors } from "@client/lib/context/ErrorContext"
 import { useQuery } from "@tanstack/react-query"
 
 export default function ManageAddresses() {
+	const { pushError } = useErrors()
 	const { data, isPending } = useQuery({
 		queryKey: ["address"],
 		queryFn: async () => {
 			const res = await client.api.users.addresses.$get()
 			if (!res.ok) {
 				const data = await res.json()
-				throw new Error(data.message)
+				pushError(data.message)
+				throw new Error(data.message);
 			}
 			const data = await res.json()
 			return data.addresses
 		},
-		throwOnError: true
 	})
 	return (
 		<main>

@@ -33,17 +33,17 @@
     "turbo"
   ],
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260116.0",
+    "@cloudflare/workers-types": "^4.20260305.1",
     "bun-types": "latest",
-    "turbo": "^2.7.4",
-    "wrangler": "^4.59.2"
+    "turbo": "^2.8.13",
+    "wrangler": "^4.70.0"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "better-auth": "^1.4.13",
-    "hono": "^4.11.4",
-    "zod": "^4.3.5"
+    "better-auth": "^1.5.3",
+    "hono": "^4.12.5",
+    "zod": "^4.3.6"
   }
 }
