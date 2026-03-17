@@ -1,0 +1,34 @@
+/* Ensure the Hack Club flag can be positioned cleanly and stick to left edge on mobile */
+.hackclub-anchor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-left: 2rem; /* mirrors previous pl-8 */
+  z-index: 50;
+}
+
+/* Make the image layout predictable */
+.hackclub-logo {
+  display: block;
+  height: 5rem; /* baseline size (approx h-20) */
+  width: auto;
+}
+
+@media (min-width: 1024px) {
+  .hackclub-logo {
+    height: 6rem; /* approx lg:h-24 */
+  }
+}
+
+@media (min-width: 1536px) {
+  .hackclub-logo {
+    height: 8rem; /* approx 2xl:h-32 */
+  }
+}
+
+/* On narrow screens, remove left padding so the left-flag sits flush */
+@media (max-width: 1023px) {
+  .hackclub-anchor {
+    padding-left: 0;
+  }
+}
