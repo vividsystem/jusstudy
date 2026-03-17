@@ -18,6 +18,7 @@ import ReviewPanel from "./routes/ReviewPanel";
 import ProjectReview from "./routes/ProjectReview";
 import VotePage from "./routes/Vote";
 import { ErrorProvider } from "./lib/context/ErrorContext";
+import RankingPage from "./routes/Ranking";
 // import RSVP from "./routes/RSVP";
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
 							<Route path="/reviews" element={<ReviewPanel />} />
 							<Route path="/reviews/:id" element={<ProjectReview />} />
 							<Route path="/vote" element={<VotePage />} />
+							<Route path="/rankings" element={<RankingPage />} />
 						</Route>
 					</Route>
 				</Routes>

@@ -4,12 +4,14 @@ import db from "@server/db";
 import { projects, projectShips } from "@server/db/schema/main";
 import { projectStats, ratings, votingRoundProjects, votingRounds } from "@server/db/schema/voting";
 import { balanceCategories, SIGMA_TRESHOLD, STAR_BUDGET, weightedSample } from "@server/voting";
-import { and, desc, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, inArray, isNull, ne, notInArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { publishVoteSchema } from "@shared/validation/votes"
 import { uniqueEntriesEqual } from "@server/lib/arr";
 import { rating, rate, ordinal } from "openskill"
 import { bumpStatus } from "@server/lib/ships";
+import { users } from "@server/db/schema";
+import { rankingsRoute } from "./rankings";
 
 const CANDIDATE_POOL_SIZE = 50;
 
@@ -197,3 +199,4 @@ export const voteRoute = new Hono<{
 			}))
 		}, 200)
 	})
+	.route("/rankings", rankingsRoute)

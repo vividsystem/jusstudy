@@ -16,10 +16,10 @@ export const ProjectSchema = TimeableSchema.extend({})
 
 export const ProjectDetailsSchema = z.object({
 	name: z.string().nonempty(),
-	total_seconds: z.number().positive(),
+	total_seconds: z.number().nonnegative(),
 	languages: z.array(z.string()),
 	repo_url: z.string().nullable(),
-	total_heartbeats: z.number().positive(),
+	total_heartbeats: z.number().nonnegative(),
 	first_heartbeat: z.iso.datetime(),
 	last_heartbeat: z.iso.datetime(),
 }).omit({

@@ -16,7 +16,7 @@ export const users = pgTable("users", {
 		.defaultNow()
 		.$onUpdate(() => /* @__PURE__ */ new Date())
 		.notNull(),
-
+	nickname: text("nickname").notNull(),
 	yswsEligible: boolean("ysws_eligible").notNull(),
 	verificationStatus: text("verification_status").notNull(),
 	slackId: text("slack_id").notNull(),

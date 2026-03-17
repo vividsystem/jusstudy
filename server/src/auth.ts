@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { genericOAuth } from "better-auth/plugins";
 import db from "./db";
 import { accounts, sessions, typeValues, users, verifications } from "./db/schema";
+import { getSlackUserInformation } from "./lib/slack";
 
 
 interface AuthProfile {
@@ -46,19 +47,21 @@ export const auth = betterAuth({
 					discoveryUrl: "https://auth.hackclub.com/.well-known/openid-configuration",
 					scopes: ["openid", "profile", "email", "name", "slack_id", "verification_status"],
 					overrideUserInfo: true,
-					mapProfileToUser: (p) => {
+					mapProfileToUser: async (p) => {
 						const profile = p as AuthProfile
 
+						const userInf = await getSlackUserInformation(profile.slack_id)
 
 						return {
 							id: profile.id,
 							name: profile.name,
 							email: profile.email,
 							emailVerified: profile.emailVerified,
-							image: undefined,
+							image: userInf?.imageUrl,
 							yswsEligible: profile.ysws_eligible,
 							verificationStatus: profile.verification_status,
 							slackId: profile.slack_id,
+							nickname: userInf?.displayName || "no slack displayname :("
 						}
 					}
 				}
@@ -97,6 +100,11 @@ export const auth = betterAuth({
 				required: true,
 				input: false
 			},
+			nickname: {
+				type: "string",
+				required: true,
+				input: false
+			}
 		}
 	}
 })

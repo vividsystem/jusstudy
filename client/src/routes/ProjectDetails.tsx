@@ -1,6 +1,7 @@
 import Button from "@client/components/Button";
 import ProjectCard from "@client/components/ProjectCard";
 import { client } from "@client/lib/api-client";
+import { authClient } from "@client/lib/auth-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
 import { formatDate, secondsToFormatTime } from "@client/lib/time";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -17,6 +18,7 @@ interface ProjectTimelineProps {
 	devlogs: Devlogs
 	ships: Ships
 	projectId: string
+	isOwner?: boolean
 }
 export function ProjectTimeline(props: ProjectTimelineProps) {
 	const items = [
@@ -32,9 +34,11 @@ export function ProjectTimeline(props: ProjectTimelineProps) {
 					: <ShipCard ship={item.data} />
 
 			)}
-			<Button href={`/projects/${props.projectId}/devlogs/new`} className="bg-dark-red border-egg-yellow border-5 text-egg-yellow w-fit">
-				Write Devlog
-			</Button>
+			{props.isOwner && (
+				<Button href={`/projects/${props.projectId}/devlogs/new`} className="bg-dark-red border-egg-yellow border-5 text-egg-yellow w-fit">
+					Write Devlog
+				</Button>
+			)}
 		</>
 	)
 }
@@ -73,6 +77,8 @@ export default function ProjectDetails() {
 	if (!projectId) {
 		return <Navigate to={"/projects"} />
 	}
+
+	const { data: sessionDetails } = authClient.useSession()
 	const { /*isPending, error,*/ data: project } = useQuery({
 		queryKey: ["singleProject", projectId],
 		queryFn: async () => {
@@ -149,15 +155,22 @@ export default function ProjectDetails() {
 		},
 	})
 
+
+	const isOwner = () => {
+		return sessionDetails != null && sessionDetails.user != null && sessionDetails.user.id == project?.project.creatorId
+	}
+
 	return (
 		<main className="w-full text-4xl flex flex-col items-center gap-4 p-4 relative">
 			{project?.project && (
-				<ProjectCard {...project!} editable={true} nDevlogs={devlogs?.length || 0} />
+				<ProjectCard {...project!} editable={isOwner()} nDevlogs={devlogs?.length || 0} />
 			)
 			}
-			<Button onClick={() => {
-				shipProject()
-			}}><Ship /></Button>
+			{isOwner() && (
+				<Button onClick={() => {
+					shipProject()
+				}}><Ship /></Button>
+			)}
 			{devlogs && ships && (
 				<div className="w-full overflow-x-hidden flex flex-col gap-4 items-center">
 					<ProjectTimeline projectId={projectId!} devlogs={devlogs} ships={ships} />
