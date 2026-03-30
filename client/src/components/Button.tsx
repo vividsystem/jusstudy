@@ -10,6 +10,7 @@ type ButtonProps = {
 	target?: string
 } & BaseParentProps | {
 	onClick?: (ev: React.MouseEvent) => void;
+	type?: string
 } & BaseParentProps;
 
 export default function Button(props: ButtonProps) {
