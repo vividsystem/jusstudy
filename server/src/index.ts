@@ -13,6 +13,7 @@ import { requestId, type RequestIdVariables } from "hono/request-id";
 import type { Logger } from "pino";
 import { logger } from "./logger";
 import { requestLogger } from "./middleware/logger";
+import { devlogsRoute } from "./routes/devlogs";
 
 
 export type Env = {
@@ -67,6 +68,7 @@ const app = new Hono<Env>().basePath("/api")
 	.route("/ships", shipsRoute)
 	.route("/vote", voteRoute)
 	.route("/admin", adminRoute)
+	.route("/devlogs", devlogsRoute)
 
 app.onError((err, c) => {
 	logger.error({ err, url: c.req.url })

@@ -16,7 +16,7 @@ body {
 	text-rendering: optimizeLegibility;
 	margin: 0;
 	padding: 0;
-	@apply bg-beige;
+	@apply bg-beige text-dark-brown;
 }
 
 .bg-layer {

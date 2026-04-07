@@ -19,6 +19,8 @@ for prod change the client and server urls to the urls where the front- and back
 ```env
 VITE_CLIENT_URL=http://localhost:5173
 VITE_SERVER_URL=http://localhost:3000
+VITE_HIDE_LOGIN=yes # if you want to disable login
+VITE_SPACES_URL=http://localhost:6570 # the host of your spaces instance
 ```
 
 > Set up .env for the server
@@ -30,7 +32,9 @@ DATABASE_URL=your_database_url
 BETTER_AUTH_SECRET=your_secret
 HACKCLUB_AUTH_CLIENT_ID=your_client_id
 HACKCLUB_AUTH_CLIENT_SECRET=your_client_secret
-HACKATIME_API_KEY=your_api_key
+START_DATE=2026-04-08
+JOE_API_KEY=JOE_API_KEY
+JOE_EVENT_ID=JOE_EVENT_ID
 ```
 
 ## Development

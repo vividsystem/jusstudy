@@ -22,6 +22,7 @@ This is built upon the [bhvr](https://bhvr.dev) stack. <br/>
 It intern is built upon [bun](https://bun.sh), [hono](https://hono.dev), [vite](https://vitejs.dev) and [react](https://react.dev).
 The project also uses [drizzle](https://orm.drizzle.team/) as an orm and [better-auth](https://better-auth.com/) together with hackclub-auth to provide auth.
 For now this project also uses [openskill's ranking implementation](https://github.com/philihp/openskill.js)
+This project also uses [spaces](https://github.com/vividsystem/spaces), a simple to use file storing service I made myself. It is in early development and it's also my first project in Rust.
 
 ## AI Disclosure
 This project is not vibe-coded. However I decided to make a part of the review-panel's UI using AI.

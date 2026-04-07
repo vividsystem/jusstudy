@@ -1,17 +1,77 @@
 import { zValidator } from "@hono/zod-validator";
-import type { auth } from "@server/auth";
 import db from "@server/db";
-import { devlogs, hackatimeProjectLinks, projects } from "@server/db/schema";
+import { devlogAttachments, devlogs, hackatimeProjectLinks, projects } from "@server/db/schema";
 import { singleProjectTime } from "@server/hackatime/client";
 import { NewDevlogRequestSchema } from "@shared/validation/devlogs";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, getTableColumns, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import type { Env } from "..";
-
-
+import { uploadDevlogAttachmentToSpaces } from "@server/lib/spaces";
+import { bodyLimit } from "hono/body-limit";
+import { MAX_FILE_SIZE } from "@shared/vars";
+import z from "zod";
 
 
 export const devlogsRoute = new Hono<Env>()
+	.post("/:id/attachment", bodyLimit({
+		maxSize: MAX_FILE_SIZE,
+		onError: (c) => {
+			return c.json({ message: "File too large" }, 413)
+		}
+	}),
+		zValidator(
+			"form",
+			z.object({
+				images: z.union([z.instanceof(File), z.array(z.instanceof(File))]),
+			})
+		),
+		async (c) => {
+			const user = c.get("user");
+			const logger = c.get("logger")
+			if (!user) return c.json({ message: "Unauthorized" }, 401)
+			const id = c.req.param("id")
+			const [devlog] = await db
+				.select({
+					d: getTableColumns(devlogs),
+					ownerId: projects.creatorId
+				})
+				.from(devlogs)
+				.innerJoin(projects, eq(projects.id, devlogs.projectId))
+				.where(eq(devlogs.id, id))
+			if (!devlog) {
+				return c.json({ message: "Not found" }, 404)
+			} else if (devlog.ownerId != user.id) {
+				return c.json({ message: "Forbidden" }, 403)
+			}
+
+			const { images } = c.req.valid("form")
+
+			const files = Array.isArray(images)
+				? images : [images]
+
+
+			const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"]
+			const invalid = files.find((f) => !ALLOWED_TYPES.includes(f.type))
+			if (invalid) {
+				return c.json({ message: "Invalid file types" }, 400)
+			}
+
+			const res = await uploadDevlogAttachmentToSpaces(files)
+			if ("message" in res) {
+				logger.error({ error_id: res.error_id }, res.message)
+				return c.json({ message: "Something went wrong" }, 500)
+			}
+
+			await db.insert(devlogAttachments).values(res.map((sf) => ({
+				spaceFileId: sf.id,
+				devlogId: devlog.d.id
+			})))
+
+			return c.json({ message: "Attachments uploaded successfully" }, 201)
+		})
+
+
+export const projectDevlogsRoute = new Hono<Env>()
 	.post("/", zValidator("json", NewDevlogRequestSchema), async (c) => {
 		const user = c.get("user")
 		const logger = c.get("logger")
@@ -79,11 +139,44 @@ export const devlogsRoute = new Hono<Env>()
 			return c.json({ message: "Bad request" }, 400)
 		}
 
-		const res = await db.select().from(devlogs).where(eq(devlogs.projectId, projectId)).orderBy(desc(devlogs.createdAt))
+		const res = await db.select().from(devlogs).where(eq(devlogs.projectId, projectId)).leftJoin(devlogAttachments, eq(devlogs.id, devlogAttachments.devlogId)).orderBy(desc(devlogs.createdAt))
+		type Row = typeof res[number];
+
+		type Devlog = Row["project_devlogs"];
+		type Attachment = Omit<NonNullable<Row["devlog_attachments"]>, "devlogId">;
+
+		type DevlogWithAttachments = Devlog & {
+			attachments: Attachment[];
+		};
+		const mapped = Object.values(
+			res.reduce<Record<string, DevlogWithAttachments>>((acc, row) => {
+				const devlog = row.project_devlogs;
+				if (!acc[devlog.id]) {
+					if (row.devlog_attachments) {
+						const { devlogId, ...attachment } = row.devlog_attachments; // name depends on your schema
+						acc[devlog.id] = {
+							...devlog,
+							attachments: [attachment],
+						};
+					} else {
+						acc[devlog.id] = {
+							...devlog,
+							attachments: [],
+						};
+					}
+				} else {
+					if (row.devlog_attachments) {
+						const { devlogId, ...attachment } = row.devlog_attachments; // name depends on your schema
+						acc[devlog.id]!.attachments.push(attachment);
+					}
+				}
+				return acc;
+			}, {})
+		);
 
 
 		return c.json({
-			devlogs: res
+			devlogs: mapped
 		}, 200)
 
 	})

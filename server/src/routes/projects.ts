@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator"
 import { devlogs, hackatimeProjectLinks, projects, users } from "@server/db/schema";
 import { and, eq, getTableColumns, sum } from "drizzle-orm";
 import { HackatimeLinkRequestSchema, NewProjectRequestSchema, UpdateProjectRequestSchema } from "@shared/validation/projects";
-import { devlogsRoute } from "./devlogs";
+import { projectDevlogsRoute } from "./devlogs";
 import z from "zod";
 import { projectShipRoute } from "./ships";
 import { projectReviewsRoute } from "./reviews";
@@ -224,7 +224,7 @@ export const projectsRoute = new Hono<Env>()
 	// 		old: deleted
 	// 	})
 	// })
-	.route("/:id/devlogs", devlogsRoute)
+	.route("/:id/devlogs", projectDevlogsRoute)
 	.route("/:id/ships", projectShipRoute)
 	.route("/:id/reviews", projectReviewsRoute)
 

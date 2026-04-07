@@ -49,14 +49,26 @@ export const devlogs = pgTable("project_devlogs", {
 	timeSpent: integer().notNull(), // 0 to 10h per devlog
 	totalTimeSpent: integer().notNull(), // total amount of time spent up until that log
 	content: text().notNull(),
-	attachment: text()
 })
 
-export const devlogsRelations = relations(devlogs, ({ one }) => ({
+export const devlogAttachments = pgTable("devlog_attachments", {
+	createdAt: timestamp().defaultNow().notNull(),
+	spaceFileId: uuid().notNull().primaryKey(), //no auto-gen
+	devlogId: uuid().references(() => devlogs.id, { onDelete: "cascade" }).notNull()
+})
+export const devlogAttachmentsRelations = relations(devlogAttachments, ({ one }) => ({
+	devlog: one(devlogs, {
+		fields: [devlogAttachments.devlogId],
+		references: [devlogs.id]
+	})
+}))
+
+export const devlogsRelations = relations(devlogs, ({ one, many }) => ({
 	project: one(projects, {
 		fields: [devlogs.projectId],
 		references: [projects.id]
-	})
+	}),
+	attachments: many(devlogAttachments)
 }))
 
 export const addresses = pgTable("addresses", {

@@ -3,10 +3,12 @@ import ProjectCard from "@client/components/ProjectCard";
 import { client } from "@client/lib/api-client";
 import { authClient } from "@client/lib/auth-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
+import { getSpaceFileURL } from "@client/lib/spaces";
 import { formatDate, secondsToFormatTime } from "@client/lib/time";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { InferResponseType } from "hono";
-import { DollarSign, Ship } from "lucide-react";
+import { ArrowLeft, ArrowRight, DollarSign, Ship } from "lucide-react";
+import { useState } from "react";
 import { Navigate, useParams } from "react-router"
 
 type DevlogResponse = InferResponseType<typeof client.api.projects[":id"]["devlogs"]["$get"]>
@@ -25,34 +27,64 @@ export function ProjectTimeline(props: ProjectTimelineProps) {
 		...props.devlogs.map(d => ({ type: "devlog" as const, createdAt: d.createdAt, data: d })),
 		...props.ships.map(s => ({ type: "ship" as const, createdAt: s.createdAt, data: s })),
 	].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+	//2c953919-4f9f-469f-a4bf-303ab059ff22
 	return (
 		<>
 
+			{props.isOwner && (
+				<Button href={`/projects/${props.projectId}/devlogs/new`} className="bg-dark-red border-egg-yellow border-5 text-egg-yellow w-fit">
+					Write Devlog
+				</Button>
+			)}
 			{items.map(item =>
 				item.type === "devlog"
 					? <DevlogCard devlog={item.data} />
 					: <ShipCard ship={item.data} />
 
 			)}
-			{props.isOwner && (
-				<Button href={`/projects/${props.projectId}/devlogs/new`} className="bg-dark-red border-egg-yellow border-5 text-egg-yellow w-fit">
-					Write Devlog
-				</Button>
-			)}
 		</>
 	)
 }
 
+export function DevlogCard({ devlog }: { devlog: Devlogs[number] }) {
 
-export function DevlogCard(props: { devlog: Devlogs[number] }) {
+	const [current, setCurrent] = useState(0);
+	const next = () => setCurrent((prev) => (prev + 1 + devlog.attachments.length) % devlog.attachments.length)
+	const prev = () => setCurrent((prev) => (prev - 1 + devlog.attachments.length) % devlog.attachments.length)
 	return (
 		<div className="p-4 border-egg-yellow bg-dark-red border-5 rounded-4xl text-beige w-1/2 text-balance">
 
+			{devlog.attachments.length != 0 && (
+				<div key={current} className="relative group rounded-lg overflow-hidden border border-gray-200 w-full">
+					<img
+						src={getSpaceFileURL(devlog.attachments[current]!.spaceFileId)}
+						className={"w-full aspect-auto object-fill"}
+					/>
+
+					{devlog.attachments.length > 1 && (
+						<>
+							<button onClick={next}
+								className="absolute top-1/2 right-1.5 items-center flex justify-center p-2 rounded-xl bg-black/60 text-egg-yellow opacity-0 group-hover:opacity-100 transition-opacity"
+							>
+								<ArrowRight />
+							</button>
+
+							<button onClick={prev}
+								className="absolute top-1/2 left-1.5 items-center flex justify-center p-2 rounded-xl bg-black/60 text-egg-yellow opacity-0 group-hover:opacity-100 transition-opacity"
+							>
+								<ArrowLeft />
+							</button>
+						</>
+					)}
+				</div>
+
+			)}
+
 			<p className="w-fit text-wrap">
-				{props.devlog.content}
+				{devlog.content}
 			</p>
 
-			<span className="text-xl">logged {secondsToFormatTime(props.devlog.timeSpent)} on {formatDate(props.devlog.createdAt)}</span>
+			<span className="text-xl">logged {secondsToFormatTime(devlog.timeSpent)} on {formatDate(devlog.createdAt)}</span>
 
 		</div>
 
@@ -166,18 +198,19 @@ export default function ProjectDetails() {
 			)
 			}
 			{isOwner() && (
-				<div>
+				<div className="flex flex-row gap-4">
 					<Button onClick={() => {
 						shipProject()
-					}}><Ship /></Button>
-					<Button onClick={() => {
-
-					}} disabled><DollarSign /></Button>
+					}} className="border-dark-red border-4 rounded-4xl"><Ship /></Button>
+					{ships?.find((s) => s.state == "pre-payout") && (
+						<Button onClick={() => {
+						}} className="border-dark-red border-4 rounded-4xl"><DollarSign /></Button>
+					)}
 				</div>
 			)}
 			{devlogs && ships && (
 				<div className="w-full overflow-x-hidden flex flex-col gap-4 items-center">
-					<ProjectTimeline projectId={projectId!} devlogs={devlogs} ships={ships} />
+					<ProjectTimeline projectId={projectId!} devlogs={devlogs} ships={ships} isOwner={isOwner()} />
 				</div>
 			)}
 
