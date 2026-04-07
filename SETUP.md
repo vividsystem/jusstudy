@@ -35,7 +35,23 @@ HACKCLUB_AUTH_CLIENT_SECRET=your_client_secret
 START_DATE=2026-04-08
 JOE_API_KEY=JOE_API_KEY
 JOE_EVENT_ID=JOE_EVENT_ID
+GRAFANA_LOKI_HOST=GRAFANA_HOST
+SPACES_URL=SPACES_HOST
+SPACES_ACC_CODE=SPACES_ACC_CODE
+SPACES_DEVLOG_ATT_SPACE_ID=ID_TO_YOUR_DEVLOG_ATTACHMENT_SPACE
 ```
+For a guide on how to setup spaces see [this](https://github.com/vividsystem/spaces/blob/master/README.md)
+Right now the web ui doesn't work because I concentrated on updating the backend to work with this instead of also updating the web. Therefore you will have to create the space via a POST request to `/api/spaces`
+It should have a body like this:
+```json
+{
+    "name": "name of your space",
+    "description": "self-explanatory",
+    "is_public": true,
+    "access_code": "a secure secret you would like to use"
+}
+```
+The request will return the space id you need for the env variable, the SPACES_ACC_CODE is the same code you supply in the reuqest
 
 ## Development
 
