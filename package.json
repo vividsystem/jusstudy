@@ -12,17 +12,17 @@
     "./shared"
   ],
   "scripts": {
-    "dev": "turbo dev",
-    "dev:client": "turbo dev --filter=client",
-    "dev:server": "turbo dev --filter=server",
-    "build": "turbo build",
-    "build:client": "turbo build --filter=client",
-    "build:server": "turbo build --filter=server",
-    "deploy:cf": "turbo build && wrangler deploy --minify",
-    "lint": "turbo lint",
-    "type-check": "turbo type-check",
-    "test": "turbo test",
-    "postinstall": "turbo build --filter=shared --filter=server"
+    "dev": "TURBO_TELEMTRY_DISABLED=1 turbo dev",
+    "dev:client": "TURBO_TELEMTRY_DISABLED=1 turbo dev --filter=client",
+    "dev:server": "TURBO_TELEMTRY_DISABLED=1 turbo dev --filter=server",
+    "build": "TURBO_TELEMTRY_DISABLED=1 turbo build",
+    "build:client": "TURBO_TELEMTRY_DISABLED=1 turbo build --filter=client",
+    "build:server": "TURBO_TELEMTRY_DISABLED=1 turbo build --filter=server",
+    "deploy:cf": "TURBO_TELEMTRY_DISABLED=1 turbo build && wrangler deploy --minify",
+    "lint": "TURBO_TELEMTRY_DISABLED=1 turbo lint",
+    "type-check": "TURBO_TELEMTRY_DISABLED=1 turbo type-check",
+    "test": "TURBO_TELEMTRY_DISABLED=1 turbo test",
+    "_postinstall": "TURBO_TELEMTRY_DISABLED=1 turbo build --filter=shared --filter=server"
   },
   "keywords": [
     "bun",

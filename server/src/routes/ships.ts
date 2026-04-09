@@ -1,4 +1,3 @@
-import type { auth } from "@server/auth";
 import db from "@server/db";
 import { devlogs, hackatimeProjectLinks, projects, projectShips, projectStats } from "@server/db/schema";
 import { desc, eq, getTableColumns } from "drizzle-orm";

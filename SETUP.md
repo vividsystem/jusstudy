@@ -90,8 +90,11 @@ bun run build:server  # Build the Hono backend
 ## Databases
 You can use drizzle-kit to migrate the db. the `push` command probably wont work
 
-### Deployment
-#### Cloudflare
+## Deployment
+### Docker
+The `server/.env` variables still have to be set.
+`sudo docker compose up backend --build -d`
+### Cloudflare
 1. Do this
 ```bash
 openssl rand -base64 32 | bunx wrangler secret put BETTER_AUTH_SECRET

@@ -1,41 +1,19 @@
 services:
-  frontend-dev:
+  backend:
     build:
-      context: ./client
-      dockerfile: Dockerfile
-    ports:
-      - "8080:5173"
-    volumes:
-      - .:/app
-    environment:
-      - NODE_ENV=development
-    networks:
-      - public
-    depends_on:
-      - backend-dev
-
-  backend-dev:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: ./server/Dockerfile
     ports: 
       - "3000:3000"
+    env_file: "./server/.env"
     networks:
       - public
       - backend
       - observability
     depends_on:
-      - db-dev
+      - loki
+      - grafana
 
-  db-dev:
-    image: postgres:16
-    volumes:
-      - jusstudy_postgres_data:/var/lib/postgresql/data
-    env_file: ".env"
-    networks:
-      - backend
-    ports:
-      - "5432:5432"
 
   loki:
     image: grafana/loki:3.0.0
