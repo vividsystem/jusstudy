@@ -13,8 +13,18 @@ services:
     depends_on:
       - loki
       - grafana
-
-
+      - spaces
+  spaces:
+    env_file: ./server/.env # for the database_url
+    environment:
+      - UPLOAD_PATH=/data/uploads
+      - ALLOWED_ORIGINS=http://localhost:3000
+    image: vividsystem/spaces:latest
+    ports:
+      - "6570:6570"
+    networks:
+      - backend
+      - observability
   loki:
     image: grafana/loki:3.0.0
     ports:
