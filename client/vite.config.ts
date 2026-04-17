@@ -1,15 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import path from "path";
+import tsconfigPaths from "vite-tsconfig-paths"
 
 export default defineConfig({
-	plugins: [react(), tailwindcss()],
-	resolve: {
-		alias: {
-			'@server': path.resolve(__dirname, '../server/src'),
-			'@client': path.resolve(__dirname, './src'),
-			'@shared': path.resolve(__dirname, '../shared/src'),
-		},
-	},
+	plugins: [react(), tailwindcss(), tsconfigPaths()],
 });

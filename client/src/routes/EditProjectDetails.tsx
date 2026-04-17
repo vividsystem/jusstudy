@@ -6,11 +6,19 @@ import { useErrors } from "@client/lib/context/ErrorContext";
 import { projectCategoryValues, type ProjectCategories } from "@server/db/schema";
 import { UpdateProjectRequestSchema } from "@shared/validation/projects";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
 import z from "zod";
 
 export default function EditProjectDetails() {
+	const { projectId } = useParams()
+	if (!projectId) {
+		return <Navigate to={"/projects"} />
+	}
+
+	return <Page projectId={projectId} />
+}
+function Page({ projectId }: { projectId: string }) {
 	const [form, setForm] = useState<{
 		name?: string,
 		description?: string,
@@ -19,14 +27,11 @@ export default function EditProjectDetails() {
 		category?: ProjectCategories
 	}>({})
 
-	let { projectId } = useParams()
 	const navigate = useNavigate()
 	const { pushError } = useErrors()
-	if (!projectId) {
-		return <Navigate to={"/projects"} />
-	}
+	const [hackatimeProjects, setHackatimeProjects] = useState<string[]>([])
 
-	const { isPending, isSuccess, /*error,*/ data } = useQuery({
+	const { isPending, /*error,*/ data } = useQuery({
 		queryKey: ["singleProject", projectId],
 		queryFn: async () => {
 			const res = await client.api.projects[":id"].time.$get({
@@ -44,10 +49,7 @@ export default function EditProjectDetails() {
 			return data
 		}
 	})
-
-
-	const [hackatimeProjects, setHackatimeProjects] = useState<string[]>([])
-	const { isError, isSuccess: _isMutationSuccess, mutate: updateProject } = useMutation({
+	const { mutate: updateProject } = useMutation({
 		mutationFn: async () => {
 			console.log(form)
 			if (Object.values(form).some(value => value !== undefined)) {
@@ -75,8 +77,7 @@ export default function EditProjectDetails() {
 				// const data = await res.json()
 			}
 
-
-			for (let proj of hackatimeProjects) {
+			for (const proj of hackatimeProjects) {
 				await client.api.projects[":id"].link.$post({
 					param: {
 						id: projectId,
@@ -89,17 +90,6 @@ export default function EditProjectDetails() {
 		},
 	})
 
-
-
-	useEffect(() => {
-		if (isPending) {
-			console.log("pending")
-		} else if (isError) {
-			console.log("error")
-		} else if (isSuccess) {
-			console.log("success")
-		}
-	})
 	return (
 		<main className="flex flex-col items-center text-4xl text-egg-yellow w-full min-h-screen gap-16">
 

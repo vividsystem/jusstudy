@@ -21,8 +21,6 @@ const CATEGORY_META: Record<ProjectCategories, { color: string; dot: string }> =
 	"App Development": { color: "bg-violet-500/15 text-violet-300 border-violet-500/30", dot: "bg-violet-400" },
 	"Desktop App Development": { color: "bg-indigo-500/15 text-indigo-300 border-indigo-500/30", dot: "bg-indigo-400" },
 	"Game Development": { color: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30", dot: "bg-emerald-400" },
-	"Music": { color: "bg-pink-500/15 text-pink-300 border-pink-500/30", dot: "bg-pink-400" },
-	"Art": { color: "bg-orange-500/15 text-orange-300 border-orange-500/30", dot: "bg-orange-400" },
 	"PCB Design": { color: "bg-yellow-500/15 text-yellow-300 border-yellow-500/30", dot: "bg-yellow-400" },
 	"CAD": { color: "bg-teal-500/15 text-teal-300 border-teal-500/30", dot: "bg-teal-400" },
 };
@@ -35,23 +33,6 @@ const STATE_META: Record<ProjectShipStatus, { label: string; color: string; bg: 
 	"finished": { label: "Finished", color: "text-blue-400", bg: "bg-blue-400" },
 	"pre-payout": { label: "Pre-Payout", color: "text-gray-400", bg: "bg-gray-400" }
 };
-
-// function initials(name: string): string {
-// 	return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
-// }
-
-// ── Sub-components ─────────────────────────────────────────────────────────
-// function Avatar({ name, src, size = "md" }: { name: string; src: string | null | undefined; size?: "sm" | "md" }) {
-// 	const cls = size === "sm" ? "w-6 h-6 text-[10px]" : "w-8 h-8 text-xs";
-// 	if (src) {
-// 		return <img src={src} alt={name} className={`${cls} rounded-full object-cover shrink-0`} />;
-// 	}
-// 	return (
-// 		<div className={`${cls} rounded-full bg-zinc-700 flex items-center justify-center shrink-0 font-bold text-zinc-300`}>
-// 			{initials(name)}
-// 		</div>
-// 	);
-// }
 
 function LinkButton({ href, icon, label }: { href: string | null | undefined; icon: React.ReactNode; label: string }) {
 	if (!href) return null;
@@ -157,7 +138,7 @@ function TimelineEntry({
 }
 
 // ── Review Form ────────────────────────────────────────────────────────────
-function ReviewForm({ reviewType, shipId }: { reviewType: ReviewType, shipId: string }) {
+function ReviewForm({ shipId }: { shipId: string }) {
 	const [passed, setPassed] = useState(false);
 	const [comment, setComment] = useState("");
 	const [note, setNotes] = useState<string | undefined>();
@@ -177,7 +158,6 @@ function ReviewForm({ reviewType, shipId }: { reviewType: ReviewType, shipId: st
 					passed,
 					comment,
 					note,
-					type: reviewType
 				}
 			})
 
@@ -326,17 +306,25 @@ function PageSkeleton() {
 
 // ── Main Page ──────────────────────────────────────────────────────────────
 export default function ProjectReview() {
+
 	const { data: session } = authClient.useSession();
 	const { id } = useParams();
-	const { pushError } = useErrors()
-
 	if (!id) {
 		return <Navigate to="/reviews" />;
 	}
-
 	if (session == null || session.user.type == "participant") {
 		return <Navigate to="/" />;
 	}
+
+	return <Page id={id} />
+}
+interface PageProps {
+	id: string,
+}
+function Page({ id }: PageProps) {
+
+	const { pushError } = useErrors()
+
 
 	const { data, isPending } = useQuery({
 		queryKey: ["review", id],
@@ -488,7 +476,7 @@ export default function ProjectReview() {
 							<div>
 								{reviews.map((r, i) => (
 									<TimelineEntry
-										key={r.id}
+										key={r.shipId}
 										review={r}
 										{/*isCurrentUser={r.reviewerName === session.user.name}*/...{}}
 										isLast={i === reviews.length - 1}
@@ -507,7 +495,7 @@ export default function ProjectReview() {
 								<p className="text-xs text-zinc-500 mb-5">
 									Your decision will affect this project's status.
 								</p>
-								<ReviewForm reviewType={ship.state as unknown as ReviewType} shipId={ship.id} />
+								<ReviewForm shipId={ship.id} />
 							</div>
 						</div>
 					</div>

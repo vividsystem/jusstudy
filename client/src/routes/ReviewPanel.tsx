@@ -10,13 +10,6 @@ import { secondsToFormatTime } from "@client/lib/time";
 import { clientURL } from "@client/lib/urls";
 import Button from "@client/components/Button";
 
-type ProjectShipState =
-	| "pre-initial"
-	| "voting"
-	| "pre-fraud"
-	| "failed"
-	| "finished";
-
 type PendingReviewResponse = InferResponseType<
 	typeof client.api.reviews.pending["$get"]
 >
@@ -28,8 +21,6 @@ const CATEGORY_META: Record<ProjectCategories, { color: string; dot: string }> =
 	"App Development": { color: "bg-violet-500/15 text-violet-300 border-violet-500/30", dot: "bg-violet-400" },
 	"Desktop App Development": { color: "bg-indigo-500/15 text-indigo-300 border-indigo-500/30", dot: "bg-indigo-400" },
 	"Game Development": { color: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30", dot: "bg-emerald-400" },
-	"Music": { color: "bg-pink-500/15 text-pink-300 border-pink-500/30", dot: "bg-pink-400" },
-	"Art": { color: "bg-orange-500/15 text-orange-300 border-orange-500/30", dot: "bg-orange-400" },
 	"PCB Design": { color: "bg-yellow-500/15 text-yellow-300 border-yellow-500/30", dot: "bg-yellow-400" },
 	"CAD": { color: "bg-teal-500/15 text-teal-300 border-teal-500/30", dot: "bg-teal-400" },
 };
@@ -37,6 +28,7 @@ const CATEGORY_META: Record<ProjectCategories, { color: string; dot: string }> =
 const STATE_META: Record<ProjectShipStatus, { label: string; color: string; bg: string }> = {
 	"voting": { label: "Voting", color: "text-emerald-400", bg: "bg-emerald-400" },
 	"pre-initial": { label: "T1", color: "text-zinc-400", bg: "bg-zinc-400" },
+	"pre-payout": { label: "PP", color: "text-zinc-400", bg: "bg-zinc-400" },
 	"pre-fraud": { label: "Fraud", color: "text-amber-400", bg: "bg-amber-400" },
 	"failed": { label: "Failed", color: "text-red-400", bg: "bg-red-400" },
 	"finished": { label: "Finished", color: "text-blue-400", bg: "bg-blue-400" },
@@ -84,7 +76,7 @@ function CategoryBadge({ category }: { category: ProjectCategories }) {
 	);
 }
 
-function StatePill({ state }: { state: ProjectShipState }) {
+function StatePill({ state }: { state: ProjectShipStatus }) {
 	const meta = STATE_META[state];
 	return (
 		<span className={`inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase ${meta.color}`}>
@@ -113,7 +105,7 @@ function LinkChip({ href, label, icon }: { href: string | null; label: string; i
 function SkeletonCard() {
 	return (
 		<div className="flex flex-col bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-			<div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+			<div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent" />
 			<div className="flex flex-col gap-4 p-5 animate-pulse">
 				<div className="flex items-start justify-between gap-3">
 					<div className="space-y-2 flex-1">
@@ -150,7 +142,7 @@ function ProjectCard({
 
 	return (
 		<div className="group relative flex flex-col bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-black/50 hover:-translate-y-0.5">
-			<div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+			<div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
 			<div className="flex flex-col gap-4 p-5 flex-1">
 				{/* Header */}
@@ -288,7 +280,7 @@ function ReviewPortalContent({
 	}, [pendingProjects]);
 
 	const stateCounts = useMemo(() => {
-		const counts: Partial<Record<ProjectShipState, number>> = {};
+		const counts: Partial<Record<ProjectShipStatus, number>> = {};
 		pendingProjects.forEach(({ project_ship: ship }) => {
 			counts[ship.state] = (counts[ship.state] ?? 0) + 1;
 		});
@@ -398,9 +390,9 @@ function ReviewPortalContent({
 					<div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
 						<span className="shrink-0 text-xs text-zinc-600 font-medium mr-1">Stage:</span>
 						{ALL_STATES.map((s) => {
-							const count = s === "All" ? pendingProjects.length : (stateCounts[s as ProjectShipState] ?? 0);
+							const count = s === "All" ? pendingProjects.length : (stateCounts[s as ProjectShipStatus] ?? 0);
 							if (s !== "All" && count === 0) return null;
-							const meta = s !== "All" ? STATE_META[s as ProjectShipState] : null;
+							const meta = s !== "All" ? STATE_META[s as ProjectShipStatus] : null;
 							return (
 								<FilterPill
 									key={s}

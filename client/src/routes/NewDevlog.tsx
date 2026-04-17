@@ -4,17 +4,21 @@ import { client } from "@client/lib/api-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
 import { NewDevlogRequestSchema } from "@shared/validation/devlogs"
 import { useMutation } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Navigate, useNavigate, useParams } from "react-router"
 import z from "zod"
 
 export default function NewDevlog() {
-	const navigate = useNavigate()
 	const { projectId } = useParams()
-	const { pushError } = useErrors()
 	if (!projectId) {
 		return <Navigate to={"/projects"} />
 	}
+	return <Page projectId={projectId} />
+}
+
+function Page({ projectId }: { projectId: string }) {
+	const navigate = useNavigate()
+	const { pushError } = useErrors()
 
 	const [images, setImages] = useState<File[]>([])
 	const [form, setForm] = useState<{

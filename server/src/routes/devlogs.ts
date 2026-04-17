@@ -27,7 +27,6 @@ export const devlogsRoute = new Hono<Env>()
 		),
 		async (c) => {
 			const user = c.get("user");
-			const logger = c.get("logger")
 			if (!user) return c.json({ message: "Unauthorized" }, 401)
 			const id = c.req.param("id")
 			const [devlog] = await db

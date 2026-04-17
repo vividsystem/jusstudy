@@ -41,7 +41,7 @@ export default function NewProjectPage() {
 
 			const data = await res.json()
 
-			for (let proj of hackatimeProjects) {
+			for (const proj of hackatimeProjects) {
 				await client.api.projects[":id"].link.$post({
 					param: {
 						id: data.project.id,

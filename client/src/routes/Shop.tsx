@@ -4,11 +4,16 @@ import { authClient } from "@client/lib/auth-client"
 import { useQuery } from "@tanstack/react-query"
 import { Navigate } from "react-router"
 
+
 export default function Shop() {
 	const { data } = authClient.useSession()
 	if (data == null) {
 		return <Navigate to={"/"} />
 	}
+
+	return <Page userCoins={data.user.coins} />
+}
+function Page({ userCoins }: { userCoins: number }) {
 	const { isPending, /*error,*/ data: shopItems } = useQuery({
 		queryKey: ["shopItems"],
 		queryFn: async () => {
@@ -21,7 +26,7 @@ export default function Shop() {
 		<main className="w-full min-h-screen p-4">
 			<div className="flex flex-row py-4 justify-between">
 				<h1 className="text-9xl">Shop</h1>
-				<span>{data.user.coins} Books</span>
+				<span>{userCoins} Books</span>
 			</div>
 			{isPending && (
 				<p>Loading shop items</p>

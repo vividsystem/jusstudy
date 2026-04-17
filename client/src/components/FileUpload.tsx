@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Trash, Upload, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Trash, Upload } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { MAX_FILE_SIZE } from "@shared/vars"
 
@@ -79,7 +79,7 @@ export function ImageUpload(props: ImageUploadProps) {
 				e.target.value = "";
 			}
 		},
-		[addFiles]
+		[addFiles, props]
 	);
 
 	const [current, setCurrent] = useState(0);

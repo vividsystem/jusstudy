@@ -1,4 +1,3 @@
-import type { auth } from "@server/auth";
 import db from "@server/db";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator"

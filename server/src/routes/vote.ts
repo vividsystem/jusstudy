@@ -1,5 +1,4 @@
 import { zValidator } from "@hono/zod-validator";
-import type { auth } from "@server/auth";
 import db from "@server/db";
 import { hackatimeProjectLinks, joeFraudReviews, projects, projectShips } from "@server/db/schema/main";
 import { projectStats, ratings, userStats, votingRoundProjects, votingRounds } from "@server/db/schema/voting";

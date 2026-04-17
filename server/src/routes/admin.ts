@@ -1,4 +1,3 @@
-import type { auth } from "@server/auth";
 import db from "@server/db";
 import { projectShips } from "@server/db/schema";
 import { avg, count, max, min, sum } from "drizzle-orm";

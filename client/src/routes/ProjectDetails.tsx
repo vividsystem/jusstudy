@@ -102,12 +102,16 @@ export function ShipCard({ ship }: { ship: Ships[number] }) {
 }
 
 
+
 export default function ProjectDetails() {
 	const { projectId } = useParams()
-	const { pushError } = useErrors()
 	if (!projectId) {
 		return <Navigate to={"/projects"} />
 	}
+	return <Page projectId={projectId} />
+}
+function Page({ projectId }: { projectId: string }) {
+	const { pushError } = useErrors()
 
 	const { data: sessionDetails } = authClient.useSession()
 	const { /*isPending, error,*/ data: project } = useQuery({
