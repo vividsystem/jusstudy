@@ -41,19 +41,6 @@ JOE_EVENT_ID=JOE_EVENT_ID
 GRAFANA_LOKI_HOST=GRAFANA_HOST
 HACKCLUB_CDN_API_KEY=YOUR_API_KEY
 ```
-For a guide on how to setup spaces see [this](https://github.com/vividsystem/spaces/blob/master/README.md)
-The origins you set up in the env file of spaces should point to the backend of this. not the frontend. i would also recommend not allowing any routes trough to the internet other than `/api/files/:space_id/download` as otherwise random users could safe stuff on your system.
-Right now the web ui doesn't work because I concentrated on updating the backend to work with this instead of also updating the web. Therefore you will have to create the space via a POST request to `/api/spaces`
-It should have a body like this:
-```json
-{
-    "name": "name of your space",
-    "description": "self-explanatory",
-    "is_public": true,
-    "access_code": "a secure secret you would like to use"
-}
-```
-The request will return the space id you need for the env variable, the SPACES_ACC_CODE is the same code you supply in the reuqest
 
 4. Build
 ```bash

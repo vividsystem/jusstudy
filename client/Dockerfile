@@ -3,27 +3,29 @@ FROM oven/bun:1-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json bun.lockb* ./
+COPY package.json bun.lock* tsconfig.json turbo.json ./
 
 COPY shared/package.json   ./shared/package.json
-COPY frontend/package.json ./frontend/package.json
+COPY client/package.json ./client/package.json
+COPY server/package.json ./server/package.json
 
 RUN bun install --frozen-lockfile
 
 COPY shared   ./shared
-COPY frontend ./frontend
+COPY client ./client
+COPY server ./server
 
-RUN cd frontend && bun run build
+RUN cd client && bun run build
 
 
 # ── Runtime stage ──────────────────────────────────────────────────────────────
-FROM dhi.io/nginx AS runtime
+FROM nginx:stable-alpine3.23 AS runtime
 
 # React Router uses client-side routing — all requests must fall back to
 # index.html so the router can handle the path, otherwise a hard refresh
 # on /some/route returns a 404 from nginx.
-COPY --from=builder /app/frontend/dist /usr/share/nginx/html
+COPY --from=builder /app/client/dist /usr/share/nginx/html
 
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80

@@ -3,8 +3,8 @@ services:
     build:
       context: ./
       dockerfile: ./server/Dockerfile
-    ports: 
-      - "3000:3000"
+    expose:
+      - "3000"
     env_file: "./server/.env"
     networks:
       - public
@@ -14,6 +14,17 @@ services:
       - loki
       - grafana
       # - spaces
+  frontend:
+    build:
+      context: ./
+      dockerfile: ./client/Dockerfile
+    ports:
+      - "80:80"
+    env_file: "./client/.env"
+    networks: 
+      - public
+    depends_on:
+      - backend
   # spaces:
   #   env_file: ./server/.env # for the database_url
   #   environment:
