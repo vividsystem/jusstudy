@@ -19,7 +19,7 @@ services:
       context: ./
       dockerfile: ./client/Dockerfile
     ports:
-      - "80:80"
+      - "3500:3500"
     env_file: "./client/.env"
     networks: 
       - public
