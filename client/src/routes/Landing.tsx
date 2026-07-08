@@ -58,27 +58,7 @@ const LandingContent = () => (
 	</>
 );
 
-const SponsorsBanner = () => (
-	<div className="bg-dark-brown p-20">
-		<h2 className="text-base sm:text-2xl lg:text-4xl 2xl:text-6xl font-bold title-font text-[#FFE6A7] leading-tight">
-			Thanks to our sponsors!!!
-		</h2>
-		<div className="flex flex-row justify-start p-4 gap-4">
-			<a href="https://hackclub.com" className="flex flex-col items-center justify-between gap-4">
-				<div className="flex items-center justify-center h-full">
-					<img src="https://assets.hackclub.com/icon-rounded.svg" className="" />
-				</div>
-				<h3 className="2xl:text-6xl text-light-brown">Hackclub</h3>
-			</a>
-			<a href="https://codecrafters.io" className="flex flex-col items-center justify-between gap-4">
-				<div className="flex items-center justify-center h-full">
-					<img src="/reward/codecrafters.svg" className="lg:size-64 md:size-32 text-white" />
-				</div>
-				<h3 className="2xl:text-6xl text-light-brown">CodeCrafters</h3>
-			</a>
-		</div>
-	</div>
-);
+
 const rewardItemsWithRotations = rewardItems.map((item) => {
 	const magnitude = Math.floor(Math.random() * 5) + 2;
 	const sign = Math.random() < 0.5 ? -1 : 1;
@@ -163,9 +143,15 @@ function Footer() {
 	return (
 		<footer className="relative h-fit w-full">
 			<img src="/ColorBanner_5.svg" alt="Banner" className="w-full h-auto block z-10 top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} />
-			<div className="absolute z-10 flex flex-col justify-center px-12 w-full h-full inset-0 py-8">
-				<h2 className="text-white lg:text-5xl py-2">Our staff</h2>
-				<img src="/signatures.png" className="max-h-1/2 w-auto object-contain self-start" />
+			<div className='flex justify-center py-55 z-20 w-full h-full inset-0 absolute'>
+			<h2 className="text-white lg:text-5xl py-2">Our staff</h2>
+			</div>
+			<div className="absolute z-10 flex flex-row justify-center px-12 w-full h-full inset-0 gap-20 py-75">
+				<img src="/signatures/Rishaan.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+				<img src="/signatures/nok.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+				<img src="/signatures/michael.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+				<img src="/signatures/r.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+				<img src="/signatures/vivid.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
 			</div>
 		</footer>
 	)
@@ -203,7 +189,6 @@ function Landing() {
 			</div>
 
 			<RewardCarousel />
-			<SponsorsBanner />
 			<FAQ />
 			<Footer />
 		</div >
