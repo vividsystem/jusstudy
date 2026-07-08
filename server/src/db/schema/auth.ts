@@ -32,7 +32,7 @@ export const users = pgTable("users", {
 	coins: integer().notNull().default(0),
 	searchVector: tsvector("search_vector")
 		.generatedAlwaysAs(
-			() => sql`to_tsvector('english', coalesce(name, '') || ' ' || coalesce(email, '') || ' ' || coalesce(id::text, '')) || ' ' || coalesce(slack_id, '') || ' ' || coalesce(nickname, '')`
+			() => sql`to_tsvector('english',name || email || id || slack_id || nickname)`
 		),
 },
 	(table) => [
