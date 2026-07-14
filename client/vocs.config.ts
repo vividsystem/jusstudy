@@ -48,8 +48,8 @@ export default defineConfig({
 					link: "/rewards/first-project"
 				},
 				{
-					text: "Further Ressources",
-					link: "/rewards/ressources"
+					text: "Further Resources",
+					link: "/rewards/resources"
 				}
 			]
 		},
