@@ -146,12 +146,13 @@ function Footer() {
 			<div className='flex justify-center py-55 z-20 w-full h-full inset-0 absolute'>
 			<h2 className="text-white lg:text-5xl py-2">Our staff</h2>
 			</div>
-			<div className="absolute z-10 flex flex-row justify-center px-12 w-full h-full inset-0 gap-20 py-75">
+			<div className="absolute z-10 flex flex-row justify-center px-12 w-full h-full inset-0 gap-7 py-75">
 				<img src="/signatures/Rishaan.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
 				<img src="/signatures/nok.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
 				<img src="/signatures/michael.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
 				<img src="/signatures/r.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
 				<img src="/signatures/vivid.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+				<img src="/signatures/aoishik.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
 			</div>
 		</footer>
 	)
