@@ -1,5 +1,8 @@
+import BugDialog from "@client/components/BugDialog";
 import UserIcon from "@client/components/UserIcon";
 import { authClient } from "@client/lib/auth-client";
+import { Bug } from "lucide-react";
+import { useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
 
 export function Link(props: { name: string, route: string, className: string }) {
@@ -12,6 +15,7 @@ export function Link(props: { name: string, route: string, className: string }) 
 
 export default function AppLayout() {
 	const { data } = authClient.useSession()
+	const [showBugDialog, setShowBugDialog] = useState(false)
 	if (data == null) {
 		return <Navigate to={"/"} />
 	}
@@ -33,7 +37,11 @@ export default function AppLayout() {
 						<Link className="" route="/admin" name="Admin" />
 					)}
 				</ul>
-				<UserIcon />
+				<div className="flex flex-row gap-8 items-center">
+					<UserIcon />
+					<BugDialog show={showBugDialog} setShow={setShowBugDialog} />
+					<Bug className="size-8 animate-pulse" onClick={() => setShowBugDialog(true)} />
+				</div>
 			</header>
 			<Outlet />
 		</div>
