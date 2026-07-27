@@ -1,5 +1,4 @@
 import { X } from "lucide-react"
-import Button from "./Button"
 
 export default function BugDialog(props: {
 	show: boolean
