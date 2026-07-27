@@ -68,7 +68,7 @@ class HackatimeClient {
 		})
 		const res = await fetch(url, {
 			headers: {
-				"authorization": `Bearer ${this.apiKey}`
+				"Authorization": `Bearer ${this.apiKey}`
 			}
 		})
 		const contentType = res.headers.get("content-type")

@@ -2,7 +2,7 @@ import z from "zod"
 
 export const TimeableSchema = z.object({
 	name: z.string().nonempty(),
-	total_seconds: z.number().positive(),
+	total_seconds: z.number().nonnegative(),
 	text: z.string().nonempty(), // human readable time spend
 	hours: z.number().nonnegative(),
 	minutes: z.number().nonnegative(),
@@ -40,8 +40,8 @@ export const StatsSchema = z.object({
 	end: z.iso.datetime(),
 	range: z.string().nonempty(),
 	human_readable_range: z.string().nonempty(),
-	total_seconds: z.number().positive(),
-	daily_average: z.number().positive(),
+	total_seconds: z.number().nonnegative(),
+	daily_average: z.number().nonnegative(),
 	human_readable_total: z.string(),
 	human_readable_daily_average: z.string().nonempty(),
 	languages: z.optional(z.array(LanguageSchema)),

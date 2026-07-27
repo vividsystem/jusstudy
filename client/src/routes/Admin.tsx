@@ -1,7 +1,7 @@
+import Button from "@client/components/Button"
 import { Input } from "@client/components/Input"
 import { client } from "@client/lib/api-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
-import { secondsToFormatTime } from "@client/lib/time"
 import { useUserSearch } from "@client/lib/userSearch"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
@@ -32,23 +32,9 @@ export default function AdminPage() {
 	}
 	return (
 		<main className="w-full min-h-screen p-4 text-4xl flex flex-col gap-4">
-			<div className="flex flex-row w-full gap-4">
-				<div className="p-4 bg-egg-yellow text-light-brown border-dark-red border-4 w-fit rounded-4xl h-fit">
-					<h2 className="bold text-6xl text-dark-brown">Payout</h2>
-					<p>Total book payout: {stats.payoutsGiven || 0}</p>
-					<p>Average payout per ship: {stats.avgPayout || 0}</p>
-					<p>Biggest payout: {stats.maxPayout || 0}</p>
-					<p>Smallest payout: {stats.minPayout || 0}</p>
-				</div>
-				<div className="p-4 bg-egg-yellow text-light-brown border-dark-red border-4 w-fit rounded-4xl h-fit">
-					<h2 className="bold text-6xl text-dark-brown">Ships</h2>
-					<p>Number of ships made: {stats.shipsMade} ({stats.finishedShips} finished; {stats.failedShips} failed)</p>
-					<p>Average (logged) time per ship: {secondsToFormatTime(stats.avgLoggedTimePerShip)}</p>
-					<p>In voting: {stats.shipsInVoting}</p>
-					<p>Awaiting normal review: {stats.shipsAwaitingNormalReview}</p>
-					<p>Awaiting fraud review: {stats.shipsAwaitingFraudReview}</p>
-					<p>Awaiting payout review: {stats.shipsAwaitingPayout}</p>
-				</div>
+			<div className="flex flex-row gap-4">
+				<Button className="w-fit border-dark-red border-4 bg-egg-yellow" href="/admin/stats">go to stats..</Button>
+				<Button className="w-fit border-dark-red border-4 bg-egg-yellow" href="/admin/shop">go to shop..</Button>
 			</div>
 
 			<div className="p-4 bg-egg-yellow text-light-brown border-dark-red border-4 w-fit rounded-4xl h-fit">
@@ -73,6 +59,6 @@ export default function AdminPage() {
 				</div>
 			</div>
 
-		</main>
+		</main >
 	)
 }

@@ -4,7 +4,7 @@ import AppLayout from "./routes/AppLayout";
 import Projects from "./routes/Projects";
 import Onboarding from "./routes/Onboarding";
 import Home from "./routes/Home";
-import PrivateRoute from "./routes/PrivateRoute";
+import PrivateRoute, { AdminRoute } from "./routes/PrivateRoute";
 import NewProjectPage from "./routes/NewProject";
 import ProjectDetails from "./routes/ProjectDetails";
 import EditProjectDetails from "./routes/EditProjectDetails";
@@ -20,6 +20,10 @@ import VotePage from "./routes/Vote";
 import { ErrorProvider } from "./lib/context/ErrorContext";
 import RankingPage from "./routes/Ranking";
 import AdminPage from "./routes/Admin";
+import AdminStatsPage from "./routes/AdminStats";
+import AdminShopPage from "./routes/AdminShopPage";
+import EditShopItemPage from "./routes/EditShopItemPage";
+import AddShopItemPage from "./routes/AddShopItemPage";
 // import RSVP from "./routes/RSVP";
 
 function App() {
@@ -54,8 +58,14 @@ function App() {
 							<Route path="/reviews" element={<ReviewPanel />} />
 							<Route path="/reviews/:id" element={<ProjectReview />} />
 							<Route path="/rankings" element={<RankingPage />} />
-							<Route path="/admin" element={<AdminPage />} />
-							<Route path="/admin/user-history/:id" element={<AdminPage />} />
+							<Route element={<AdminRoute />}>
+								<Route path="/admin" element={<AdminPage />} />
+								<Route path="/admin/stats" element={<AdminStatsPage />} />
+								<Route path="/admin/user-history/:id" element={<AdminPage />} />
+								<Route path="/admin/shop" element={<AdminShopPage />} />
+								<Route path="/admin/shop/new" element={<AddShopItemPage />} />
+								<Route path="/admin/shop/item/:id/edit" element={<EditShopItemPage />} />
+							</Route>
 						</Route>
 					</Route>
 				</Routes>
