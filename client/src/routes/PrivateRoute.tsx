@@ -17,4 +17,20 @@ const PrivateRoute: React.FC = () => {
 		<Navigate to="/" replace state={{ from: location }} />
 	);
 };
+export const AdminRoute: React.FC = () => {
+	const {
+		data: session,
+		isPending,
+	} = authClient.useSession();
+	const location = useLocation();
+
+	if (isPending) {
+		return <div>loading...</div>
+	}
+	return session && session.user.type == "admin" ? (
+		<Outlet />
+	) : (
+		<Navigate to="/" replace state={{ from: location }} />
+	);
+};
 export default PrivateRoute

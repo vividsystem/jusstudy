@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { NewShopItemRequest, PlaceOrderRequest } from "@shared/validation/shop"
+import { NewShopItemRequest, PlaceOrderRequest, UpdateShopItemRequest } from "@shared/validation/shop"
 import db from "@server/db";
 import { addresses, shopItems, shopOrders, users } from "@server/db/schema";
 import { asc, eq, getTableColumns } from "drizzle-orm";
@@ -39,6 +39,39 @@ export const shopRoute = new Hono<Env>()
 		}
 
 		return c.json({ item: item[0]! }, 200)
+	})
+	.post("/items/:itemId/retire", async (c) => {
+		const user = c.get("user")
+		if (!user) return c.json({ message: "Unauthorized" }, 401)
+		if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
+
+		const itemId = c.req.param("itemId")
+
+
+		const [item] = await db.select().from(shopItems).where(eq(shopItems.id, itemId))
+		if (!item) {
+			return c.json({ message: "Item not found" }, 404)
+		}
+
+		await db.update(shopItems).set({ quantity: 0 }).where(eq(shopItems.id, itemId))
+
+		return c.json({ message: "Shop successfully taken out of the shop" }, 200)
+	})
+
+	.patch("/items/:itemId", zValidator("json", UpdateShopItemRequest), async (c) => {
+		const user = c.get("user")
+		if (!user) return c.json({ message: "Unauthorized" }, 401)
+		if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
+
+		const itemId = c.req.param("itemId")
+		const data = c.req.valid("json")
+
+		const [item] = await db.update(shopItems).set({ ...data }).where(eq(shopItems.id, itemId)).returning()
+		if (!item) {
+			return c.json({ message: "Something went wrong" }, 500)
+		}
+
+		return c.json({ message: "Item updated", item: item }, 200)
 	})
 	.post("/orders", zValidator("json", PlaceOrderRequest), async (c) => {
 		const user = c.get("user")

@@ -8,6 +8,11 @@ export const NewShopItemRequest = z.object({
 	image: z.url().optional()
 })
 
+export const UpdateShopItemRequest = NewShopItemRequest.extend({
+	quantity: z.number().positive().nullable(),
+	image: z.url().nullable()
+}).partial().strip()
+
 export const PlaceOrderRequest = z.object({
 	itemId: z.uuid().nonempty(),
 	quantity: z.number().positive(),

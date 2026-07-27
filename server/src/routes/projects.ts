@@ -29,7 +29,7 @@ export const projectsRoute = new Hono<Env>()
 
 		const hackatimeRes = await sortedUserProjectTimes(user.slackId, res)
 		if (!hackatimeRes.ok) {
-			logger.error({ userId: user.id })
+			logger.error({ message: hackatimeRes.error, userId: user.id })
 			return c.json({ message: "Something went wrong" }, 500)
 		}
 
