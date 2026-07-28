@@ -1,7 +1,8 @@
 import { relations, sql } from "drizzle-orm";
 import { text, timestamp, boolean, index, pgTable, integer, pgEnum, customType } from "drizzle-orm/pg-core";
-import { addresses, projectReviews, shopOrders } from "./main";
+import { addresses, projectReviews } from "./main";
 import { userStats } from "./voting";
+import { shopOrders } from "./shop";
 
 
 const tsvector = customType<{ data: string }>({
