@@ -1,6 +1,7 @@
 import { boolean, integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 import { relations } from "drizzle-orm";
+import { shopOrders } from "./shop";
 
 export const projectCategoryValues = ["CAD", "Game Development", "Web Development", "PCB Design", "App Development", "Desktop App Development"] as const
 export const categoryEnum = pgEnum("category", projectCategoryValues)
@@ -92,47 +93,6 @@ export const addressesRelations = relations(addresses, ({ one, many }) => ({
 		references: [users.id]
 	}),
 	orders: many(shopOrders)
-}))
-
-export const shopItems = pgTable("shop_items", {
-	id: uuid().defaultRandom().primaryKey(),
-	createdAt: timestamp().defaultNow().notNull(),
-	quantity: integer(), // null means unlimited
-	name: text().notNull(),
-	description: text().notNull(),
-	price: integer().notNull(),
-	image: text(),
-})
-
-export const shopItemRelations = relations(shopItems, ({ many }) => ({
-	orders: many(shopOrders)
-}))
-
-export const shopOrders = pgTable("shop_orders", {
-	id: uuid().defaultRandom().primaryKey(),
-	placedAt: timestamp().defaultNow().notNull(),
-	fulfilledAt: timestamp(),
-	itemId: uuid().references(() => shopItems.id).notNull(),
-	quantity: integer().notNull(),
-	addressId: uuid().references(() => addresses.id).notNull(), // address also contains buyer id
-	trackingId: text(),
-	orderNotes: text(),
-	userId: text().references(() => users.id).notNull()
-})
-
-export const shopOrderRelations = relations(shopOrders, ({ one }) => ({
-	item: one(shopItems, {
-		fields: [shopOrders.itemId],
-		references: [shopItems.id]
-	}),
-	address: one(addresses, {
-		fields: [shopOrders.addressId],
-		references: [addresses.id]
-	}),
-	user: one(users, {
-		fields: [shopOrders.userId],
-		references: [users.id]
-	})
 }))
 
 export const projectReviews = pgTable("project_reviews", {

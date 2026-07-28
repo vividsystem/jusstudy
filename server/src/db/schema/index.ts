@@ -1,3 +1,4 @@
 export * from "./main"
 export * from "./auth"
 export * from "./voting"
+export * from "./shop"
