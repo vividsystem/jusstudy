@@ -9,6 +9,7 @@ import { Clock, PieChart } from "lucide-react";
 import { useState } from "react";
 import { Navigate, useParams } from "react-router";
 import { DevlogCard } from "./ProjectDetails";
+import { secondsToFormatTime } from "@client/lib/time";
 
 
 export function CharacterSkeleton() {
@@ -171,7 +172,7 @@ function Page(props: { id: string }) {
 
 	return (
 		<main className="p-4 w-full min-h-screen flex flex-col items-center gap-4">
-			{userPending ? <UserProfileSkeleton /> : <UserProfileCard user={user} stats={stats} />}
+			{userPending ? <UserProfileSkeleton /> : <UserProfileCard user={user} stats={stats} devlogs={devlogs} />}
 			<div className="w-full flex flex-col gap-4">
 				<div className="flex flex-row gap-4 text-egg-yellow text-3xl w-full items-center justify-start">
 					<Button onClick={() => setShowDevlogs(true)} className={`${showDevlogs ? "bg-dark-red border-egg-yellow" : "bg-dark-brown border-light-brown"} border-4`}>Devlogs</Button>
@@ -233,9 +234,10 @@ function ProjectsGrid({ projects }: ProjectsGridProps) {
 interface UserProfileCardProps {
 	user: Extract<InferResponseType<typeof client.api.users[":id"]["$get"]>, { user: unknown }>["user"]
 	stats?: Extract<InferResponseType<typeof client.api.users[":id"]["stats"]["$get"]>, { stats: unknown }>["stats"]
+	devlogs?: Extract<InferResponseType<typeof client.api.users[":id"]["devlogs"]["$get"]>, { devlogs: unknown }>["devlogs"]
 }
 
-function UserProfileCard({ user, stats }: UserProfileCardProps) {
+function UserProfileCard({ user, stats, devlogs }: UserProfileCardProps) {
 	return (
 		<div className="p-4 flex items-center gap-4 border-4 border-dark-brown rounded-xl">
 			<div className="flex flex-col gap-4 items-center p-4">
@@ -278,7 +280,11 @@ function UserProfileCard({ user, stats }: UserProfileCardProps) {
 					<h2>Coding time</h2>
 				</div>
 				<div className="h-full items-center justify-center flex">
-					<span className="text-3xl">22h</span>
+					{devlogs ? (
+						<span className="text-3xl">{secondsToFormatTime(devlogs.reduce((acc, d) => acc + d.timeSpent, 0))}</span>
+					) : (
+						<MultiCharacterSkeleton />
+					)}
 				</div>
 			</div>
 
