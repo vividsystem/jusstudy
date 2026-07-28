@@ -1,8 +1,8 @@
+import ProjectPreviewCard from "@client/components/ProjectPreviewCard";
 import { client } from "@client/lib/api-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
-import { secondsToFormatTime } from "@client/lib/time";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Clock, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 
 
 export default function Projects() {
@@ -36,22 +36,7 @@ export default function Projects() {
 					"You don't have any projects yet"
 
 				) : ""}
-				{data?.projects.map((project) => (
-					<a href={`/projects/${project.id}`} className="p-4 border-4 bg-dark-red text-egg-yellow text-4xl rounded-4xl">
-						<h2 className="text-5xl text-beige">{project.name}</h2>
-						{project.description && (
-							<span className="line-clamp-3">{project.description}</span>
-						)}
-						<div className="flex flex-items items-center gap-4">
-							<BookOpen className="size-8" />
-							<span>0 devlogs</span>
-						</div>
-						<div className="flex flex-items items-center gap-4">
-							<Clock className="size-8" />
-							<span>{secondsToFormatTime(project.timeSpent)}</span>
-						</div>
-					</a>
-				))}
+				{data?.projects.map((p) => <ProjectPreviewCard project={p} />)}
 
 			</div>
 		</main>

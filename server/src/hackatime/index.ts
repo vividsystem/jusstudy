@@ -89,7 +89,6 @@ class HackatimeClient {
 		return parsed.data
 
 	}
-
 }
 
 

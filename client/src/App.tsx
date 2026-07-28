@@ -24,6 +24,7 @@ import AdminStatsPage from "./routes/AdminStats";
 import AdminShopPage from "./routes/AdminShopPage";
 import EditShopItemPage from "./routes/EditShopItemPage";
 import AddShopItemPage from "./routes/AddShopItemPage";
+import UserProfile from "./routes/UserProfile";
 // import RSVP from "./routes/RSVP";
 
 function App() {
@@ -54,6 +55,8 @@ function App() {
 
 							<Route path="/explore" element={<ComingSoon />} />
 							<Route path="/guides" element={<ComingSoon />} />
+
+							<Route path="/user/:id" element={<UserProfile />} />
 
 							<Route path="/reviews" element={<ReviewPanel />} />
 							<Route path="/reviews/:id" element={<ProjectReview />} />

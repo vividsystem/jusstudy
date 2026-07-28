@@ -1,5 +1,6 @@
 import Button from "@client/components/Button";
 import ProjectCard from "@client/components/ProjectCard";
+import { Avatar } from "@client/components/UserIcon";
 import { client } from "@client/lib/api-client";
 import { authClient } from "@client/lib/auth-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
@@ -18,7 +19,10 @@ type Ships = Extract<ShipResponse, { ships: unknown }>["ships"]
 interface ProjectTimelineProps {
 	devlogs: Devlogs
 	ships: Ships
-	projectId: string
+	project?: {
+		id: string
+		name: string
+	}
 	isOwner?: boolean
 }
 export function ProjectTimeline(props: ProjectTimelineProps) {
@@ -26,33 +30,61 @@ export function ProjectTimeline(props: ProjectTimelineProps) {
 		...props.devlogs.map(d => ({ type: "devlog" as const, createdAt: d.createdAt, data: d })),
 		...props.ships.map(s => ({ type: "ship" as const, createdAt: s.createdAt, data: s })),
 	].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-	//2c953919-4f9f-469f-a4bf-303ab059ff22
 	return (
 		<>
 
-			{props.isOwner && (
-				<Button href={`/projects/${props.projectId}/devlogs/new`} className="bg-dark-red border-egg-yellow border-5 text-egg-yellow w-fit">
+			{props.isOwner && props.project && (
+				<Button href={`/projects/${props.project.id}/devlogs/new`} className="bg-dark-red border-egg-yellow border-5 text-egg-yellow w-fit">
 					Write Devlog
 				</Button>
 			)}
 			{items.map(item =>
 				item.type === "devlog"
-					? <DevlogCard devlog={item.data} />
+					? <DevlogCard devlog={item.data} project={props.project} />
 					: <ShipCard ship={item.data} />
 
 			)}
 		</>
 	)
 }
-
-export function DevlogCard({ devlog }: { devlog: Devlogs[number] }) {
+interface DevlogCardProps {
+	devlog: Devlogs[number]
+	project?: {
+		id: string
+		name: string
+	}
+	user?: {
+		id: string
+		image?: string | null
+		nickname: string
+	}
+}
+export function DevlogCard({ devlog, project, user }: DevlogCardProps) {
 
 	const [current, setCurrent] = useState(0);
 	const next = () => setCurrent((prev) => (prev + 1 + devlog.attachments.length) % devlog.attachments.length)
 	const prev = () => setCurrent((prev) => (prev - 1 + devlog.attachments.length) % devlog.attachments.length)
 	return (
-		<div className="p-4 border-egg-yellow bg-dark-red border-5 rounded-4xl text-beige w-1/2 text-balance">
+		<div className="p-4 border-egg-yellow bg-dark-red border-5 rounded-4xl text-beige w-1/2 text-balance flex flex-col gap-2">
+			<div className="flex flex-col items-start text-egg-yellow">
+				<div className="flex flex-row gap-2 items-center">
+					{user && (
+						<a className="flex flex-row gap-2 items-center" href={`/user/${user.id}`}>
+							{user.image && (
+								<Avatar size={8} imageURL={user.image} />
+							)}
+							<span>{user.nickname}</span>
+						</a>
+					)}
 
+					<p>logged {secondsToFormatTime(devlog.timeSpent)} for {project ? (
+						<a className="underline underline-offset-2" href={`/projects/${project.id}`}>{project.name}</a>
+					) : (
+						<div className="bg-egg-yellow h-6 w-32 animate-pulse rounded-md inline-block"></div>
+					)}</p>
+				</div>
+				<p>on {formatDate(devlog.createdAt)}</p>
+			</div>
 			{devlog.attachments.length != 0 && (
 				<div key={current} className="relative group rounded-lg overflow-hidden border border-gray-200 w-full">
 					<img
@@ -82,8 +114,6 @@ export function DevlogCard({ devlog }: { devlog: Devlogs[number] }) {
 			<p className="w-fit text-wrap">
 				{devlog.content}
 			</p>
-
-			<span className="text-xl">logged {secondsToFormatTime(devlog.timeSpent)} on {formatDate(devlog.createdAt)}</span>
 
 		</div>
 
@@ -213,7 +243,7 @@ function Page({ projectId }: { projectId: string }) {
 			)}
 			{devlogs && ships && (
 				<div className="w-full overflow-x-hidden flex flex-col gap-4 items-center">
-					<ProjectTimeline projectId={projectId!} devlogs={devlogs} ships={ships} isOwner={isOwner()} />
+					<ProjectTimeline project={project?.project} devlogs={devlogs} ships={ships} isOwner={isOwner()} />
 				</div>
 			)}
 
