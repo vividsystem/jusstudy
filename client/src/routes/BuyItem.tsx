@@ -5,7 +5,7 @@ import { authClient } from "@client/lib/auth-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import type { InferResponseType } from "hono"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Navigate, useParams, useNavigate } from "react-router"
 
 
@@ -17,7 +17,7 @@ export default function BuyItem() {
 	const { data } = authClient.useSession()
 	const { itemId } = useParams()
 
-	const { /*isPending, /*error,*/ data: shopItem } = useQuery({
+	const { /*isPending, /*error,*/ data: item } = useQuery({
 		queryKey: ["shopItems", itemId],
 		queryFn: async () => {
 			if (!itemId) {
@@ -51,8 +51,8 @@ export default function BuyItem() {
 
 	return (
 		<main className="flex flex-col items-center p-4 w-full min-h-screen">
-			{shopItem ? (
-				<ShopItemContainer item={shopItem} userCoins={data.user.coins} />
+			{item ? (
+				<ShopItemContainer item={item} userCoins={data.user.coins} />
 			)
 				: (
 					<p>loading</p>
@@ -62,6 +62,8 @@ export default function BuyItem() {
 	)
 }
 
+
+
 interface ShopItemContainerProps {
 	item: ShopItem
 	userCoins: number
@@ -70,6 +72,24 @@ export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
 
 	const navigate = useNavigate()
 	const [quantity, setQuantity] = useState(1)
+	const [opts, setOpts] = useState<{ optionId: string, variantId: string, additionalPrice: number }[]>([])
+
+
+	const setOption = (oId: string, vId: string) => {
+		const opt = opts.find((o) => o.optionId === oId)
+		const addPrice = item.options.find((o) => o.id === oId)?.variants.find((v) => v.id === vId)?.additionalPrice
+		if (!opt) {
+			setOpts((prev) => [...prev, { optionId: oId, variantId: vId, additionalPrice: (addPrice || 0) }])
+		} else {
+			setOpts((prev) => prev.map((ov) => ov.optionId === oId ? { ...ov, variantId: vId } : ov))
+		}
+	}
+
+	const [variantPrice, setVariantPrice] = useState(0)
+	useEffect(() => {
+		setVariantPrice(opts.reduce((acc, o) => acc + o.additionalPrice, 0))
+	})
+
 	const [addressId, setAddressId] = useState("")
 	const { pushError } = useErrors()
 	const { data: addresses } = useQuery({
@@ -92,10 +112,30 @@ export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
 				pushError("Select a valid address")
 				throw new Error("Select a valid address")
 			}
+
+			if (opts.length !== item.options.length) {
+				pushError("Select variants for all options!")
+				throw new Error("Select variants for all options!")
+
+			}
+
+			const optRecord = opts.reduce((rec, opt) => {
+				rec[opt.optionId] = opt.variantId
+				return rec
+			}, {} as Record<string, string>)
+
+			if (Object.values(optRecord).some((v) => v === "")) {
+				pushError("Select variants for all options!")
+				throw new Error("Select variants for all options!")
+			}
+
+
+
 			const res = await client.api.shop.orders.$post({
 				json: {
 					itemId: item.id,
 					quantity,
+					optionVariants: optRecord,
 					addressId
 				}
 			})
@@ -117,6 +157,23 @@ export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
 				}
 				<h1 className="text-6xl text-egg-yellow">{item.name}</h1>
 				<p className="text-beige">{item.description}</p>
+
+				{item.options.map((o) => (
+					<>
+						<label htmlFor={o.id} className="text-beige">{o.name}</label>
+						<select
+							name={o.id}
+							className="border border-beige rounded-sm p-1 text-beige"
+							onChange={(ev) => setOption(o.id, ev.currentTarget.value)}
+						>
+
+							<option value="">Select a variant please</option>
+							{o.variants.map((v) => (
+								<option value={v.id}>{v.name} {v.additionalPrice && (`(+ ${v.additionalPrice} Books)`)}</option>
+							))}
+						</select>
+					</>
+				))}
 			</div>
 			<div className="text-beige flex flex-col gap-4">
 				<Input type="number" label={"Quantity"} name="orderQuantity" placeholder="1" defaultValue="1" onInput={(v) => setQuantity(Number(v))} step="1" min="1" />
@@ -129,18 +186,20 @@ export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
 						<option value={addr.id}>{addr.address_first_line} - {addr.city}</option>
 					))}
 				</select>
+
+
 				<Button href={"/addresses"} className="border-beige border-2">Edit Addresses</Button>
 				<div className="py-4 px-2 border-2 rounded-2xl">
-					<p>Item price: {item.price}</p>
-					<p>Order cost: {quantity}x{item.price} = {quantity * item.price}</p>
+					<p>Item price: {item.basePrice}</p>
+					<p>Order cost: {quantity}x{item.basePrice + variantPrice} = {quantity * (item.basePrice + variantPrice)}</p>
 				</div>
 				<Button onClick={(ev) => {
 					ev.preventDefault()
 					buyItem()
 					navigate("/shop")
 
-				}} className="border-egg-yellow border-2 disabled:bg-beige disabled:text-light-brown" disabled={userCoins < (quantity * item.price)}>Buy</Button>
-			</div>
+				}} className="border-egg-yellow border-2 disabled:bg-beige disabled:text-light-brown" disabled={userCoins < (quantity * (item.basePrice + variantPrice))}>Buy</Button>
+			</div >
 		</div>
 	)
 }
