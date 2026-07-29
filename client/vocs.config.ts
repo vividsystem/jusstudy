@@ -60,6 +60,10 @@ export default defineConfig({
 				{
 					text: "Make a Stationary Organiser",
 					link: "/guides/stationary-organiser"
+				},
+				{
+					text: "Make a Website Blocker",
+					link: "/guides/website-blockerx"
 				}
 			]
 		},
