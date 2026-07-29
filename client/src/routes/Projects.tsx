@@ -36,7 +36,7 @@ export default function Projects() {
 					"You don't have any projects yet"
 
 				) : ""}
-				{data?.projects.map((p) => <ProjectPreviewCard project={p} />)}
+				{data?.projects.map((p) => <ProjectPreviewCard project={p} key={p.id} />)}
 
 			</div>
 		</main>

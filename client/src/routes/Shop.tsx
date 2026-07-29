@@ -33,7 +33,7 @@ function Page({ userCoins }: { userCoins: number }) {
 			)}
 			<div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-5 gap-4 items-center">
 				{shopItems && shopItems?.length != 0 ? shopItems.map(item => (
-					<ShopItemBox item={item} />
+					<ShopItemBox item={item} key={item.id} />
 
 				)) : (
 					<p>No items in shop yet</p>

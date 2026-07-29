@@ -60,7 +60,7 @@ export default function AdminShopPage() {
 			)}
 			<div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-5 gap-4 items-center">
 				{shopItems && shopItems?.length != 0 ? shopItems.map(item => (
-					<AdminShopItemBox item={item} onDelete={onDelete} />
+					<AdminShopItemBox item={item} onDelete={onDelete} key={item.id} />
 
 				)) : (
 					<p>No items in shop yet</p>
