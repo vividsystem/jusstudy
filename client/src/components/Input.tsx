@@ -48,7 +48,7 @@ type CheckboxProps = {
 }
 export const Checkbox = (props: CheckboxProps) => {
 	return (
-		<div className="flex flex-col">
+		<div className="flex flex-row gap-2">
 			<label htmlFor={props.name}>{props.label}</label>
 			<input type="checkbox" onChange={(ev) => props.onCheck(ev.currentTarget.checked)} className={`border-2 rounded-lg p-2 ${props.className}`} id={props.id} />
 		</div>
@@ -73,7 +73,7 @@ export const CheckableInput = (props: CheckableInputProps) => {
 		}
 	}
 
-	const onCheck = (v) => {
+	const onCheck = (v: boolean) => {
 		if (!v) {
 			onInput(undefined)
 		}

@@ -7,13 +7,12 @@ interface ShopItemBoxProps {
 		quantity: number | null;
 		name: string;
 		description: string;
-		price: number;
+		basePrice: number;
 		image: string | null;
 	}
-	onDelete: (id: string) => void
 }
 
-export function AdminShopItemBox(props: ShopItemBoxProps) {
+export function AdminShopItemBox(props: ShopItemBoxProps & { onDelete: (id: string) => void }) {
 	return (
 		<div className="bg-dark-red border-2 border-egg-yellow p-4 flex flex-col items-center relative rounded-4xl gap-4">
 			{props.item.image && (
@@ -22,8 +21,8 @@ export function AdminShopItemBox(props: ShopItemBoxProps) {
 			<div className="h-1/2 flex flex-col items-start">
 				<h2 className="text-egg-yellow text-2xl">{props.item.name}</h2>
 				<p className="text-xl text-beige">{props.item.description}</p>
-				<p className="text-xl text-beige">Qty: {props.item.quantity}</p>
-				<p className="text-xl text-beige">Price: {props.item.price}</p>
+				<p className="text-xl text-beige">Qty: {props.item.quantity || "∞"}</p>
+				<p className="text-xl text-beige">Price: {props.item.basePrice}</p>
 
 			</div>
 			<div className="flex flex-row gap-4">
@@ -38,7 +37,7 @@ export function AdminShopItemBox(props: ShopItemBoxProps) {
 export default function ShopItemBox(props: ShopItemBoxProps) {
 	return (
 		<div className={`border-2 border-egg-yellow p-4 flex flex-col-reverse items-center relative rounded-4xl ${props.item.quantity == 0 ? "bg-beige" : "bg-dark-red"}`}>
-			<Button href={`/shop/${props.item.id}`} className="translate-y-1/2 bottom-0 bg-egg-yellow border-dark-red border-3 not-disabled:pointer-none:bg-beige disabled:bg-dark-brown" disabled={props.item.quantity == 0}>{props.item.quantity === 0 ? "Sold out" : `${props.item.price} Books`}</Button>
+			<Button href={`/shop/${props.item.id}`} className="translate-y-1/2 bottom-0 bg-egg-yellow border-dark-red border-3 not-disabled:pointer-none:bg-beige disabled:bg-dark-brown" disabled={props.item.quantity == 0}>{props.item.quantity === 0 ? "Sold out" : `${props.item.basePrice} Books`}</Button>
 
 			<div className="h-1/2 flex flex-col items-start">
 				<h2 className="text-egg-yellow text-2xl">{props.item.name}</h2>
