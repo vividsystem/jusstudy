@@ -25,6 +25,7 @@ import AdminShopPage from "./routes/AdminShopPage";
 import EditShopItemPage from "./routes/EditShopItemPage";
 import AddShopItemPage from "./routes/AddShopItemPage";
 import UserProfile from "./routes/UserProfile";
+import ShopOrders from "./routes/ShopOrders";
 // import RSVP from "./routes/RSVP";
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
 							<Route path="/vote" element={<VotePage />} />
 
 							<Route path="/shop" element={<Shop />} />
+							<Route path="/shop/orders" element={<ShopOrders />} />
 							<Route path="/shop/:itemId" element={<BuyItem />} />
 							<Route path="/addresses/new" element={<NewAddress />} />
 							<Route path="/addresses" element={<ManageAddresses />} />
