@@ -140,7 +140,7 @@ interface VariantProps {
 }
 
 
-function Variant({ variant, ...props }: VariantProps) {
+export function Variant({ variant, ...props }: VariantProps) {
 	const [addCost, setAddCost] = useState(false)
 
 	return (
