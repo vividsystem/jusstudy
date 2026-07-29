@@ -2,7 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { NewOptionRequest, NewShopItemRequest, NewVariantRequest, PlaceOrderRequest, UpdateShopItemRequest } from "@shared/validation/shop"
 import db from "@server/db";
-import { addresses, itemVariants, shopItemOptions, shopItems, shopOrders, users } from "@server/db/schema";
+import { addresses, itemVariants, orderVariantSelection, shopItemOptions, shopItems, shopOrders, users } from "@server/db/schema";
 import { asc, count, eq, getTableColumns, inArray } from "drizzle-orm";
 import type { Env } from "..";
 
@@ -70,7 +70,7 @@ export const shopRoute = new Hono<Env>()
 		const items = await db.select().from(shopItems).orderBy(asc(shopItems.basePrice))
 
 
-		return c.json({ shopItems: items }, 200)
+		return c.json({ shopItems: items, message: "Variants not included" }, 200)
 	})
 	.get("/items/:itemId", async (c) => {
 		const logger = c.get("logger")
@@ -85,7 +85,7 @@ export const shopRoute = new Hono<Env>()
 			.where(eq(shopItemOptions.itemId, itemId))
 
 		if (!options) {
-			return c.json({ item }, 200)
+			return c.json({ item: { ...item, options: [] } }, 200)
 		}
 
 		const variants = await db.select().from(itemVariants).where(inArray(itemVariants.optionId, options.map((o) => o.id)))
@@ -212,15 +212,15 @@ export const shopRoute = new Hono<Env>()
 			logger.error({ message: "aggreggate count sql query didnt return anything", data })
 			return c.json({ message: "Something went wrong" }, 500)
 		}
-		if (expected.n > 0 || !data.optionVariants) {
+		if (expected.n > 0 && !data.optionVariants) {
 			return c.json({ message: "You need to specify options and their variants!" }, 400)
 		}
 
-		const optIds = Object.keys(data.optionVariants)
+		const optIds = Object.keys(data.optionVariants || [])
 		if (optIds.length != expected.n) {
 			return c.json({ message: "Not all options (or too many) given" }, 400)
 		}
-		const variantIds = Object.values(data.optionVariants)
+		const variantIds = Object.values(data.optionVariants || [])
 
 		const options = await db.select().from(shopItemOptions).where(inArray(shopItemOptions.id, optIds))
 		if (options.length != expected.n) {
@@ -245,7 +245,7 @@ export const shopRoute = new Hono<Env>()
 
 		let validVariants = true
 		for (let variant of variants) {
-			if (data.optionVariants[variant.optionId] != variant.id) {
+			if (!data.optionVariants || data.optionVariants[variant.optionId] != variant.id) {
 				validVariants = false
 				break
 			}
@@ -271,14 +271,24 @@ export const shopRoute = new Hono<Env>()
 				return c.json({ message: "Order too expensive" }, 400)
 			}
 
-			const placedOrder = await tx.insert(shopOrders).values({ ...data, userId: user.id }).returning()
-			if (placedOrder.length == 0) {
+			const [placedOrder] = await tx.insert(shopOrders).values({ ...data, userId: user.id }).returning()
+			if (!placedOrder) {
 				logger.error({ userId: user.id, data, cost, item, variants }, "Couldnt place order")
+				tx.rollback()
 				return c.json({ message: "Something went wrong" }, 500)
 			}
 
+			if (data.optionVariants) {
+				const selection = await tx.insert(orderVariantSelection).values(Object.entries(data.optionVariants).map(([optionId, variantId]) => ({ optionId, variantId, orderId: placedOrder.id }))).returning()
+				if (selection.length == 0) {
+					logger.error({ userId: user.id, data, cost, item, variants, placedOrder }, "Couldnt make variant selection")
+					tx.rollback()
+					return c.json({ message: "Something went wrong" }, 500)
+				}
+			}
 
-			return c.json({ order: placedOrder[0]! }, 201)
+
+			return c.json({ order: placedOrder }, 201)
 		})
 
 	})
