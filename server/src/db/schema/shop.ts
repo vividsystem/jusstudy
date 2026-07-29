@@ -42,13 +42,14 @@ export const shopOrders = pgTable("shop_orders", {
 	itemId: uuid().references(() => shopItems.id).notNull(),
 	quantity: integer().notNull(),
 	addressId: uuid().references(() => addresses.id).notNull(), // address also contains buyer id
+	price: integer().notNull(),
 	trackingId: text(),
 	orderNotes: text(),
 	userId: text().references(() => users.id).notNull()
 })
 
 export const orderVariantSelection = pgTable("shop_order_item_variant", {
-	orderId: uuid().references(() => shopOrders.id).notNull(),
+	orderId: uuid().references(() => shopOrders.id, { onDelete: "cascade" }).notNull(),
 	variantId: uuid().references(() => itemVariants.id).notNull()
 }, (table) => [
 	primaryKey({ columns: [table.orderId, table.variantId] })
