@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { NewOptionRequest, NewShopItemRequest, NewVariantRequest, PlaceOrderRequest, UpdateShopItemRequest } from "@shared/validation/shop"
 import db from "@server/db";
 import { addresses, itemVariants, orderVariantSelection, shopItemOptions, shopItems, shopOrders, users } from "@server/db/schema";
-import { asc, count, eq, getTableColumns, inArray } from "drizzle-orm";
+import { asc, count, desc, eq, getTableColumns, inArray } from "drizzle-orm";
 import type { Env } from "..";
 
 
@@ -269,15 +269,16 @@ export const shopRoute = new Hono<Env>()
 				return c.json({ message: "Order too expensive" }, 400)
 			}
 
-			const [placedOrder] = await tx.insert(shopOrders).values({ ...data, userId: user.id }).returning()
+			const [placedOrder] = await tx.insert(shopOrders).values({ ...data, userId: user.id, price: cost }).returning()
 			if (!placedOrder) {
 				logger.error({ userId: user.id, data, cost, item, variants }, "Couldnt place order")
 				tx.rollback()
 				return c.json({ message: "Something went wrong" }, 500)
 			}
 
-			if (data.optionVariants) {
-				const selection = await tx.insert(orderVariantSelection).values(Object.entries(data.optionVariants).map(([optionId, variantId]) => ({ optionId, variantId, orderId: placedOrder.id }))).returning()
+			const opts = Object.entries(data.optionVariants || {}).map(([optionId, variantId]) => ({ optionId, variantId, orderId: placedOrder.id }))
+			if (opts.length !== 0) {
+				const selection = await tx.insert(orderVariantSelection).values(opts).returning()
 				if (selection.length == 0) {
 					logger.error({ userId: user.id, data, cost, item, variants, placedOrder }, "Couldnt make variant selection")
 					tx.rollback()
@@ -310,8 +311,19 @@ export const shopRoute = new Hono<Env>()
 		const user = c.get("user")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
-		const { addressId, orderNotes, ...rest } = getTableColumns(shopOrders)
-		const orders = await db.select(rest).from(shopOrders).where(eq(shopOrders.userId, user.id))
+		const { addressId, orderNotes, itemId, ...rest } = getTableColumns(shopOrders)
+		const orders = await db.select({
+			...rest,
+			item: {
+				id: shopItems.id,
+				name: shopItems.name,
+				image: shopItems.image
+			}
+		})
+			.from(shopOrders)
+			.innerJoin(shopItems, eq(shopItems.id, shopOrders.itemId))
+			.where(eq(shopOrders.userId, user.id))
+			.orderBy(desc(shopOrders.placedAt))
 
 		return c.json({ orders: orders }, 200)
 	})
