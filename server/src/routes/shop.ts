@@ -126,9 +126,7 @@ export const shopRoute = new Hono<Env>()
 			return c.json({ message: "Something went wrong" }, 500)
 		}
 
-
 		return c.json({ option: { ...option, variants } }, 201)
-
 	})
 	.post("/options/:optionId/variants", zValidator("json", NewVariantRequest), async (c) => {
 		const user = c.get("user")

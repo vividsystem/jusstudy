@@ -169,7 +169,7 @@ export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
 
 							<option value="">Select a variant please</option>
 							{o.variants.map((v) => (
-								<option value={v.id}>{v.name} {v.additionalPrice && (`(+ ${v.additionalPrice} Books)`)}</option>
+								<option value={v.id}>{v.name} (+ {v.additionalPrice} Books)</option>
 							))}
 						</select>
 					</>
