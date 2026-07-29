@@ -47,11 +47,11 @@ export const shopOrders = pgTable("shop_orders", {
 	userId: text().references(() => users.id).notNull()
 })
 
-export const orderVariantSelection = pgTable("shop_item_variant", {
+export const orderVariantSelection = pgTable("shop_order_item_variant", {
 	orderId: uuid().references(() => shopOrders.id).notNull(),
-	optionId: uuid().references(() => shopItemOptions.id).notNull(),
+	variantId: uuid().references(() => itemVariants.id).notNull()
 }, (table) => [
-	primaryKey({ columns: [table.orderId, table.optionId] })
+	primaryKey({ columns: [table.orderId, table.variantId] })
 ])
 
 export const shopOrderRelations = relations(shopOrders, ({ one }) => ({
