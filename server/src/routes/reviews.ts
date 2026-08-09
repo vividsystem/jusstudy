@@ -127,12 +127,27 @@ export const shipReviewsRoute = new Hono<{
 
 		const data = c.req.valid("json")
 
+		if (!data.passed && data.timeRemoved > 0) {
+			return c.json({ message: "Hours can only be removed when passing a review" }, 400)
+		}
+		if (data.timeRemoved > ship.loggedTime) {
+			return c.json({ message: "Cannot remove more time than the project has logged" }, 400)
+		}
+		const timeRemovalReason = data.passed && data.timeRemoved > 0 ? data.timeRemovalReason?.trim() : undefined;
 
-		await db.insert(projectReviews).values({ ...data, shipId: id, reviewerId: user.id }).returning()
+		await db.insert(projectReviews).values({
+			...data,
+			timeRemovalReason,
+			shipId: id,
+			reviewerId: user.id
+		}).returning()
 		if (!data.passed) {
 			await db.update(projectShips).set({ state: "failed" }).where(eq(projectShips.id, id))
 		} else {
-			await db.update(projectShips).set({ state: bumpStatus(ship.state) }).where(eq(projectShips.id, id))
+			await db.update(projectShips).set({
+				state: bumpStatus(ship.state),
+				loggedTime: ship.loggedTime - data.timeRemoved
+			}).where(eq(projectShips.id, id))
 		}
 
 		return c.json({ message: "Review created!" }, 201)

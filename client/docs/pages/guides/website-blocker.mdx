@@ -1,9 +1,4 @@
----
-title: Website Blocker with GUI
-author: ne05tane
-description:  A software application that allows users to restrict access to specific websites through a visual interface
-created_at: 7-15-2026
----
+
 
 ## Disclaimer -
 
@@ -59,36 +54,36 @@ Both Hackatime and Git are important to set up if you're doing the YSWS.
 I will be using VSCode as that is what I'm most familiar with.
 
 1)<img width="998" height="641" alt="Screenshot 2026-07-12 213132" src="https://github.com/user-attachments/assets/f9f51054-e3d1-4b94-8792-57a4a1407ed2" />
-    <br><br>
+    <br /><br />
         On GitHub, create a new repo and name it.
         You can add a README later.
-    <br><br>
+    <br /><br />
 
         2)<img width="1267" height="632" alt="Screenshot 2026-07-12 213222" src="https://github.com/user-attachments/assets/bbcf082e-70d6-44f6-a781-3ae77073ada6" />
-    <br><br>
+    <br /><br />
         Copy the URL
-    <br><br>
+    <br /><br />
         3)<img width="1365" height="720" alt="Screenshot 2026-07-12 213631" src="https://github.com/user-attachments/assets/6bea7825-1ebf-432f-9480-5cd519dfe896" />
-    <br><br>
+    <br /><br />
         Click on clone repository
 
-    <br><br>
+    <br /><br />
         4)<img width="1365" height="721" alt="Screenshot 2026-07-12 214000" src="https://github.com/user-attachments/assets/dda73aff-d855-4677-bb3e-bec45b39a6bd" />
-    <br><br>
+    <br /><br />
         Paste the url in the search bar or alternatively, click on the correct repo from the dropdown menu.
 
-    <br><br>
+    <br /><br />
         5)<img width="1365" height="719" alt="Screenshot 2026-07-12 214415" src="https://github.com/user-attachments/assets/412a9cd3-7a52-4df5-ae36-875a46e78c95" />
-    <br><br>
+    <br /><br />
         If you've done it right, the command center will display the correct repo's name.
         Click on new file and name it main.py
 
-    <br><br>
+    <br /><br />
 
         ## Basics -
 
         <img width="1365" height="719" alt="Screenshot 2026-07-12 214524" src="https://github.com/user-attachments/assets/3645e26f-0c16-4fc5-b9a4-32eb8be29556" />
-    <br><br>
+    <br /><br />
         Yay! Time to make your first commit (and learn version control).
 
         Locate and click on Source Control (The Y-shaped icon). You will see that right now, your main.py file is unstaged so we have to do three steps-stage, commit and push.
@@ -102,10 +97,10 @@ I will be using VSCode as that is what I'm most familiar with.
         OR
         2) Open the terminal in your editor and run `git add main.py`
 
-    <br><br>
+    <br /><br />
         <img width="1365" height="722" alt="Screenshot 2026-07-12 214609" src="https://github.com/user-attachments/assets/706cf9da-3916-468e-9a72-aad236b8e91c" />
 
-    <br><br>
+    <br /><br />
         Notice in source control, the file you staged is now under staged changes. This prepares it for the next step - <mark>Commit</mark>.
         Committing saves a permanent snapshot to your *local* repository history. I say local becuse these changes remain private to your local machine.
 
@@ -119,26 +114,26 @@ I will be using VSCode as that is what I'm most familiar with.
 
         Just like `git add`, another way to commit is by using the terminal to run `git commit -m "Your message"`
 
-    <br><br>
+    <br /><br />
 
         <img width="1365" height="477" alt="Screenshot 2026-07-12 214747" src="https://github.com/user-attachments/assets/882b727e-a3e5-450c-98c0-c5cd98173ca4" />
 
-    <br><br>
+    <br /><br />
         For this last step, you have to use the terminal. Locate the terminal in your editor and write `git push`. Earlier, I said committing only saves your changes locally, but **pushing** shares them to a remote repository like GitHub. This serves as cloud backup and other people can learn from your code. You should remember the following three commands in order and remember to commit frequently!
 
         - `git add .` The dot after `add` means stage *all* files and changes.
         - `git commit -m "message"` &
         - `git push`
 
-    <br><br>
+    <br /><br />
         ## Tkinter -
 
         It is better to keep the blocking logic and graphical interface separate. Our main.py will contain the GUI. You can actually skip to the part where we initialize logic.py but I wanted to make a window first (The rectangle box that has all your widgets like buttons and images)
 
-    <br><br>
+    <br /><br />
         <img width="1365" height="710" alt="Screenshot 2026-07-12 215250" src="https://github.com/user-attachments/assets/06960285-2fcb-463b-b853-0467a67c9bf3" />
 
-    <br><br>
+    <br /><br />
         We start by importing tkinter to build our graphical interface. There are many ways you can do this:-
         1. `import tkinter`
         2. `from tkinter import * ` (meaning from tkinter import all)
@@ -148,20 +143,20 @@ I will be using VSCode as that is what I'm most familiar with.
 
         Save your file, use the three git commands in order or use the source control sidebar to commit and push.
 
-    <br><br>
+    <br /><br />
         <img width="1365" height="691" alt="Screenshot 2026-07-12 215433" src="https://github.com/user-attachments/assets/97d10863-191b-4840-b0fb-d038d0e1c0eb" />
-    <br><br>
+    <br /><br />
         This is what the terminal looks like after everything
-    <br><br><br>
+    <br /><br /><br />
 
         <img width="1365" height="641" alt="Screenshot 2026-07-12 215827" src="https://github.com/user-attachments/assets/10b13699-a600-4446-ac87-74717a48fb7b" />
-    <br><br>
+    <br /><br />
         You can check your remote repository to see if it shows up.
 
-    <br><br>
+    <br /><br />
         <img width="1363" height="683" alt="Screenshot 2026-07-12 221111" src="https://github.com/user-attachments/assets/7acfdbd2-ff85-4275-bebd-ab10315a389a" />
 
-    <br><br>
+    <br /><br />
         To define the window's size, we use the method `window.geometry("widthxheight")`. You must enter the values in pixels.
 
         You can even define its position using `window.geometry("widthxheight+x+y)` for example,  `window.geometry("300x200+100+50")` sets the size to 300x200 and positions the top-left corner at x=100, y=50.
@@ -172,36 +167,36 @@ I will be using VSCode as that is what I'm most familiar with.
 
         But most importantly, you must call `window.mainloop()` to start the event loop aka, keeping the application responsive and to actually display the window. If you try running main.py and for some reason, your root window does not show up, make sure to check if you've called it correctly.
 
-    <br><br>
+    <br /><br />
         <img width="1365" height="721" alt="Screenshot 2026-07-12 221125" src="https://github.com/user-attachments/assets/5c2d9e19-7b56-42f7-a375-1ff684948ccc" />
 
-    <br><br>
+    <br /><br />
         Here is what it looks like when you run it. Came out kind of weird
         so you can modify the dimensions in `window.geometry()`
-    <br><br>
+    <br /><br />
 
         <img width="1365" height="682" alt="Screenshot 2026-07-12 221219" src="https://github.com/user-attachments/assets/c7cba96d-ba78-4e97-94b3-4eea673fbb22" />
-    <br><br>
+    <br /><br />
         If you're happy with how it looks, you can go ahead and stage and commit.
-    <br><br>
+    <br /><br />
 
         ## Logic -
 
         <img width="964" height="308" alt="Screenshot 2026-07-12 224853" src="https://github.com/user-attachments/assets/88c1dc88-5157-4c74-a2f5-c7284378dbca" />
-    <br><br>
+    <br /><br />
         Next we're gonna initialise logic.py and import datetime and time modules.
         Create two variables as in the picture. One will hold the directory to our hosts file and the second - the loopback address.
 
-    <br><br>
+    <br /><br />
         <img width="1348" height="665" alt="Screenshot 2026-07-12 225010" src="https://github.com/user-attachments/assets/30d6d8b5-22d5-4ab5-83f0-dbd4744cc1a7" />
 
-    <br><br>
+    <br /><br />
         Locate the hosts file in your system and copy the path.
 
-    <br><br>
+    <br /><br />
         <img width="1360" height="525" alt="Screenshot 2026-07-12 233524" src="https://github.com/user-attachments/assets/490b089d-afce-4f2c-9473-dfb6434b7032" />
 
-    <br><br>
+    <br /><br />
         Next write the blocking logic. I did this by creating a function with the same name that will take two arguments- `duration_hours` & ```website_list```
         As the name says, one holds a list of websites and the other will ask for the time duration that you want them blocked.
 
@@ -230,10 +225,10 @@ I will be using VSCode as that is what I'm most familiar with.
         Also note, `r` opens the file in "read mode", `w` in "write mode", `a` in "append mode", `r+` in "read and write" mode etc.
         We want to be able to both read and write in our file.
 
-    <br><br>
+    <br /><br />
         <img width="919" height="520" alt="Screenshot 2026-07-12 235646" src="https://github.com/user-attachments/assets/3870ca9e-6602-4662-8ce8-86dacd2c2bc4" />
 
-    <br><br>
+    <br /><br />
         Then the else block (`datetime.datetime.now > end_time`) will execute the unblocking phase, you can see how it's done above but I encourage you try to figure it out yourself first.
 
         Hints:-
@@ -251,7 +246,7 @@ I will be using VSCode as that is what I'm most familiar with.
 
         Remember to commit!
 
-    <br><br>
+    <br /><br />
         ## GUI -
 
         You can choose to build and code simultaneously or design a complete visual mockup first. If you plan to launch a webpage, you should likely create your wireframes in Figma.
@@ -259,9 +254,9 @@ I will be using VSCode as that is what I'm most familiar with.
         I don't plan to make the UI too complex or visually stunning so I fleshed it out on paper.
 
         Anyways Here is my crappy design:
-    <br><br>
+    <br /><br />
         <img width="2417" height="1921" alt="IMG_20260724_221957_597~2" src="https://github.com/user-attachments/assets/71d36a71-37db-4ea0-bdf6-c993b33d2a08" />
-    <br><br>
+    <br /><br />
         I've already created the window and named the title, so now I need five more widgets :-
 
         1. A display that says "focus" that shows the time when the start button is pressed
@@ -270,10 +265,10 @@ I will be using VSCode as that is what I'm most familiar with.
         4. An widget that holds the duration of your focus time & finally,
         5. The main start button
 
-    <br><br>
+    <br /><br />
         <img width="993" height="686" alt="Screenshot 2026-07-13 003742" src="https://github.com/user-attachments/assets/0a23dd0c-2c11-4f90-a580-086851f6acb1" />
 
-    <br><br>
+    <br /><br />
         Back to main.py, we will import the threading module and logic.py through `import file_name`.
         Since mine is simply named "logic", it will be `import logic`. You have to make sure your filename doesn't match any existing modules/libraries in python or as you might guess, it will create problems when you try and import it.
 
@@ -307,10 +302,10 @@ I will be using VSCode as that is what I'm most familiar with.
 
         Lastly, copy the last three methods just before `self._setup_ui()`. They will be explained later in the guide.
 
-    <br><br>
+    <br /><br />
         <img width="1189" height="680" alt="Screenshot 2026-07-13 073910" src="https://github.com/user-attachments/assets/164ab4a6-c777-4d8a-9037-7f6ce03923fa" />
 
-    <br><br>
+    <br /><br />
         You must also put `window.mainloop()` inside the `if__name__== "__main__"` block to the very end.
 
         *Note: It is `root.mainloop()` if you have named your root variable root!*
@@ -330,26 +325,26 @@ I will be using VSCode as that is what I'm most familiar with.
 
         Then you need to pack all these attributes using `self.timer.pack` because the display im creating is actually a timer. Use pady to make changes in the y direction aka make the button have greater width for example 20px. Similarly, use padx aka padding in the x direction to change the length of the label.
 
-    <br><br>
+    <br /><br />
         <img width="1365" height="567" alt="Screenshot 2026-07-13 080225" src="https://github.com/user-attachments/assets/4e3d6386-639d-495f-81ee-421ddd7ccf9a" />
-    <br><br>
+    <br /><br />
         Make as many labels as you want (according to your design) and modify them using the above attributes.
 
-    <br><br>
+    <br /><br />
         <img width="1365" height="687" alt="Screenshot 2026-07-13 075746" src="https://github.com/user-attachments/assets/e01080dd-85b8-4490-9c84-94d62f4d7311" />
 
-    <br><br>
+    <br /><br />
         Save your file and run it to see how it looks so far.
         Mine is very basic and I only aim to provide a base which you can change or tweak as per your liking
 
-    <br><br>
+    <br /><br />
         <img width="1365" height="588" alt="Screenshot 2026-07-13 081006" src="https://github.com/user-attachments/assets/2afea515-8588-4fb2-8161-c62422f043a3" />
-    <br><br>
+    <br /><br />
         I'm gonna import another module scrolledtext from tkinter because as mentioned above, I want to make a multi-line text box with a built-in scroll bar where you'll actually enter the list of websites.
 
-    <br><br>
+    <br /><br />
         <img width="720" height="542" alt="Screenshot 2026-07-13 081506" src="https://github.com/user-attachments/assets/4d74e93a-997b-4d1d-8216-af8415c92922" />
-    <br><br>
+    <br /><br />
         The timer label is stored as an instance attribute (`self.timer`) because the application needs to change its text while the timer is running.
 
         After it's created, `.pack()` adds it to the window with some vertical padding.
@@ -360,16 +355,16 @@ I will be using VSCode as that is what I'm most familiar with.
         - `background` sets the widget's background color.
         - `relief=FLAT` removes the default raised border for a cleaner appearance.
 
-    <br><br>
+    <br /><br />
         <img width="1182" height="574" alt="Screenshot 2026-07-13 082144" src="https://github.com/user-attachments/assets/40196ae4-9a1a-4c95-a24b-2c96ac4eff35" />
 
-    <br><br>
+    <br /><br />
         Check to see how everything looks so far
 
-    <br><br>
+    <br /><br />
         <img width="1365" height="550" alt="Screenshot 2026-07-22 144604" src="https://github.com/user-attachments/assets/827c3fdd-189e-4df9-80c5-e6a75dc62325" />
 
-    <br><br>
+    <br /><br />
         Once the `ScrolledText` widget has been configured, it's added to the layout using `.pack()`. The horizontal and vertical padding gives it some space so it isn't pressed against neighboring elements. `pady` adds padding in the y-direction and `padx` in the x-direction.
 
         Now write `duration = Frame(self.window, background="white")`: Instead of placing every widget directly inside the main window, a `Frame` is used to group the duration controls together. This makes layout management much simpler. Since the label and spinbox (see 4th para) belong to the same row, they can both be packed inside the frame while the frame itself is positioned within the main window.
@@ -382,9 +377,9 @@ I will be using VSCode as that is what I'm most familiar with.
 
         Finally, we can pack the widget into the frame alongside its label.
 
-    <br><br>
+    <br /><br />
         <img width="1365" height="461" alt="Screenshot 2026-07-22 144624" src="https://github.com/user-attachments/assets/b5ced9b1-9929-4995-a9de-30132ac8cfc2" />
-    <br><br>
+    <br /><br />
 
         Create the action button and configure it using the same methods we did with previous labels.
 
@@ -404,16 +399,16 @@ I will be using VSCode as that is what I'm most familiar with.
         The final widget is a simple informational label reminding the user that the application must be run with administrator privileges.
         Since this text never changes, there's no need to store it as an instance attribute. Packing it with `side=BOTTOM` anchors the label near the bottom of the window and keeps it separate from the main controls.
 
-    <br><br>
+    <br /><br />
         <img width="1015" height="520" alt="Screenshot 2026-07-22 144648" src="https://github.com/user-attachments/assets/f6f3e1d7-8027-4cd8-a6a9-d4c7691d3006" />
-    <br><br>
+    <br /><br />
         Next we figure out how to switch between start and stop. You can go ahead and create separate start/stop buttons but the way I did it was to create a single button whose behavior depends on the current state. You can follow my steps to do the latter. Basically, the `self.is_blocking` flag tracks whether a focus session is already running. If no session is active, clicking the button starts one, otherwise, it stops the existing session.
 
         Remember the spinbox? its value is returned as a string, so we will convert it to a float before use in `try: hrs = float(self.enter_hours.get())`....`return`
 
         If the conversion fails or the value is less than or equal to zero, an error dialog is displayed and the method exits early with `return`. Validating user input before starting the background task helps prevent unexpected runtime errors.
 
-    <br><br>
+    <br /><br />
         The next block of code is pretty basic python but feel free to see what they do below
 
         - Collect websites:-
@@ -449,10 +444,10 @@ I will be using VSCode as that is what I'm most familiar with.
         This gives a final confirmation to the user to use the hosts file cause it requires administrative priveleges.
         `askyesno()` returns `True` if the user clicks **Yes** and `False` otherwise. If the answer is no, the method exits.
 
-    <br><br>
+    <br /><br />
         <img width="811" height="319" alt="Screenshot 2026-07-27 115000" src="https://github.com/user-attachments/assets/56d524da-8767-484a-9b8d-0b65633abffa" />
 
-    <br><br>
+    <br /><br />
 
         #### Daemon Thread -
 
@@ -509,10 +504,10 @@ I will be using VSCode as that is what I'm most familiar with.
         ```
         This part is also optional. `state=DISABLED` puts the widget into a "read-only" or "locked" mode. This prevents you from changing settings while the blocker is still running.
 
-    <br><br>
+    <br /><br />
         <img width="957" height="496" alt="Screenshot 2026-07-22 144719" src="https://github.com/user-attachments/assets/776b4fe6-69d1-4aa1-b2c7-7321e165202b" />
 
-    <br><br>
+    <br /><br />
         ```python
         if self.block_thread and self.block_thread.is_alive():
         self.stop_event.set()
@@ -534,11 +529,11 @@ I will be using VSCode as that is what I'm most familiar with.
         This is what mine looks like at the end
         <img width="1365" height="650" alt="Screenshot 2026-07-13 092206" src="https://github.com/user-attachments/assets/927fad32-6311-4a41-a42a-4b905d40e543" />
         <img width="1365" height="667" alt="Screenshot 2026-07-13 092243" src="https://github.com/user-attachments/assets/42a8be3f-897e-4e96-9dad-389e31fb0fb5" />
-    <br><br>
+    <br /><br />
         When testing stuff out, you should also purposefully try and enter the wrong stuff to check if the error is being handled as you want it to be.
 
 
-    <br><br>
+    <br /><br />
         ## Time to Ship -
 
         yayayayay &lt;/3 what is shipping you say? well it doesn't really do much benefit if your awesome project sits in your computer alone and unseen :c
@@ -547,13 +542,14 @@ I will be using VSCode as that is what I'm most familiar with.
 
         Scroll below to skip to Mac/Linux instructions
 
-        <br>
+        <br />
 
         ### For Windows -
 
         Open NotePad and copy this exact code
 
-        ```<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        ```xml
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
             <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
                 <security>
@@ -562,24 +558,25 @@ I will be using VSCode as that is what I'm most familiar with.
                     </requestedPrivileges>
                 </security>
             </trustInfo>
-        </assembly>```
+        </assembly>
+        ```
 
-    <br>
+    <br />
         Name it **manifest** & save it as **.xml** file. Do not save it as .txt or anything else.
 
         Basically, when you run your program, your code tries to edit the hosts file, then windows says "No Access" and your app crashes.
         But a manifest saves that from happening by prompting windows to show a pop-up that asks the user to click yes
 
-    <br><br>
+    <br /><br />
         <img width="729" height="286" alt="Screenshot 2026-07-26 174318" src="https://github.com/user-attachments/assets/ba7a645d-91d9-4940-a82f-e4b0c9dd6d82" />
 
-    <br>
+    <br />
         Make sure your manifest is in the same folder that has main.py in it.
 
-    <br><br>
+    <br /><br />
         <img width="875" height="253" alt="Screenshot 2026-07-26 174352" src="https://github.com/user-attachments/assets/0c867fe4-40c1-45ee-adf2-fa1f67d8fb91" />
 
-    <br>
+    <br />
         Then open PowerShell or command prompt. Make sure you change it to the right path that contains the manifest.
         (go to your project folder, copy the path and in the terminal, write "cd your_copied_path" )
 
@@ -588,16 +585,16 @@ I will be using VSCode as that is what I'm most familiar with.
 
         In place of "WebsiteBlocker", you can give it any name. I want to call my app "Focus" so I wrote ``` --name "Focus"``` instead.
 
-    <br>
+    <br />
         <img width="837" height="184" alt="Screenshot 2026-07-26 174458" src="https://github.com/user-attachments/assets/6be6b6b5-a47c-4ed2-8116-36d5ddfa6bc9" />
-    <br>
+    <br />
         This is what the terminal shows at the very end if you ran everything correctly.
 
-    <br><br>
+    <br /><br />
         <img width="703" height="347" alt="Screenshot 2026-07-26 174547" src="https://github.com/user-attachments/assets/9f91074c-95cb-4d85-988a-7eac4a78580b" />
         <img width="673" height="181" alt="Screenshot 2026-07-26 174554" src="https://github.com/user-attachments/assets/96242186-7f6a-4abf-8ab3-7ee29a6cda0f" />
 
-    <br>
+    <br />
         Finally, you'll see Focus.exe/WebsiteBlocker.exe appear in the new dist folder. Send this exact file to people who wanna run your project.
         When you run it the first time, windows will give you warnings. Ignore them and click yes on the admin permission pop-up.
 
@@ -605,7 +602,8 @@ I will be using VSCode as that is what I'm most familiar with.
 
         You won't be needing a manifest file but you will need to add an extra bit of code at the start of main.py to check for admin rights.
 
-        ```import os
+        ```python
+        import os
         import sys
         import subprocess
 
@@ -640,10 +638,7 @@ I will be using VSCode as that is what I'm most familiar with.
         ### The file might disappear immediately upon download due to antivirus software doing its thing. Just temporarily disable real-time protection or add an exclusion for the file before running it.
 
 
-
-
-
-
+Credit to ne05tane for this guide.
 
 
 
