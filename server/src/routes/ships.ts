@@ -1,6 +1,6 @@
 import db from "@server/db";
 import { devlogs, hackatimeProjectLinks, projects, projectShips, projectStats } from "@server/db/schema";
-import { desc, eq, getTableColumns } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, ne } from "drizzle-orm";
 import { Hono } from "hono";
 import { shipReviewsRoute } from "./reviews";
 import { singleProjectTime } from "@server/hackatime/client";
@@ -24,7 +24,20 @@ export const shipsRoute = new Hono<Env>()
 		}
 
 
-		return c.json({ ship: ship.ship }, 200)
+		const previousProjects = await db.select({
+			project: getTableColumns(projects),
+			ship: getTableColumns(projectShips),
+		})
+			.from(projectShips)
+			.innerJoin(projects, eq(projects.id, projectShips.projectId))
+			.where(and(
+				eq(projects.creatorId, ship.creatorId),
+				ne(projectShips.id, id)
+			))
+			.orderBy(desc(projectShips.createdAt))
+			.limit(8)
+
+		return c.json({ ship: ship.ship, previousProjects }, 200)
 
 	})
 	.route("/:id/reviews", shipReviewsRoute)
