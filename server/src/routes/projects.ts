@@ -10,6 +10,7 @@ import { projectShipRoute } from "./ships";
 import { projectReviewsRoute } from "./reviews";
 import { singleProjectTime, sortedUserProjectTimes } from "@server/hackatime/client";
 import type { Env } from "..";
+import { projectRatingsRoute } from "./vote";
 
 
 export const projectsRoute = new Hono<Env>()
@@ -29,7 +30,7 @@ export const projectsRoute = new Hono<Env>()
 
 		const hackatimeRes = await sortedUserProjectTimes(user.slackId, res)
 		if (!hackatimeRes.ok) {
-			logger.error({ message: hackatimeRes.error, userId: user.id })
+			logger.error({ hackatimeRes, userId: user.id })
 			return c.json({ message: "Something went wrong" }, 500)
 		}
 
@@ -226,5 +227,6 @@ export const projectsRoute = new Hono<Env>()
 	.route("/:id/devlogs", projectDevlogsRoute)
 	.route("/:id/ships", projectShipRoute)
 	.route("/:id/reviews", projectReviewsRoute)
+	.route("/:id/ratings", projectRatingsRoute)
 
 export { projectsRoute as default }

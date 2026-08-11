@@ -1,5 +1,5 @@
 import db from "@server/db";
-import { devlogs, hackatimeProjectLinks, projects, projectShips, projectStats } from "@server/db/schema";
+import { devlogs, hackatimeProjectLinks, projects, projectShips, projectStats, ratings } from "@server/db/schema";
 import { desc, eq, getTableColumns } from "drizzle-orm";
 import { Hono } from "hono";
 import { shipReviewsRoute } from "./reviews";
@@ -122,11 +122,15 @@ export const projectShipRoute = new Hono<Env>()
 			return c.json({ message: "Bad request" }, 400)
 		}
 
-		const ships = await db.select().from(projectShips).where(eq(projectShips.projectId, id)).orderBy(desc(projectShips.createdAt))
+		const ships = await db
+			.select()
+			.from(projectShips)
+			.where(eq(projectShips.projectId, id))
+			.orderBy(desc(projectShips.createdAt))
 
 		return c.json({ ships: ships }, 200)
 	})
-	.post("payout", async (c) => {
+	.post("/payout", async (c) => {
 		const user = c.get("user")
 		// const logger = c.get("logger")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)

@@ -28,6 +28,7 @@ export const ratings = pgTable("ratings", {
 	documentation: integer().notNull().default(0),
 	creativity: integer().notNull().default(0),
 	implementation: integer().notNull().default(0),
+	feedback: text().notNull()
 }, (t) => [
 	primaryKey({ columns: [t.roundId, t.projectId] })
 	//maybe add a rating category >= 0 check in the future?

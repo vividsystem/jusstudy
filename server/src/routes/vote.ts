@@ -277,3 +277,28 @@ export const voteRoute = new Hono<Env>()
 		}, 200)
 	})
 	.route("/rankings", rankingsRoute)
+
+export const projectRatingsRoute = new Hono<Env>()
+	.get("/", async (c) => {
+		const user = c.get("user")
+		const logger = c.get("logger")
+		if (!user) return c.json({ message: "Unauthorized" }, 401)
+
+
+		const id = c.req.param("id")
+		if (!id) {
+			return c.json({ message: "Bad request" }, 400)
+		}
+
+
+		const [proj] = await db.select().from(projects).where(eq(projects.id, id))
+		if (!proj) {
+			return c.json({ message: "Not found" }, 404)
+		} else if (proj.creatorId != user.id && user.type != "admin") {
+			return c.json({ message: "Forbidden" }, 403)
+		}
+
+		const r = await db.select().from(ratings).where(eq(ratings.projectId, proj.id))
+
+		return c.json({ ratings: r }, 200)
+	})
