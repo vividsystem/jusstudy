@@ -184,7 +184,16 @@ export function ShipCard({ ship }: { ship: Ships[number] }) {
 }
 
 export function RatingCard({ rating }: { rating: Ratings[number] }) {
-	return (<div>
+	return (<div className="flex flex-col w-1/2 rounded-2xl border-4 p-4 text-light-brown gap-4">
+		<span>Feedback</span>
+		<div className="flex flex-row gap-4">
+			<span>Implementation: {rating.implementation}</span>
+			<span>Technicality: {rating.technicality}</span>
+			<span>Creativity: {rating.creativity}</span>
+			<span>Documentation: {rating.documentation}</span>
+
+		</div>
+		<p className="tet">{rating.feedback}</p>
 
 	</div>)
 }
