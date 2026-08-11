@@ -6,6 +6,7 @@ export const rating = z.object({
 	documentation: z.number().min(0).max(5),
 	creativity: z.number().min(0).max(5),
 	implementation: z.number().min(0).max(5),
+	feedback: z.string().nonempty()
 })
 
 export const publishVoteSchema = z.object({

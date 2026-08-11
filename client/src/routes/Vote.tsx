@@ -13,17 +13,23 @@ import { DevlogCard } from "./ProjectDetails"
 
 type Votes = Extract<InferResponseType<typeof client.api.vote.rounds.$post>, { round: unknown }>
 type VoteState = {
-	technicality: number
-	implementation: number
-	documentation: number
-	creativity: number
+	ratings: {
+		technicality: number
+		implementation: number
+		documentation: number
+		creativity: number
+	}
+	feedback: string
 }
 
 const defaultVote: VoteState = {
-	technicality: 0,
-	implementation: 0,
-	documentation: 0,
-	creativity: 0
+	ratings: {
+		technicality: 0,
+		implementation: 0,
+		documentation: 0,
+		creativity: 0,
+	},
+	feedback: ""
 }
 
 export default function VotePage() {
@@ -61,7 +67,8 @@ export default function VotePage() {
 				param: { id: data!.round.id },
 				json: {
 					ratings: sorted.map(p => ({
-						...(votes[p.position]!),
+						...(votes[p.position]!.ratings),
+						feedback: votes[p.position]!.feedback,
 						projectId: p.id,
 					}))
 				}
@@ -92,15 +99,30 @@ export default function VotePage() {
 	const next = () => setIndex(i => (i + 1) % (sorted.length + 1));
 
 	const sumAllVotes = () => {
-		return Object.values(votes).reduce((prev, curr) => (
-			prev + curr.implementation + curr.documentation + curr.creativity + curr.technicality
+		return Object.values(votes).reduce((prev, v) => (
+			prev + v.ratings.implementation + v.ratings.documentation + v.ratings.creativity + v.ratings.technicality
 		), 0)
 	}
-	const updateVote = (position: number, field: keyof VoteState, value: number) => {
-		if (sumAllVotes() - (votes[position] ? votes[position][field] : 0) + value > STAR_BUDGET) return
+	const updateVoteFeedback = (position: number, value: string) => {
 		setVotes(prev => ({
 			...prev,
-			[position]: { ...prev[position] ?? defaultVote, [field]: value }
+			[position]: {
+				...prev[position] ?? defaultVote,
+				feedback: value
+			}
+		}))
+	}
+	const updateVote = (position: number, field: keyof VoteState["ratings"], value: number) => {
+		if (sumAllVotes() - (votes[position] ? votes[position]["ratings"][field] : 0) + value > STAR_BUDGET) return
+		setVotes(prev => ({
+			...prev,
+			[position]: {
+				feedback: prev[position]?.feedback ?? "",
+				ratings: {
+					...(prev[position]?.ratings ?? defaultVote["ratings"]),
+					[field]: value
+				}
+			}
 		}))
 	}
 	return (
@@ -122,7 +144,8 @@ export default function VotePage() {
 				{sorted[index] ? (
 					<VoteCard
 						project={sorted[index]}
-						setVote={(f, v) => updateVote(sorted[index]!.position, f, v)}
+						setVoteRating={(f, v) => updateVote(sorted[index]!.position, f, v)}
+						setVoteFeedback={(v) => updateVoteFeedback(sorted[index]!.position, v)}
 						vote={votes[sorted[index].position] ?? defaultVote}
 					/>
 				) : (
@@ -145,10 +168,11 @@ export default function VotePage() {
 interface VoteCardProps {
 	project: Votes["projects"][number]
 	vote: VoteState
-	setVote: (field: keyof VoteState, value: number) => void
+	setVoteRating: (field: keyof VoteState["ratings"], value: number) => void
+	setVoteFeedback: (value: string) => void
 
 }
-export function VoteCard({ project, vote, setVote }: VoteCardProps) {
+export function VoteCard({ project, vote, setVoteRating: setVote, setVoteFeedback: setFeedback }: VoteCardProps) {
 	//add a dialog w/devlogs
 	const { pushError } = useErrors()
 	const { data, isLoading } = useQuery({
@@ -190,6 +214,17 @@ export function VoteCard({ project, vote, setVote }: VoteCardProps) {
 					</div>
 				</div>
 				<ScoreCard setVote={setVote} vote={vote} />
+				<div className="p-4 text-4xl flex flex-col justify-start gap-2">
+					<label>
+						Your feedback
+					</label>
+					<textarea
+						placeholder="Great project. I liked XYZ. This and this could have been better."
+						className="border-dark-red border-4 rounded-2xl p-2"
+						onInput={(e) => setFeedback(e.currentTarget.value)}
+						value={vote.feedback}
+					/>
+				</div>
 			</div >
 			{isLoading && (
 				<p className="text-4xl">Loading devlogs...</p>
@@ -206,26 +241,26 @@ export function VoteCard({ project, vote, setVote }: VoteCardProps) {
 }
 
 interface ScoreCardProps {
-	setVote: VoteCardProps["setVote"]
+	setVote: VoteCardProps["setVoteRating"]
 	vote: VoteCardProps["vote"]
 }
 function ScoreCard({ setVote, vote }: ScoreCardProps) {
 	return (<div className="flex flex-col px-2 py-4 text-4xl border-t-dark-red border-t-4">
 		<div className="flex flex-row items-center justify-between">
 			<span>Technicality</span>
-			<Rating n={5} setRating={(n) => setVote("technicality", n)} rating={vote.technicality} />
+			<Rating n={5} setRating={(n) => setVote("technicality", n)} rating={vote.ratings.technicality} />
 		</div>
 		<div className="flex flex-row items-center justify-between">
 			<span>Creativity</span>
-			<Rating n={5} setRating={(n) => setVote("creativity", n)} rating={vote.creativity} />
+			<Rating n={5} setRating={(n) => setVote("creativity", n)} rating={vote.ratings.creativity} />
 		</div>
 		<div className="flex flex-row items-center justify-between">
 			<span>Documentation</span>
-			<Rating n={5} setRating={(n) => setVote("documentation", n)} rating={vote.documentation} />
+			<Rating n={5} setRating={(n) => setVote("documentation", n)} rating={vote.ratings.documentation} />
 		</div>
 		<div className="flex flex-row items-center justify-between">
 			<span>Implementation</span>
-			<Rating n={5} setRating={(n) => setVote("implementation", n)} rating={vote.implementation} />
+			<Rating n={5} setRating={(n) => setVote("implementation", n)} rating={vote.ratings.implementation} />
 		</div>
 	</div>)
 }

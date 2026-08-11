@@ -7,14 +7,16 @@ import { useErrors } from "@client/lib/context/ErrorContext";
 import { formatDate, secondsToFormatTime } from "@client/lib/time";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { InferResponseType } from "hono";
-import { ArrowLeft, ArrowRight, DollarSign, Ship } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Clock, DollarSign, Ship } from "lucide-react";
 import { useState } from "react";
 import { Navigate, useParams } from "react-router"
 
 type DevlogResponse = InferResponseType<typeof client.api.projects[":id"]["devlogs"]["$get"]>
 type ShipResponse = InferResponseType<typeof client.api.projects[":id"]["ships"]["$get"]>
+type RatingsResponse = InferResponseType<typeof client.api.projects[":id"]["ratings"]["$get"]>
 type Devlogs = Extract<DevlogResponse, { devlogs: unknown }>["devlogs"]
 type Ships = Extract<ShipResponse, { ships: unknown }>["ships"]
+type Ratings = Extract<RatingsResponse, { ratings: unknown }>["ratings"]
 
 interface ProjectTimelineProps {
 	devlogs: Devlogs
@@ -26,9 +28,32 @@ interface ProjectTimelineProps {
 	isOwner?: boolean
 }
 export function ProjectTimeline(props: ProjectTimelineProps) {
+	const { pushError } = useErrors()
+	const { data: ratings } = useQuery({
+		queryKey: ["projectRatings", props.project?.id],
+		queryFn: async () => {
+			if (!props.isOwner) return []
+			if (!props.project) return []
+			const res = await client.api.projects[":id"].ratings.$get({
+				param: {
+					id: props.project.id
+				}
+			})
+			if (!res.ok) {
+				const data = await res.json()
+				pushError(data.message)
+
+				throw new Error(data.message)
+			}
+
+			const data = await res.json();
+			return data.ratings
+		},
+	})
 	const items = [
 		...props.devlogs.map(d => ({ type: "devlog" as const, createdAt: d.createdAt, data: d })),
 		...props.ships.map(s => ({ type: "ship" as const, createdAt: s.createdAt, data: s })),
+		...(ratings || []).map(r => ({ type: "rating" as const, createdAt: r.createdAt, data: r })),
 	].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 	return (
 		<>
@@ -38,11 +63,16 @@ export function ProjectTimeline(props: ProjectTimelineProps) {
 					Write Devlog
 				</Button>
 			)}
-			{items.map(item =>
-				item.type === "devlog"
-					? <DevlogCard devlog={item.data} project={props.project} />
-					: <ShipCard ship={item.data} />
-
+			{items.map(item => {
+				switch (item.type) {
+					case "devlog":
+						return <DevlogCard devlog={item.data} project={props.project} />
+					case "ship":
+						return <ShipCard ship={item.data} />
+					case "rating":
+						return <RatingCard rating={item.data} />
+				}
+			}
 			)}
 		</>
 	)
@@ -123,12 +153,40 @@ export function DevlogCard({ devlog, project, user }: DevlogCardProps) {
 
 export function ShipCard({ ship }: { ship: Ships[number] }) {
 	return (
-		<div className="flex flex-row w-1/2 px-4">
-			<p className="text-xl">shipped {secondsToFormatTime(ship.timeSpent)}({secondsToFormatTime(ship.loggedTime)}) on {formatDate(ship.createdAt)} (state: {ship.state != "finished" ? ship.state : ""})</p>
+		<div className="flex flex-col w-1/2 border-dark-brown bg-light-brown rounded-2xl border-4 p-4 text-beige">
+			<div className="flex flex-row items-center gap-2">
+				<Ship className="size-8" />
+				<p>Ship</p>
+				<span className={`border-3 rounded-xl p-1
+					${ship.state == "failed" ? "bg-red-400 border-red-500 text-blue-400" : ""}
+					${ship.state == "finished" ? "bg-green-400 border-green-500" : ""}
+					${ship.state == "voting" || ship.state == "pre-payout" ? "bg-blue-400 border-blue-500 text-red-400" : ""}
+					${ship.state == "pre-initial" || ship.state == "pre-fraud" ? "bg-yellow-400 border-yellow-500" : ""}
+					`}>{ship.state}</span>
+			</div>
+			<div className="flex flex-row gap-8">
+				<div className="flex flex-row gap-2 items-center">
+					<Clock className="size-6" />
+					<p>{secondsToFormatTime(ship.loggedTime)}</p>
+				</div>
+				{ship.payout && (
+					<div className="flex flex-row gap-2 items-center">
+						<BookOpen className="size-6" />
+						<p>{ship.payout}</p>
+					</div>
+				)}
+			</div>
+			<p className="text-xl">on {formatDate(ship.createdAt)}</p>
 		</div>
 
 	)
 
+}
+
+export function RatingCard({ rating }: { rating: Ratings[number] }) {
+	return (<div>
+
+	</div>)
 }
 
 
