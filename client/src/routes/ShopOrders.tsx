@@ -4,7 +4,6 @@ import { useErrors } from "@client/lib/context/ErrorContext"
 import { formatDate } from "@client/lib/time"
 import { useQuery } from "@tanstack/react-query"
 import type { InferResponseType } from "hono"
-import { useState } from "react"
 
 function OrderBox({ order }: {
 	order: Extract<InferResponseType<typeof client.api.shop.orders["$get"]>, { orders: unknown }>["orders"][number]

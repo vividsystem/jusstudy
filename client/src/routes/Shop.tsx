@@ -1,11 +1,7 @@
 import ShopItemBox from "@client/components/ShopItemBox"
 import { client } from "@client/lib/api-client"
 import { authClient } from "@client/lib/auth-client"
-import { useErrors } from "@client/lib/context/ErrorContext"
 import { useQuery } from "@tanstack/react-query"
-import type { InferResponseType } from "hono"
-import { ArrowDown, ArrowLeft } from "lucide-react"
-import { useState } from "react"
 import { Navigate } from "react-router"
 
 
