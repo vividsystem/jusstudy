@@ -1,13 +1,8 @@
-import { ErrorToastContainer } from "@client/components/ErrorToastContainer";
 import {
 	createContext,
-	useCallback,
 	useContext,
-	useState,
-	type ReactNode,
 } from "react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface AppError {
 	id: string;
@@ -43,50 +38,7 @@ export interface ErrorContextValue {
 	dismissAll: () => void;
 }
 
-// ─── Context ──────────────────────────────────────────────────────────────────
-
-const ErrorContext = createContext<ErrorContextValue | null>(null);
-
-let _counter = 0;
-const nextId = (): string => `err-${++_counter}-${Date.now()}`;
-
-// ─── Provider ─────────────────────────────────────────────────────────────────
-
-export function ErrorProvider({ children }: { children: ReactNode }) {
-	const [errors, setErrors] = useState<AppError[]>([]);
-
-	const pushError = useCallback(
-		(
-			message: string,
-			title = "Something went wrong",
-			code: number | string | null = null,
-			detail?: unknown
-		): string => {
-			const id = nextId();
-			setErrors((prev) => [
-				...prev,
-				{ id, title, message, code, detail, timestamp: new Date() },
-			]);
-			return id;
-		},
-		[]
-	);
-
-	const dismissError = useCallback((id: string) => {
-		setErrors((prev) => prev.filter((e) => e.id !== id));
-	}, []);
-
-	const dismissAll = useCallback(() => setErrors([]), []);
-
-	return (
-		<ErrorContext.Provider value={{ errors, pushError, dismissError, dismissAll }}>
-			{children}
-			<ErrorToastContainer />
-		</ErrorContext.Provider>
-	);
-}
-
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+export const ErrorContext = createContext<ErrorContextValue | null>(null);
 
 export function useErrors(): ErrorContextValue {
 	const ctx = useContext(ErrorContext);

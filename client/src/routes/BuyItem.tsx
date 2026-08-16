@@ -5,9 +5,8 @@ import { authClient } from "@client/lib/auth-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import type { InferResponseType } from "hono"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Navigate, useParams, useNavigate } from "react-router"
-
 
 type ShopItem = Extract<InferResponseType<typeof client.api.shop.items[":itemId"]["$get"]>, { item: unknown }>["item"]
 
@@ -17,7 +16,7 @@ export default function BuyItem() {
 	const { data } = authClient.useSession()
 	const { itemId } = useParams()
 
-	const { /*isPending, /*error,*/ data: item } = useQuery({
+	const { data: item } = useQuery({
 		queryKey: ["shopItems", itemId],
 		queryFn: async () => {
 			if (!itemId) {
@@ -73,6 +72,7 @@ export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
 	const navigate = useNavigate()
 	const [quantity, setQuantity] = useState(1)
 	const [opts, setOpts] = useState<{ optionId: string, variantId: string, additionalPrice: number }[]>([])
+	const [variantPrice, setVariantPrice] = useState(0)
 
 
 	const setOption = (oId: string, vId: string) => {
@@ -83,12 +83,10 @@ export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
 		} else {
 			setOpts((prev) => prev.map((ov) => ov.optionId === oId ? { ...ov, variantId: vId } : ov))
 		}
+
+		setVariantPrice(opts.reduce((acc, o) => acc + o.additionalPrice, 0))
 	}
 
-	const [variantPrice, setVariantPrice] = useState(0)
-	useEffect(() => {
-		setVariantPrice(opts.reduce((acc, o) => acc + o.additionalPrice, 0))
-	})
 
 	const [addressId, setAddressId] = useState("")
 	const { pushError } = useErrors()

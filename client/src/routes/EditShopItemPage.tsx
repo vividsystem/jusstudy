@@ -2,13 +2,11 @@ import Button from "@client/components/Button"
 import { CheckableInput, Input } from "@client/components/Input"
 import { client } from "@client/lib/api-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
-import type { UpdateShopItemRequest } from "@shared/validation/shop"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import type { InferResponseType } from "hono"
 import { Coins, CornerDownRight, Plus, Trash } from "lucide-react"
 import { useState } from "react"
 import { Navigate, useNavigate, useParams } from "react-router"
-import type z from "zod"
 import { Variant } from "./AddShopItemPage"
 
 type Item = Extract<InferResponseType<typeof client.api.shop.items[":itemId"]["$get"]>, { item: unknown }>["item"]
@@ -78,7 +76,7 @@ function EditItemForm(props: { item: Item }) {
 				throw new Error(data.message)
 			}
 
-			for (let opt of newOptions) {
+			for (const opt of newOptions) {
 				const optRes = await client.api.shop.items[":itemId"].options.$post({ json: opt, param: { itemId: props.item.id } })
 				if (!optRes.ok) {
 					const data = await optRes.json()
@@ -87,7 +85,7 @@ function EditItemForm(props: { item: Item }) {
 
 			}
 
-			for (let variant of newVariants) {
+			for (const variant of newVariants) {
 				const variantRes = await client.api.shop.options[":optionId"].variants.$post({ json: variant, param: { optionId: variant.optionId } })
 				if (!variantRes.ok) {
 					const data = await variantRes.json()
