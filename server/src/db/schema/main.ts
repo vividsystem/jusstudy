@@ -130,7 +130,7 @@ export const shipStatusValues = ["pre-initial", "voting", "pre-fraud", "failed",
 export const shipStatus = pgEnum("ship_status", shipStatusValues)
 export type ProjectShipStatus = typeof shipStatus.enumValues[number]
 
-export const projectShips = pgTable("project_ship", {
+export const projectShips = pgTable("project_ships", {
 	id: uuid().defaultRandom().primaryKey(),
 	createdAt: timestamp().defaultNow().notNull(),
 	timeSpent: integer().notNull(),
