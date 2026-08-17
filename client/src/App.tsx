@@ -17,7 +17,7 @@ import ComingSoon from "./routes/ComingSoon";
 import ReviewPanel from "./routes/ReviewPanel";
 import ProjectReview from "./routes/ProjectReview";
 import VotePage from "./routes/Vote";
-import { ErrorProvider } from "./lib/context/ErrorContext";
+import { ErrorProvider } from "./lib/context/ErrorProvider";
 import RankingPage from "./routes/Ranking";
 import AdminPage from "./routes/Admin";
 import AdminStatsPage from "./routes/AdminStats";
