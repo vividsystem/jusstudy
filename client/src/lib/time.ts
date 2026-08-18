@@ -5,9 +5,18 @@ export function secondsToFormatTime(s: number) {
 		const secondsTillFullHour = s % 3600
 		const hours = (s - secondsTillFullHour) / 3600
 		const minutes = Math.floor(secondsTillFullHour / 60)
-		return minutes != 0 ? `${hours}h ${Math.floor(secondsTillFullHour / 60)}min` : `${hours}h`
+		return minutes != 0 ? `${hours}h${Math.floor(secondsTillFullHour / 60)}min` : `${hours}h`
 	}
 
+}
+
+export function timeAgo(dateStr: string): string {
+	const diff = Date.now() - new Date(dateStr).getTime();
+	const days = Math.floor(diff / 86_400_000);
+	if (days === 0) return "Today";
+	if (days === 1) return "Yesterday";
+	if (days < 30) return `${days}d ago`;
+	return `${Math.floor(days / 30)}mo ago`;
 }
 
 export function formatDate(dateStr: string): string {

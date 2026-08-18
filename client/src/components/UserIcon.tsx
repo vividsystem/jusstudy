@@ -3,7 +3,10 @@ import { User } from "lucide-react";
 import { Navigate } from "react-router";
 
 
-export function Avatar(props: { imageURL?: string | null, size?: number }) {
+export function Avatar(props: { imageURL?: string | null, size?: number, hideMissing?: boolean }) {
+	if (props.hideMissing && !props.imageURL) {
+		return <></>
+	}
 	return (
 		<div>
 			{props.imageURL ? (
@@ -11,7 +14,6 @@ export function Avatar(props: { imageURL?: string | null, size?: number }) {
 					<img src={props.imageURL} className={`size-${String(props.size || 24)} rounded-full`} />
 				</div>
 			) : (
-
 				<div className="bg-gray-600 w-fit rounded-full p-4">
 					<User className={`size-${String(props.size || 24 - 6)} animate-pulse`} />
 				</div>
