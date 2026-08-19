@@ -99,7 +99,7 @@ export function DevlogCard({ devlog, project, user }: DevlogCardProps) {
 			<div className="flex flex-col items-start text-egg-yellow">
 				<div className="flex flex-row gap-2 items-center">
 					{user && (
-						<a className="flex flex-row gap-2 items-center" href={`/user/${user.id}`}>
+						<a className="flex flex-row gap-2 items-center" href={`/users/${user.id}`}>
 							{user.image && (
 								<Avatar size={8} imageURL={user.image} />
 							)}

@@ -1,10 +1,11 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Lock } from "lucide-react"
 import Button from "../Button"
 import { useNavigate } from "react-router"
 import { useErrors } from "@client/lib/context/ErrorContext"
 import { useMutation } from "@tanstack/react-query"
 import { client } from "@client/lib/api-client"
+import Dialog, { type DialogHandle } from "@client/components/Dialog";
 
 interface SubmissionFormProps {
 	shipId: string
@@ -18,6 +19,7 @@ export default function ReviewSubmissionForm(props: SubmissionFormProps) {
 
 	const navigate = useNavigate()
 	const { pushError } = useErrors()
+	const dialog = useRef<DialogHandle>(null)
 
 	const { mutate: submitReview } = useMutation({
 		mutationFn: async () => {
@@ -43,7 +45,26 @@ export default function ReviewSubmissionForm(props: SubmissionFormProps) {
 			navigate("/reviews")
 		},
 	})
-	return <div className="border-4 border-dark-red rounded-2xl p-4 bg-egg-yellow text-dark-red text-xl flex flex-col gap-3">
+
+	const { mutate: lockProject } = useMutation({
+		mutationFn: async () => {
+			const res = await client.api.ships[":id"].reviews.lock.$post({
+				param: { id: props.shipId }, json: {
+					comment: comment,
+					note: note
+				}
+			})
+			if (!res.ok) {
+				const data = await res.json()
+				pushError(data.message)
+				throw new Error(data.message)
+			}
+
+			navigate("/reviews")
+		}
+	})
+
+	return <><div className="border-4 border-dark-red rounded-2xl p-4 bg-egg-yellow text-dark-red text-xl flex flex-col gap-3">
 		<div className="flex flex-col gap-1">
 			<legend className="font-bold">Verdict</legend>
 			<div className="flex gap-2 items-center">
@@ -95,9 +116,35 @@ export default function ReviewSubmissionForm(props: SubmissionFormProps) {
 			</Button>
 			<button
 				className="bg-red-400 w-fit rounded-2xl p-4"
+				onClick={dialog.current?.open}
 			>
 				<Lock className="size-8" />
 			</button>
 		</div>
+
 	</div >
+
+		<Dialog blurBg ref={dialog}>
+			<p>Are you sure you want to lock this project? <br />This can only be undone by an admin</p>
+			<div className="flex gap-2">
+				<Button
+					className="border-2 border-dark-red text-egg-yellow bg-red-400"
+					onClick={() => {
+						lockProject()
+						dialog.current?.close()
+					}}
+				>
+					Lock
+				</Button>
+				<Button
+					className="border-2 border-dark-red"
+					onClick={dialog.current?.close}
+				>
+					Cancel
+
+				</Button>
+			</div>
+		</Dialog>
+
+	</>
 }
