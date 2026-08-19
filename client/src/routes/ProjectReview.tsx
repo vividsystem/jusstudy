@@ -1,67 +1,20 @@
 import { useState } from "react";
-import { Navigate, useNavigate, useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 import { authClient } from "@client/lib/auth-client";
 import Button from "@client/components/Button";
-import { ArrowLeft, BookOpen, Check, Clock, GitPullRequest, Globe, Lock, X } from "lucide-react";
+import { ArrowLeft, Check, Clock, Lock, X } from "lucide-react";
 import { client } from "@client/lib/api-client";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import type { ProjectCategories, ProjectShipStatus } from "@server/db/schema";
+import { useQuery } from "@tanstack/react-query";
 import { type InferResponseType } from "hono/client";
-import { formatDate, secondsToFormatTime } from "@client/lib/time";
+import { formatDate } from "@client/lib/time";
 import { useErrors } from "@client/lib/context/ErrorContext";
+import ReviewCard from "@client/components/reviews/ReviewCard";
+import ReviewSubmissionForm from "@client/components/reviews/SubmissionForm";
 
-// ── Inferred types from Hono client ───────────────────────────────────────
 type ReviewsResponse = InferResponseType<typeof client.api.projects[":id"]["reviews"]["$get"]>;
 
 type Review = Extract<ReviewsResponse, { reviews: unknown }>["reviews"][number];
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-const CATEGORY_META: Record<ProjectCategories, { color: string; dot: string }> = {
-	"Web Development": { color: "bg-sky-500/15 text-sky-300 border-sky-500/30", dot: "bg-sky-400" },
-	"App Development": { color: "bg-violet-500/15 text-violet-300 border-violet-500/30", dot: "bg-violet-400" },
-	"Desktop App Development": { color: "bg-indigo-500/15 text-indigo-300 border-indigo-500/30", dot: "bg-indigo-400" },
-	"Game Development": { color: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30", dot: "bg-emerald-400" },
-	"PCB Design": { color: "bg-yellow-500/15 text-yellow-300 border-yellow-500/30", dot: "bg-yellow-400" },
-	"CAD": { color: "bg-teal-500/15 text-teal-300 border-teal-500/30", dot: "bg-teal-400" },
-};
-
-const STATE_META: Record<ProjectShipStatus, { label: string; color: string; bg: string }> = {
-	"voting": { label: "Voting", color: "text-emerald-400", bg: "bg-emerald-400" },
-	"pre-initial": { label: "T1", color: "text-zinc-400", bg: "bg-zinc-400" },
-	"pre-fraud": { label: "Flagged", color: "text-amber-400", bg: "bg-amber-400" },
-	"failed": { label: "Failed", color: "text-red-400", bg: "bg-red-400" },
-	"finished": { label: "Finished", color: "text-blue-400", bg: "bg-blue-400" },
-	"pre-payout": { label: "Pre-Payout", color: "text-gray-400", bg: "bg-gray-400" }
-};
-
-function LinkButton({ href, icon, label }: { href: string | null | undefined; icon: React.ReactNode; label: string }) {
-	if (!href) return null;
-	return (
-		<a
-			href={href}
-			target="_blank"
-			rel="noopener noreferrer"
-			className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 text-sm text-zinc-300 hover:text-white transition-all"
-		>
-			{icon}
-			{label}
-		</a>
-	);
-}
-
-function TimeStat({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
-	return (
-		<div className={`flex flex-col items-center px-3 py-2.5 rounded-lg border ${highlight ? "bg-amber-500/10 border-amber-500/20" : "bg-zinc-800/60 border-zinc-700/50"
-			}`}>
-			<span className={`text-center font-bold font-mono leading-none ${highlight ? "text-amber-300" : "text-zinc-200"}`}>
-				{secondsToFormatTime(value)}
-			</span>
-			<span className="text-zinc-500 text-xs mt-1">{label}</span>
-		</div>
-	);
-}
-
-// ── Timeline ───────────────────────────────────────────────────────────────
 function TimelineEntry({
 	review,
 	// isCurrentUser,
@@ -71,7 +24,7 @@ function TimelineEntry({
 	// isCurrentUser: boolean;
 	isLast: boolean;
 }) {
-	const [notesOpen, setNotesOpen] = useState(false);
+	const [notesOpen, setNotesOpen] = useState(false)
 	const passed = review.passed
 
 	return (
@@ -137,174 +90,7 @@ function TimelineEntry({
 	);
 }
 
-// ── Review Form ────────────────────────────────────────────────────────────
-function ReviewForm({ shipId }: { shipId: string }) {
-	const [passed, setPassed] = useState(false);
-	const [comment, setComment] = useState("");
-	const [note, setNotes] = useState<string | undefined>();
-	const [submitting, setSubmitting] = useState(false);
 
-	const navigate = useNavigate()
-	const { pushError } = useErrors()
-
-	const { mutate: submitReview } = useMutation({
-		mutationFn: async () => {
-			setSubmitting(true);
-			const res = await client.api.ships[":id"].reviews.$post({
-				param: {
-					id: shipId
-				},
-				json: {
-					passed,
-					comment,
-					note,
-				}
-			})
-
-			if (!res.ok) {
-				const data = await res.json()
-				pushError(data.message)
-				setSubmitting(false);
-				throw new Error(data.message)
-			}
-
-
-			setSubmitting(false);
-			navigate("/reviews")
-		},
-	})
-
-	return (
-		<div className="space-y-5">
-			<div className="space-y-2">
-				<label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Verdict</label>
-				<div className="grid grid-cols-2 gap-3">
-					<button
-						onClick={() => setPassed(true)}
-						className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold transition-all ${passed
-							? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-lg shadow-emerald-500/10"
-							: "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200"
-							}`}
-					>
-						<Check className="size-5" />
-						Pass
-					</button>
-					<button
-						onClick={() => setPassed(false)}
-						className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold transition-all ${!passed
-							? "bg-red-500/20 border-red-500/50 text-red-300 shadow-lg shadow-red-500/10"
-							: "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200"
-							}`}
-					>
-						<X className="size-5" />
-						Fail
-					</button>
-				</div>
-			</div>
-
-			<div className="space-y-1.5">
-				<label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-					Comment
-					<span className="text-red-500">*</span>
-					<span className="text-zinc-600 font-normal normal-case">— visible to creator</span>
-				</label>
-				<textarea
-					value={comment}
-					onChange={(e) => setComment(e.target.value)}
-					placeholder="Explain your decision clearly and constructively…"
-					rows={4}
-					className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 focus:border-zinc-600 rounded-xl text-sm text-white placeholder-zinc-600 outline-none resize-none transition-colors leading-relaxed"
-				/>
-				<p className="text-[11px] text-zinc-600 text-right">
-					{comment.trim().length === 0 ? "Required" : `${comment.length} chars`}
-				</p>
-			</div>
-
-			<div className="space-y-1.5">
-				<label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-					<Lock className="size-3" />
-					Internal notes
-					<span className="text-zinc-600 font-normal normal-case">— reviewers only, optional</span>
-				</label>
-				<textarea
-					value={note}
-					onChange={(e) => setNotes(e.target.value)}
-					placeholder="Red flags, patterns, context for the next reviewer…"
-					rows={3}
-					className="w-full px-4 py-3 bg-amber-500/5 border border-amber-500/15 focus:border-amber-500/35 rounded-xl text-sm text-zinc-300 placeholder-zinc-600 outline-none resize-none transition-colors leading-relaxed"
-				/>
-			</div>
-
-			<button
-				onClick={(e) => {
-					e.preventDefault()
-					submitReview()
-
-				}}
-				className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${passed
-					? "bg-emerald-500 hover:bg-emerald-400 text-white active:scale-[0.98] shadow-lg shadow-emerald-500/20"
-					: "bg-red-500 hover:bg-red-400 text-white active:scale-[0.98] shadow-lg shadow-red-500/20"
-					}`}
-			>
-				{submitting ? (
-					<>
-						<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-						Submitting…
-					</>
-				) : passed ? (
-					<><Check className="size-5" /> Submit Pass</>
-				) : !passed ? (
-					<><X className="size-5" /> Submit Fail</>
-				) : (
-					"Select a verdict to continue"
-				)}
-			</button>
-		</div>
-	);
-}
-
-// ── Skeleton ───────────────────────────────────────────────────────────────
-function PageSkeleton() {
-	return (
-		<div className="max-w-350 mx-auto px-6 py-8">
-			<div className="grid grid-cols-1 lg:grid-cols-[1fr_280px_400px] xl:grid-cols-[1fr_300px_420px] gap-6 items-start animate-pulse">
-				<div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
-					<div className="h-7 bg-zinc-800 rounded-lg w-2/3" />
-					<div className="h-4 bg-zinc-800 rounded w-1/4" />
-					<div className="space-y-2">
-						<div className="h-3 bg-zinc-800 rounded w-full" />
-						<div className="h-3 bg-zinc-800 rounded w-5/6" />
-						<div className="h-3 bg-zinc-800 rounded w-4/6" />
-					</div>
-					<div className="grid grid-cols-3 gap-2.5">
-						{[0, 1, 2].map((i) => <div key={i} className="h-14 bg-zinc-800 rounded-lg" />)}
-					</div>
-					<div className="flex gap-2">
-						<div className="h-9 bg-zinc-800 rounded-lg w-24" />
-						<div className="h-9 bg-zinc-800 rounded-lg w-24" />
-					</div>
-				</div>
-				<div className="space-y-3">
-					<div className="h-4 bg-zinc-800 rounded w-1/2" />
-					<div className="h-24 bg-zinc-800 rounded-xl" />
-					<div className="h-24 bg-zinc-800 rounded-xl" />
-				</div>
-				<div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
-					<div className="h-5 bg-zinc-800 rounded w-1/2" />
-					<div className="grid grid-cols-2 gap-3">
-						<div className="h-12 bg-zinc-800 rounded-xl" />
-						<div className="h-12 bg-zinc-800 rounded-xl" />
-					</div>
-					<div className="h-28 bg-zinc-800 rounded-xl" />
-					<div className="h-20 bg-zinc-800 rounded-xl" />
-					<div className="h-12 bg-zinc-800 rounded-xl" />
-				</div>
-			</div>
-		</div>
-	);
-}
-
-// ── Main Page ──────────────────────────────────────────────────────────────
 export default function ProjectReview() {
 
 	const { data: session } = authClient.useSession();
@@ -325,7 +111,6 @@ function Page({ id }: PageProps) {
 
 	const { pushError } = useErrors()
 
-
 	const { data, isPending } = useQuery({
 		queryKey: ["review", id],
 		queryFn: async () => {
@@ -345,6 +130,15 @@ function Page({ id }: PageProps) {
 			}
 			const { project } = await projectRes.json();
 
+
+			const userRes = await client.api.users[":id"].$get({ param: { id: project.creatorId } });
+			if (!userRes.ok) {
+				const err = await userRes.json();
+				pushError(err.message);
+				throw new Error(err.message)
+			}
+			const { user } = await userRes.json();
+
 			const reviewsRes = await client.api.projects[":id"].reviews.$get({ param: { id: project.id } });
 			if (!reviewsRes.ok) {
 				const err = await reviewsRes.json();
@@ -354,7 +148,7 @@ function Page({ id }: PageProps) {
 			const { reviews } = await reviewsRes.json();
 
 			// Return everything so the component can use it
-			return { ship, project, reviews };
+			return { ship, project, reviews, creator: user };
 		},
 	});
 
@@ -362,30 +156,28 @@ function Page({ id }: PageProps) {
 	// Show skeleton while loading — data is guaranteed non-null below this point
 	if (isPending || !data) {
 		return (
-			<div className="min-h-screen bg-zinc-950 text-white">
+			<div className="min-h-screen w-full">
 				<header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur-xl">
-					<div className="max-w-350 mx-auto px-6 py-4 flex items-center gap-4">
+					< div className="max-w-350 mx-auto px-6 py-4 flex items-center gap-4" >
 						<Button href="/reviews" className="flex items-center gap-2 text-sm text-zinc-500 shrink-0">
 							<ArrowLeft className="size-4" />
 							Back to portal
 						</Button>
-					</div>
-				</header>
-				<PageSkeleton />
-			</div>
+					</div >
+				</header >
+				<p>loading...</p>
+			</div >
 		);
 	}
 
-	const { ship, project, reviews } = data;
+	const { ship, project, reviews, creator } = data;
 	if (ship.state != "pre-initial" && ship.state != "pre-fraud") {
 		return <Navigate to={"/reviews"} />
 	}
 
-	const catMeta = CATEGORY_META[project.category];
-	const stateMeta = STATE_META[ship.state];
 
 	return (
-		<div className="min-h-screen bg-zinc-950 text-white">
+		<div className="min-h-screen w-full">
 			{/* ── Header ── */}
 			<header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur-xl">
 				<div className="max-w-350 mx-auto px-6 py-4 flex items-center gap-4">
@@ -396,68 +188,18 @@ function Page({ id }: PageProps) {
 						<ArrowLeft className="size-4" />
 						Back to portal
 					</Button>
-					<div className="w-px h-4 bg-zinc-800 shrink-0" />
-					<div className="flex items-center gap-2 min-w-0">
-						<span className={`w-2 h-2 rounded-full shrink-0 ${stateMeta.bg}`} />
-						<span className="text-sm text-zinc-400 truncate">
-							Reviewing <span className="text-white font-semibold">{project.name}</span>
-						</span>
-					</div>
-					<div className="ml-auto shrink-0">
-						<span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${catMeta.color}`}>
-							<span className={`w-1.5 h-1.5 rounded-full ${catMeta.dot}`} />
-							{project.category}
-						</span>
-					</div>
 				</div>
 			</header>
 
-			{/* ── Three-column body ── */}
-			<div className="max-w-350 mx-auto px-6 py-8">
-				<div className="grid grid-cols-1 lg:grid-cols-[1fr_280px_400px] xl:grid-cols-[1fr_300px_420px] gap-6 items-start">
+			<div className="w-full grid grid-cols-2 p-4">
 
-					{/* ── COL 1: Project details ── */}
-					<div className="min-w-0">
-						<div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-							<div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent" />
-							<div className="p-6 space-y-5">
-								<div className="flex items-start justify-between gap-3">
-									<div className="space-y-2 min-w-0">
-										<h1 className="text-2xl font-bold text-white leading-tight">{project.name}</h1>
-										{/*
-										<div className="flex items-center gap-2">
-											<span className="text-sm text-zinc-400">
-												by <span className="text-zinc-200 font-medium">{project.creatorName}</span>
-											</span>
-										</div>
-										*/}
-									</div>
-									<span className={`shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase ${stateMeta.color}`}>
-										<span className={`w-1.5 h-1.5 rounded-full animate-pulse ${stateMeta.bg}`} />
-										{stateMeta.label}
-									</span>
-								</div>
+				<div>
+					<ReviewCard project={project} ship={ship} creator={creator} />
+				</div>
 
-								{project.description && (
-									<p className="text-sm text-zinc-300 leading-relaxed">{project.description}</p>
-								)}
+				<div className="flex flex-col gap-4">
+					<ReviewSubmissionForm shipId={ship.id} />
 
-								<div className="grid grid-cols-3 gap-2.5">
-									<TimeStat label="Logged" value={ship.loggedTime} highlight />
-									<TimeStat label="Spent" value={ship.timeSpent} />
-									<TimeStat label="Total" value={ship.totalTime} />
-								</div>
-
-								<div className="flex flex-wrap gap-2">
-									<LinkButton href={project.demoLink} icon={<Globe className="size-3.5" />} label="Live demo" />
-									<LinkButton href={project.repository} icon={<GitPullRequest className="size-3.5" />} label="Repository" />
-									<LinkButton href={project.readmeLink} icon={<BookOpen className="size-3.5" />} label="README" />
-								</div>
-							</div>
-						</div>
-					</div>
-
-					{/* ── COL 2: Review history timeline ── */}
 					<div className="lg:sticky lg:top-18.25 lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto pr-1">
 						<div className="mb-4 flex items-center gap-2">
 							<h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider whitespace-nowrap">
@@ -485,21 +227,6 @@ function Page({ id }: PageProps) {
 							</div>
 						)}
 					</div>
-
-					{/* ── COL 3: Review form ── */}
-					<div className="lg:sticky lg:top-18.25">
-						<div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-							<div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent" />
-							<div className="p-6">
-								<h2 className="text-base font-bold text-white mb-0.5">Submit your review</h2>
-								<p className="text-xs text-zinc-500 mb-5">
-									Your decision will affect this project's status.
-								</p>
-								<ReviewForm shipId={ship.id} />
-							</div>
-						</div>
-					</div>
-
 				</div>
 			</div>
 		</div>
