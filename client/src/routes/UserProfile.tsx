@@ -193,7 +193,8 @@ interface DevlogTimelineProps {
 function DevlogTimeline({ devlogs, user }: DevlogTimelineProps) {
 	return (
 		<div className="w-full flex flex-col items-center text-4xl">
-			{devlogs ? devlogs.map((d) => <DevlogCard devlog={d} project={d.project} user={user} />) : (
+			{devlogs && devlogs.map((d) => <DevlogCard devlog={d} project={d.project} user={user} />)}
+			{devlogs?.length === 0 && (
 				<p>no devlogs yet...</p>
 			)}
 		</div>
