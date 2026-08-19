@@ -56,7 +56,7 @@ export default function ReviewCard({ ship, project, creator }: ReviewProjectCard
 			</div>
 			<div className="flex gap-2 items-center text-xl">
 				<span>by</span>
-				<Link href="/users" external={false} className="group grup-has-[*:nth-child(2)]:gap-2">
+				<Link href={`/users/${creator.id}`} external={false} className="group grup-has-[*:nth-child(2)]:gap-2">
 					<Avatar imageURL={creator.image} size={8} hideMissing />
 					<span className="hover:text-dark-red transition-colors">{creator.nickname}</span>
 				</Link>

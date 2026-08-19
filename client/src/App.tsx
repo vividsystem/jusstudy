@@ -58,7 +58,7 @@ function App() {
 							<Route path="/explore" element={<ComingSoon />} />
 							<Route path="/guides" element={<ComingSoon />} />
 
-							<Route path="/user/:id" element={<UserProfile />} />
+							<Route path="/users/:id" element={<UserProfile />} />
 
 							<Route path="/reviews" element={<ReviewPanel />} />
 							<Route path="/reviews/:id" element={<ProjectReview />} />
