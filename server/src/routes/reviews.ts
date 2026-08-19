@@ -46,32 +46,18 @@ export const projectReviewsRoute = new Hono<{
 		}
 
 		const { note, ...reviewCols } = getTableColumns(projectReviews)
-		if (user.type != "participant") {
-			const reviews = (await db.select({
-				review: {
-					...reviewCols,
-					note
-				}
-			}).from(projectShips)
-				.where(eq(projectShips.projectId, id))
-				.leftJoin(projectReviews, eq(projectReviews.shipId, projectShips.id)))
-				.map(r => r.review)
-				.filter((r): r is NonNullable<typeof r> => r !== null);
+		const reviews = (await db.select({
+			review: {
+				...(user.type != "participant" ? { note } : {}),
+				...reviewCols
+			}
+		}).from(projectShips)
+			.where(eq(projectShips.projectId, id))
+			.leftJoin(projectReviews, eq(projectReviews.shipId, projectShips.id)))
+			.map(r => r.review)
+			.filter((r): r is NonNullable<typeof r> => r !== null);
 
-			return c.json({ reviews: (reviews as (typeof projectReviews.$inferSelect)[]) }, 200)
-		} else {
-			const reviews = (await db.select({
-				review: reviewCols,
-			}).from(projectShips)
-				.where(eq(projectShips.projectId, id))
-				.leftJoin(projectReviews, eq(projectReviews.shipId, projectShips.id)))
-				.map(r => r.review)
-				.filter((r): r is NonNullable<typeof r> => r !== null);
-
-			return c.json({
-				reviews: (reviews as Omit<(typeof projectReviews.$inferSelect), "note">[])
-			}, 200)
-		}
+		return c.json({ reviews: (reviews as (typeof projectReviews.$inferSelect)[]) }, 200)
 	})
 
 export const shipReviewsRoute = new Hono<{
