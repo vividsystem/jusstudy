@@ -1,11 +1,11 @@
 import Button from "@client/components/Button"
-import ConfirmDialog from "@client/components/ConfirmDialog"
+import Dialog, { type DialogHandle } from "@client/components/Dialog"
 import { AdminShopItemBox } from "@client/components/ShopItemBox"
 import { client } from "@client/lib/api-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useNavigate } from "react-router"
 
 export default function AdminShopPage() {
@@ -38,19 +38,26 @@ export default function AdminShopPage() {
 		}
 	})
 
-	const [showConfirm, setShowConfirm] = useState<boolean>(false)
+	const dialog = useRef<DialogHandle>(null)
 
 	const onDelete = (id: string) => {
 		setIdToDelete(id)
-		setShowConfirm(true)
+		dialog.current?.open()
 	}
 
 	return (
 		<main className="w-full min-h-screen p-4 text-4xl flex flex-col gap-4">
-			<ConfirmDialog description="Are you sure you want to take this item out of the shop?" onConfirm={() => {
-				softDeleteItem()
-				setIdToDelete("")
-			}} setShow={setShowConfirm} show={showConfirm} />
+			<Dialog ref={dialog}>
+				<p>Are you sure you want to take this item out of the shop?</p>
+				<div className="flex flex-row gap-4">
+					<Button onClick={() => {
+						softDeleteItem()
+						setIdToDelete("")
+						dialog.current?.close()
+					}} className="bg-dark-red text-beige">Confirm</Button>
+					<Button className="bg-beige text-dark-red" onClick={() => dialog.current?.close()}>Cancel</Button>
+				</div>
+			</Dialog>
 			<div className="flex flex-row justify-between items-center">
 				<h1 className="text-4xl">Shop Admin Panel</h1>
 				<Button href="/admin/shop/new" className="w-fit border-dark-red bg-egg-yellow border-4"><Plus /></Button>
