@@ -87,8 +87,8 @@ export const voteRoute = new Hono<Env>()
 		return c.json({
 			round, projects: projectDetails.map(s => ({
 				...s.projects,
-				timeSpent: s.project_ship.timeSpent,
-				loggedTime: s.project_ship.loggedTime,
+				timeSpent: s.project_ships.timeSpent,
+				loggedTime: s.project_ships.loggedTime,
 				position: roundProjects.find(p => p.projectId == s.projects.id)!.position
 			}))
 		}, 201)
@@ -270,8 +270,8 @@ export const voteRoute = new Hono<Env>()
 		return c.json({
 			round, projects: projectDetails.map(s => ({
 				...s.projects,
-				timeSpent: s.project_ship.timeSpent,
-				loggedTime: s.project_ship.loggedTime,
+				timeSpent: s.project_ships.timeSpent,
+				loggedTime: s.project_ships.loggedTime,
 				position: roundProjects.find(p => p.projectId == s.projects.id)!.position
 			}))
 		}, 200)
