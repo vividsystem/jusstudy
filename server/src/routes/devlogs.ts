@@ -176,5 +176,4 @@ export const projectDevlogsRoute = new Hono<Env>()
 		}, 200)
 
 	})
-// TODO: get all devlogs of project
 // TOOD: get one

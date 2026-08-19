@@ -7,7 +7,7 @@ import { Hono } from "hono";
 import { NewAddressSchema } from "@shared/validation/addresses"
 import z from "zod";
 import type { Env } from "..";
-import { singleProjectTime, sortedUserProjectTimes } from "@server/hackatime/client";
+import { sortedUserProjectTimes } from "@server/hackatime/client";
 
 const searchSchema = z.object({
 	q: z.string().min(1).max(100),
