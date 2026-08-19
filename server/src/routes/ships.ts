@@ -1,6 +1,6 @@
 import db from "@server/db";
-import { devlogs, hackatimeProjectLinks, projects, projectShips, projectStats, ratings } from "@server/db/schema";
-import { desc, eq, getTableColumns } from "drizzle-orm";
+import { devlogs, hackatimeProjectLinks, projectLocks, projects, projectShips, projectStats, ratings } from "@server/db/schema";
+import { and, desc, eq, getTableColumns, isNull } from "drizzle-orm";
 import { Hono } from "hono";
 import { shipReviewsRoute } from "./reviews";
 import { singleProjectTime } from "@server/hackatime/client";
@@ -44,26 +44,38 @@ export const projectShipRoute = new Hono<Env>()
 			return c.json({ message: "Bad request" }, 400)
 		}
 
-		const res = await db.select().from(projects).where(eq(projects.id, id))
-		if (res.length == 0) {
+
+
+		const [project] = await db.select().from(projects).where(eq(projects.id, id))
+		if (!project) {
 			return c.json({ message: "Ressource not found" }, 404)
-		}
-		const project = res[0]!
-		if (project.creatorId != user.id) {
+		} else if (project.creatorId != user.id) {
 			return c.json({ message: "Forbidden" }, 403)
 		}
 
+		const [lock] = await db
+			.select()
+			.from(projectLocks)
+			.where(and(
+				eq(projectLocks.projectId, id),
+				isNull(projectLocks.unlockedAt)
+			))
+		if (lock) {
+			return c.json({ message: "Project locked." }, 403)
+		}
 
-		const lastShip = await db
+
+		const [lastShip] = await db
 			.select()
 			.from(projectShips)
 			.where(eq(projectShips.projectId, project.id))
 			.orderBy(desc(projectShips.createdAt))
 			.limit(1)
-		if (lastShip.length > 0 && !(lastShip[0]?.state == "finished" || lastShip[0]?.state == "failed")) {
+		if (lastShip && (lastShip.state == "finished" || lastShip.state == "failed")) {
 			return c.json({ message: "This project has other unfinished ships" }, 400)
 		}
-		const lastDevlog = await db
+
+		const [lastDevlog] = await db
 			.select()
 			.from(devlogs)
 			.where(eq(devlogs.projectId, project.id))
@@ -71,8 +83,8 @@ export const projectShipRoute = new Hono<Env>()
 			.limit(1)
 
 
-		const timeAlreadyShipped = lastShip[0]?.timeSpent || 0
-		const loggedTime = (lastDevlog[0]?.timeSpent || 0) - (lastShip[0]?.loggedTime || 0)
+		const timeAlreadyShipped = lastShip?.timeSpent || 0
+		const loggedTime = (lastDevlog?.timeSpent || 0) - (lastShip?.loggedTime || 0)
 
 
 		const links = await db.select().from(hackatimeProjectLinks).where(eq(hackatimeProjectLinks.projectId, id))
@@ -135,24 +147,35 @@ export const projectShipRoute = new Hono<Env>()
 		// const logger = c.get("logger")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
-		return c.json({ message: "Currently disabled!" }, 400)
+		return c.json({ message: "Currently disabled while we gather data to make payout amounts fair!" }, 400)
 		// const id = c.req.param("id")
 		// if (!id) {
 		// 	return c.json({ message: "Bad request" }, 400)
 		// }
 		//
-		// const projectRes = await db
+		// const [project] = await db
 		// 	.select()
 		// 	.from(projects)
 		// 	.where(eq(projects.id, id))
-		// if (projectRes.length == 0) {
+		// if (!project) {
 		// 	return c.json({ message: "Not found" }, 404)
-		// }
-		// const project = projectRes[0]!
-		// if (project.creatorId != user.id) {
+		// } else if (project.creatorId != user.id) {
 		// 	return c.json({ message: "Forbidden" }, 403)
 		// }
-		// const activeShips = await db
+		//
+		// const [lock] = await db
+		// 	.select()
+		// 	.from(projectLocks)
+		// 	.where(and(
+		// 		eq(projectLocks.projectId, id),
+		// 		isNull(projectLocks.unlockedAt)
+		// 	))
+		// if (lock) {
+		// 	return c.json({ message: "Project locked." }, 403)
+		//
+		// }
+		//
+		// const [ship] = await db
 		// 	.select()
 		// 	.from(projectShips)
 		// 	.where(
@@ -161,14 +184,13 @@ export const projectShipRoute = new Hono<Env>()
 		// 			eq(projectShips.state, "pre-payout")
 		// 		)
 		// 	)
-		// if (activeShips.length == 0) {
+		// if (!ship) {
 		// 	return c.json({ message: "No active pre-payout ships found" }, 404)
 		// }
-		// const ship = activeShips[0]!
 		//
 		// const [uStats] = await db.select().from(userStats).where(eq(userStats.userId, user.id))
 		// if (!uStats) {
-		//  logger.error({ ship, activeShips, project }, "Couldnt find user stats")
+		// 	logger.error({ ship, project }, "Couldnt find user stats")
 		// 	return c.json({ message: "Something went wrong" }, 500)
 		// }
 		//
@@ -211,6 +233,5 @@ export const projectShipRoute = new Hono<Env>()
 		// 		.where(eq(users.id, user.id))
 		//
 		// 	return c.json({ message: "Coins awarded", amount: shipRes.payout }, 201)
-		//
-		// })
+
 	})

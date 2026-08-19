@@ -1,8 +1,8 @@
 import db from "@server/db";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator"
-import { devlogs, hackatimeProjectLinks, projects, users } from "@server/db/schema";
-import { and, eq, getTableColumns, sum } from "drizzle-orm";
+import { devlogs, hackatimeProjectLinks, projectLocks, projects, users } from "@server/db/schema";
+import { and, eq, getTableColumns, isNull, sum } from "drizzle-orm";
 import { HackatimeLinkRequestSchema, NewProjectRequestSchema, UpdateProjectRequestSchema } from "@shared/validation/projects";
 import { projectDevlogsRoute } from "./devlogs";
 import z from "zod";
@@ -138,11 +138,20 @@ export const projectsRoute = new Hono<Env>()
 			.where(eq(projects.id, id))
 		if (!project) {
 			return c.json({ message: "Ressource not found" }, 404)
-		}
-		if (project.creatorId != user.id) {
+		} else if (project.creatorId != user.id) {
 			return c.json({ message: "Forbidden" }, 403)
 		}
 
+		const [lock] = await db
+			.select()
+			.from(projectLocks)
+			.where(and(
+				eq(projectLocks.projectId, id),
+				isNull(projectLocks.unlockedAt)
+			))
+		if (lock) {
+			return c.json({ message: "Project locked." }, 403)
+		}
 
 		const data = c.req.valid('json')
 

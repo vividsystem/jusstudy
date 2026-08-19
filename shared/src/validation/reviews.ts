@@ -5,3 +5,8 @@ export const NewReviewSchema = z.object({
 	comment: z.string().nonempty(),
 	note: z.string().optional(),
 })
+
+export const LockReviewSchema = z.object({
+	comment: z.string().nonempty(),
+	note: z.string().optional(),
+})

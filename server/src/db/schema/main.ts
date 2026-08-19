@@ -95,6 +95,16 @@ export const addressesRelations = relations(addresses, ({ one, many }) => ({
 	orders: many(shopOrders)
 }))
 
+
+export const projectLocks = pgTable("project_locks", {
+	projectId: uuid().references(() => projects.id).notNull(),
+	shipId: uuid().references(() => projectShips.id).notNull(),
+	lockedAt: timestamp().defaultNow().notNull(),
+	unlockedAt: timestamp(),
+}, (table) => [
+	primaryKey({ columns: [table.projectId, table.shipId] })
+])
+
 export const projectReviews = pgTable("project_reviews", {
 	createdAt: timestamp().defaultNow().notNull(),
 	passed: boolean().default(false).notNull(),
