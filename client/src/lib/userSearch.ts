@@ -10,6 +10,7 @@ async function searchUsers(q: string, pushError: (v: string) => void) {
 	const res = await client.api.users.search.$get({
 		query: {
 			q: q,
+			limit: String(10)
 		}
 	})
 	if (!res.ok) {
