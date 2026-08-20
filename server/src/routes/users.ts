@@ -133,6 +133,41 @@ export const usersRoutes = new Hono<Env>()
 
 		return c.json({ addresses: res }, 200)
 	})
+	.get("/search", zValidator("query", searchSchema), async (c) => {
+		const user = c.get("user")
+		if (!user || user.type != "admin") return c.json({ message: "Unauthorized" }, 401)
+
+		const { q, limit, offset } = c.req.valid("query");
+
+		const tsQuery = q
+			.trim()
+			.split(/\s+/)
+			.map((word) => `${word}:*`) // this does prefixes as well
+			.join(" & ");
+
+		const results = await db
+			.select({
+				id: users.id,
+				name: users.name,
+				nickname: users.nickname,
+				slackId: users.slackId,
+				type: users.type,
+				image: users.image,
+				rank: sql<number>`ts_rank(search_vector, to_tsquery('english', ${tsQuery}))`,
+			})
+			.from(users)
+			.where(
+				sql`search_vector @@ to_tsquery('english', ${tsQuery})`
+			)
+			.orderBy(desc(sql`ts_rank(search_vector, to_tsquery('english', ${tsQuery}))`))
+			.limit(limit)
+			.offset(offset);
+		if (results.length === 0) {
+			return c.json({ message: "No users found" }, 404)
+		}
+
+		return c.json({ results, query: q }, 200);
+	})
 	.post("/:id/ban", async (c) => {
 		const user = c.get("user")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
@@ -251,38 +286,4 @@ export const usersRoutes = new Hono<Env>()
 
 
 		return c.json({ devlogs: dlogs }, 201)
-
 	})
-	.get("/search", zValidator("query", searchSchema), async (c) => {
-		const user = c.get("user")
-		if (!user || user.type != "admin") return c.json({ message: "Unauthorized" }, 401)
-
-		const { q, limit, offset } = c.req.valid("query");
-
-		const tsQuery = q
-			.trim()
-			.split(/\s+/)
-			.map((word) => `${word}:*`) // this does prefixes as well
-			.join(" & ");
-
-		const results = await db
-			.select({
-				id: users.id,
-				name: users.name,
-				nickname: users.nickname,
-				slackId: users.slackId,
-				type: users.type,
-				image: users.image,
-				rank: sql<number>`ts_rank(search_vector, to_tsquery('english', ${tsQuery}))`,
-			})
-			.from(users)
-			.where(
-				sql`search_vector @@ to_tsquery('english', ${tsQuery})`
-			)
-			.orderBy(desc(sql`ts_rank(search_vector, to_tsquery('english', ${tsQuery}))`))
-			.limit(limit)
-			.offset(offset);
-
-		return c.json({ results, query: q }, 200);
-	}
-	);
