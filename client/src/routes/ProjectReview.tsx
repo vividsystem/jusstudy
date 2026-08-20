@@ -109,7 +109,7 @@ function Page({ id }: PageProps) {
 				</div>
 			</header>
 
-			<div className="w-full grid grid-cols-2 p-4 gap-4">
+			<div className="w-full grid grid-cols-2 2xl:grid-cols-3 p-4 gap-4">
 				<div>
 					<ReviewCard project={project} ship={ship} creator={creator} />
 				</div>
@@ -117,8 +117,12 @@ function Page({ id }: PageProps) {
 				<div className="flex flex-col gap-4">
 					<ReviewSubmissionForm shipId={ship.id} />
 
-					<ReviewHistory reviews={reviews} />
 				</div>
+				<div>
+					{/* add hackatime stuff here */}
+				</div>
+
+				<ReviewHistory reviews={reviews} />
 			</div>
 		</div>
 	);
