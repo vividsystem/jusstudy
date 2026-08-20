@@ -8,8 +8,8 @@ import type { InferResponseType } from "hono";
 import { Clock, PieChart } from "lucide-react";
 import { useState } from "react";
 import { Navigate, useParams } from "react-router";
-import { DevlogCard } from "./ProjectDetails";
 import { secondsToFormatTime } from "@client/lib/time";
+import { DevlogCard } from "@client/components/devlogs/Card";
 
 
 export function CharacterSkeleton() {
@@ -22,9 +22,7 @@ export function MultiCharacterSkeleton() {
 	return (
 		<div className="h-8 w-14 text-2xl bg-dark-brown rounded-md animate-pulse"></div>
 	)
-
 }
-
 
 function StatsSkeleton() {
 	return (

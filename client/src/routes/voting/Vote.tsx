@@ -1,4 +1,5 @@
 import Button from "@client/components/Button"
+import { DevlogCard } from "@client/components/devlogs/Card"
 import Rating from "@client/components/Rating"
 import { client } from "@client/lib/api-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
@@ -8,7 +9,6 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import type { InferResponseType } from "hono"
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react"
 import { useState } from "react"
-import { DevlogCard } from "./ProjectDetails"
 
 
 type Votes = Extract<InferResponseType<typeof client.api.vote.rounds.$post>, { round: unknown }>
