@@ -26,6 +26,7 @@ import AdminStatsPage from "./routes/admin/AdminStats";
 import AdminShopPage from "./routes/admin/AdminShopPage";
 import AddShopItemPage from "./routes/admin/AddShopItemPage";
 import EditShopItemPage from "./routes/admin/EditShopItemPage";
+import AdminUserHistoryPage from "./routes/admin/AdminUserHistory";
 // import RSVP from "./routes/RSVP";
 
 function App() {
@@ -66,7 +67,7 @@ function App() {
 							<Route element={<AdminRoute />}>
 								<Route path="/admin" element={<AdminPage />} />
 								<Route path="/admin/stats" element={<AdminStatsPage />} />
-								<Route path="/admin/user-history/:id" element={<AdminPage />} />
+								<Route path="/admin/user-history/:id" element={<AdminUserHistoryPage />} />
 								<Route path="/admin/shop" element={<AdminShopPage />} />
 								<Route path="/admin/shop/new" element={<AddShopItemPage />} />
 								<Route path="/admin/shop/item/:id/edit" element={<EditShopItemPage />} />

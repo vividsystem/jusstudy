@@ -34,7 +34,6 @@ export const projectsRoute = new Hono<Env>()
 			return c.json({ message: "Something went wrong" }, 500)
 		}
 
-
 		return c.json({
 			projects: res.map(p => {
 				const { hackatimeLinks, ...rest } = p
@@ -42,7 +41,19 @@ export const projectsRoute = new Hono<Env>()
 			})
 		}, 200)
 	})
+	.get("/locks", async (c) => {
+		const user = c.get("user")
 
+		if (!user) return c.json({ message: "Unauthorized" }, 401)
+
+		const locks = await db
+			.select(getTableColumns(projectLocks))
+			.from(projectLocks)
+			.innerJoin(projects, eq(projects.id, projectLocks.projectId))
+			.where(eq(projects.creatorId, user.id))
+		return c.json({ locks }, 200)
+
+	})
 
 	// get project by id
 	.get("/:id", async (c) => {
@@ -53,8 +64,76 @@ export const projectsRoute = new Hono<Env>()
 			return c.json({ message: "Ressource not found" }, 404)
 		}
 
-
 		return c.json({ project: res[0]! }, 200)
+	})
+	.get("/:id/locks", async (c) => {
+		const user = c.get("user")
+		if (!user) return c.json({ message: "unauthorized" }, 401)
+
+		const id = c.req.param("id")
+
+		const [project] = await db.select({ creatorId: projects.creatorId }).from(projects).where(eq(projects.id, id))
+		if (!project) {
+			return c.json({ message: "Ressource not found" }, 404)
+		} else if (user.type != "admin" && user.id !== project.creatorId) {
+			return c.json({ message: "Forbidden" })
+		}
+
+		const locks = await db.select().from(projectLocks).where(eq(projectLocks.projectId, id))
+
+		return c.json({ locks: locks }, 200)
+	})
+	.get("/:id/locks/active", async (c) => {
+		const user = c.get("user")
+		if (!user) return c.json({ message: "unauthorized" }, 401)
+
+		const id = c.req.param("id")
+
+		const [project] = await db.select({ creatorId: projects.creatorId }).from(projects).where(eq(projects.id, id))
+		if (!project) {
+			return c.json({ message: "Ressource not found" }, 404)
+		} else if (user.type != "admin" && user.id !== project.creatorId) {
+			return c.json({ message: "Forbidden" })
+		}
+
+		const [lock] = await db
+			.select()
+			.from(projectLocks)
+			.where(and(
+				eq(projectLocks.projectId, id),
+				isNull(projectLocks.unlockedAt)
+			))
+		if (!lock) {
+			return c.json({ message: "Not locked" }, 404)
+		}
+
+		return c.json({ lock: lock }, 200)
+	})
+	.post("/:id/unlock", async (c) => {
+		const user = c.get("user")
+		if (!user) return c.json({ message: "Unauthorized" }, 401)
+		if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
+
+		const id = c.req.param("id")
+
+		const [lock] = await db
+			.select()
+			.from(projectLocks)
+			.where(and(
+				eq(projectLocks.projectId, id),
+				isNull(projectLocks.unlockedAt),
+			))
+		if (!lock) {
+			return c.json({ message: "Project not locked" }, 400)
+		}
+
+
+		await db.update(projectLocks)
+			.set({ unlockedAt: new Date() })
+			.where(and(eq(projectLocks.projectId, lock.projectId), eq(projectLocks.shipId, lock.shipId)))
+
+		return c.json({ message: "Project unlocked." }, 200)
+
 	})
 	.get("/:id/time", async (c) => {
 		const id = c.req.param("id")
