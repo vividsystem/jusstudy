@@ -155,32 +155,3 @@ export const shipReviewsRoute = new Hono<{
 
 
 	})
-	.post("/unlock", async (c) => {
-		const user = c.get("user")
-		if (!user) return c.json({ message: "Unauthorized" }, 401)
-		if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
-
-		const id = c.req.param("id")
-		if (!id) {
-			return c.json({ message: "Bad request" }, 400)
-		}
-
-		const [lock] = await db
-			.select()
-			.from(projectLocks)
-			.where(and(
-				eq(projectLocks.shipId, id),
-				isNull(projectLocks.unlockedAt),
-			))
-		if (!lock) {
-			return c.json({ message: "Project not locked" }, 400)
-		}
-
-
-		await db.update(projectLocks)
-			.set({ unlockedAt: new Date() })
-			.where(and(eq(projectLocks.projectId, lock.projectId), eq(projectLocks.shipId, lock.shipId)))
-
-		return c.json({ message: "Project unlocked." }, 200)
-
-	})

@@ -24,7 +24,7 @@ export function MultiCharacterSkeleton() {
 	)
 }
 
-function StatsSkeleton() {
+export function StatsSkeleton() {
 	return (
 		<>
 			<div className="flex flex-col items-center justify-center gap-1">
@@ -183,8 +183,9 @@ function Page(props: { id: string }) {
 	)
 }
 
+type Devlogs = Extract<InferResponseType<typeof client.api.users[":id"]["devlogs"]["$get"]>, { devlogs: unknown }>["devlogs"]
 interface DevlogTimelineProps {
-	devlogs?: Extract<InferResponseType<typeof client.api.users[":id"]["devlogs"]["$get"]>, { devlogs: unknown }>["devlogs"]
+	devlogs?: Devlogs
 	user?: Extract<InferResponseType<typeof client.api.users[":id"]["$get"]>, { user: unknown }>["user"]
 }
 
@@ -201,16 +202,17 @@ function DevlogTimeline({ devlogs, user }: DevlogTimelineProps) {
 
 interface ProjectsGridProps {
 	projects?: Extract<InferResponseType<typeof client.api.users[":id"]["projects"]["$get"]>, { projects: unknown }>["projects"]
+	devlogs: Devlogs
 }
 
-function ProjectsGrid({ projects }: ProjectsGridProps) {
+function ProjectsGrid({ projects, devlogs }: ProjectsGridProps) {
 	return (
 		<div className="grid 2xl:grid-cols-5 grid-cols-3 gap-4">
 			{projects ? (<> {
 				projects.length == 0 ? (
 					"You don't have any projects yet"
 
-				) : projects.map((p) => <ProjectPreviewCard project={p} />)
+				) : projects.map((p) => <ProjectPreviewCard project={p} nDevlogs={devlogs.reduce((acc, d) => d.projectId === p.id ? acc + 1 : acc, 0)} />)
 			}</>) : (<>
 				<ProjectPreviewCardSkeleton />
 				<ProjectPreviewCardSkeleton />

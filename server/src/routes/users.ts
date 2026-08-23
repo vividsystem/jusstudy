@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import db from "@server/db";
-import { addresses, devlogAttachments, devlogs, hackatimeProjectLinks, projects, projectShips, shopOrders, users, userStats } from "@server/db/schema";
+import { addresses, devlogAttachments, devlogs, hackatimeProjectLinks, projectLocks, projects, projectShips, shopOrders, users, userStats } from "@server/db/schema";
 import hackatime from "@server/hackatime";
 import { and, count, desc, eq, getTableColumns, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { Hono } from "hono";
@@ -206,6 +206,21 @@ export const usersRoutes = new Hono<Env>()
 
 		return c.json({ user }, 200)
 	})
+	.get("/:id/locks", async (c) => {
+		const user = c.get("user")
+		if (!user) return c.json({ message: "Unauthorized" }, 401)
+
+		const { id } = c.req.param()
+		if (user.id !== id && user.type != "admin") return c.json({ message: "Forbidden" }, 403)
+
+
+		const locks = await db
+			.select(getTableColumns(projectLocks))
+			.from(projectLocks)
+			.innerJoin(projects, eq(projects.id, projectLocks.projectId))
+			.where(eq(projects.creatorId, id))
+		return c.json({ locks }, 200)
+	})
 
 	.get("/:id/projects", async (c) => {
 		const loggedInUser = c.get("user")
@@ -243,7 +258,6 @@ export const usersRoutes = new Hono<Env>()
 	})
 	.get("/:id/devlogs", async (c) => {
 		const loggedInUser = c.get("user")
-		const logger = c.get("logger")
 		if (!loggedInUser) return c.json({ message: "Unauthorized" }, 401)
 
 		const { id } = c.req.param()
