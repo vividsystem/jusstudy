@@ -42,7 +42,7 @@ export function DevlogCard({ devlog, project, user }: DevlogCardProps) {
 					<p>logged {secondsToFormatTime(devlog.timeSpent)} for {project ? (
 						<a className="underline underline-offset-2" href={`/projects/${project.id}`}>{project.name}</a>
 					) : (
-						<div className="bg-egg-yellow h-6 w-32 animate-pulse rounded-md inline-block"></div>
+						<span className="bg-egg-yellow h-6 w-32 animate-pulse rounded-md inline-block" />
 					)}</p>
 				</div>
 				<p>on {formatDate(devlog.createdAt)}</p>

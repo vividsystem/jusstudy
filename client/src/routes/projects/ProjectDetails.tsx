@@ -65,11 +65,11 @@ export function ProjectTimeline(props: ProjectTimelineProps) {
 			{items.map(item => {
 				switch (item.type) {
 					case "devlog":
-						return <DevlogCard devlog={item.data} project={props.project} />
+						return <DevlogCard devlog={item.data} project={props.project} key={item.data.id} />
 					case "ship":
-						return <ShipCard ship={item.data} />
+						return <ShipCard ship={item.data} key={item.data.id} />
 					case "rating":
-						return <RatingCard rating={item.data} />
+						return <RatingCard rating={item.data} key={item.data.id} />
 				}
 			}
 			)}
