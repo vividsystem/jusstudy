@@ -144,7 +144,7 @@ function Footer() {
 		<footer className="relative h-fit w-full">
 			<img src="/ColorBanner_5.svg" alt="Banner" className="w-full h-auto block z-10 top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} />
 			<div className='flex justify-center py-55 z-20 w-full h-full inset-0 absolute'>
-			<h2 className="text-white lg:text-5xl py-2">Our staff</h2>
+				<h2 className="text-white lg:text-5xl py-2">Our staff</h2>
 			</div>
 			<div className="absolute z-10 flex flex-row justify-center px-12 w-full h-full inset-0 gap-7 py-75">
 				<img src="/signatures/Rishaan.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
@@ -161,8 +161,8 @@ function Landing() {
 
 	const login = async (ev: React.MouseEvent) => {
 		ev.preventDefault();
-		await authClient.signIn.oauth2({
-			providerId: "hackclub-auth",
+		await authClient.signIn.social({
+			provider: "hackclub-auth",
 			newUserCallbackURL: clientURL("/onboarding").toString(),
 			callbackURL: clientURL("/home").toString()
 		});
