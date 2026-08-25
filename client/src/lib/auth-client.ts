@@ -1,4 +1,4 @@
-import { genericOAuthClient, inferAdditionalFields } from "better-auth/client/plugins";
+import { inferAdditionalFields } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react"
 import { serverURL } from "./urls";
 import { typeValues } from "@server/db/schema";
@@ -8,7 +8,6 @@ const SERVER_URL = serverURL("/api/auth").toString()
 export const authClient = createAuthClient({
 	baseURL: SERVER_URL,
 	plugins: [
-		genericOAuthClient(),
 		inferAdditionalFields({
 			user: {
 				yswsEligible: {
