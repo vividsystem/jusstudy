@@ -1,6 +1,6 @@
 import db from "@server/db"
 import { projectShips, timeEntries } from "../schema"
-import { and, desc, eq, gt, lt, sum } from "drizzle-orm"
+import { and, desc, eq, gt, lt, or, sum } from "drizzle-orm"
 import type { HelperCfg } from "@server/lib"
 
 
@@ -38,7 +38,10 @@ export async function getCurrentShipTime(projectId: string, cfg?: HelperCfg): Pr
 		.where(and(
 			eq(timeEntries.projectId, projectId),
 			gt(timeEntries.createdAt, startDate),
-			lt(timeEntries.createdAt, ships[0]!.createdAt)
+			or(
+				eq(timeEntries.type, "manual"),
+				lt(timeEntries.createdAt, ships[0]!.createdAt)
+			)
 		))
 	if (!entry) {
 		cfg?.logger?.error({ projectId: projectId, ships, startDate }, "Could not get time spent for ship")
