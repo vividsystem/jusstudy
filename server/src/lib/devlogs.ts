@@ -1,9 +1,9 @@
-import type { devlogAttachments, devlogs, timeEntries } from "@server/db/schema";
+import type { Attachment, Devlog, TimeEntry } from "@shared/validation";
 
 interface Row {
-	time_entries: typeof timeEntries.$inferSelect
-	project_devlogs: typeof devlogs.$inferSelect
-	devlog_attachments: typeof devlogAttachments.$inferSelect | null
+	time_entries: TimeEntry
+	project_devlogs: Devlog
+	devlog_attachments: Attachment | null
 }
 export function mapAttachmentsToDevlogs(rows: Row[]) {
 	type Devlog = Row["project_devlogs"];
