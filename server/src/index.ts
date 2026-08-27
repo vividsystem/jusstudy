@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { Scalar } from "@scalar/hono-api-reference"
 import { cors } from "hono/cors";
 import { auth } from "./auth";
 import { usersRoutes } from "./routes/users";
@@ -14,6 +15,7 @@ import type { Logger } from "pino";
 import { logger } from "./logger";
 import { requestLogger } from "./middleware/logger";
 import { devlogsRoute } from "./routes/devlogs";
+import { openAPIRouteHandler } from "hono-openapi";
 
 
 export type Env = {
@@ -67,6 +69,26 @@ const app = new Hono<Env>().basePath("/api")
 	.route("/vote", voteRoute)
 	.route("/admin", adminRoute)
 	.route("/devlogs", devlogsRoute)
+app.get("/openapi", openAPIRouteHandler(app, {
+	documentation: {
+		info: {
+			title: "Jus'Study API",
+			version: "1.0.0",
+			description: "The API for the Jus'Study YSWS"
+		}
+	}
+}))
+app.get(
+	"/docs",
+	Scalar(() => {
+		return {
+			url: "/api/openapi",
+			pageTitle: "Jus'Study API Docs",
+		}
+
+	})
+)
+
 
 app.onError((err, c) => {
 	logger.error({ err, url: c.req.url })
