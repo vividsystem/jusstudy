@@ -10,6 +10,12 @@ interface CDNFile {
 	created_at: string
 }
 
+export function validImageAttachments(files: File[]) {
+	const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"]
+	return !files.some((f) => !ALLOWED_TYPES.includes(f.type))
+}
+
+
 export async function uploadDevlogAttachmentToCDN(files: File[]) {
 	let responses: CDNFile[] = [];
 	for (let file of files) {

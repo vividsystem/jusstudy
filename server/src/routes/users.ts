@@ -1,13 +1,13 @@
 import { zValidator } from "@hono/zod-validator";
 import db from "@server/db";
-import { addresses, devlogAttachments, devlogs, hackatimeProjectLinks, projectLocks, projects, projectShips, shopOrders, users, userStats } from "@server/db/schema";
-import hackatime from "@server/hackatime";
+import { addresses, devlogAttachments, devlogs, projectLocks, projects, projectShips, shopOrders, timeHackatimeLinks, users, userStats } from "@server/db/schema";
+import hackatime from "@server/hackatime/client";
 import { and, count, desc, eq, getTableColumns, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { NewAddressSchema } from "@shared/validation/addresses"
 import z from "zod";
 import type { Env } from "..";
-import { sortedUserProjectTimes } from "@server/hackatime/client";
+import { auth } from "@server/auth";
 
 const searchSchema = z.object({
 	q: z.string().min(1).max(100),
@@ -22,26 +22,37 @@ export const usersRoutes = new Hono<Env>()
 
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
-		const res = await hackatime.userProjectDetails(user.slackId, {
-			startDate: new Date(process.env.START_DATE!),
+		const accounts = await auth.api.listUserAccounts({ headers: c.req.raw.headers })
+		const htAccount = accounts.find((a) => a.providerId === "hackatime")
+		if (!htAccount) {
+			return c.json({ message: "Hackatime account needs to be linked!" }, 400)
+		}
+		const token = await auth.api.getAccessToken({
+			headers: c.req.raw.headers,
+			body: {
+				accountId: htAccount.id
+			}
 		})
-		if (!res.success) {
+		const res = await hackatime.projects(token.accessToken, { startDate: new Date(process.env.START_DATE!) })
+		if (!res.ok) {
 			logger.error({ userId: user.id }, res.error)
 			return c.json({ message: "Something went wrong" }, 500)
 		}
 
-		const dbRes = await db.select({
-			hackatimeProjects: hackatimeProjectLinks.hackatimeProjectId
-		}).from(hackatimeProjectLinks).leftJoin(projects, and(
-			eq(hackatimeProjectLinks.projectId, projects.id),
-			eq(projects.creatorId, user.id)
-		))
+		const linksInUse = await db.select({
+			name: timeHackatimeLinks.hackatimeProjectName
+		})
+			.from(timeHackatimeLinks)
+			.innerJoin(projects, eq(projects.id, timeHackatimeLinks.projectId))
+			.where(and(
+				eq(projects.creatorId, user.id)
+			))
+		const alreadyInUse = linksInUse.map(l => l.name)
 
-		const alreadyInUse = dbRes.map(p => p.hackatimeProjects)
-
+		const allHTProjects = res.data
 		return c.json({
 			used: alreadyInUse,
-			unused: res.projects.filter(p => !alreadyInUse.includes(p.name)).map(p => p.name),
+			unused: allHTProjects.filter(p => !alreadyInUse.includes(p.name)).map(p => p.name),
 		}, 200)
 
 	})
@@ -224,7 +235,6 @@ export const usersRoutes = new Hono<Env>()
 
 	.get("/:id/projects", async (c) => {
 		const loggedInUser = c.get("user")
-		const logger = c.get("logger")
 		if (!loggedInUser) return c.json({ message: "Unauthorized" }, 401)
 
 		const { id } = c.req.param()
@@ -235,25 +245,13 @@ export const usersRoutes = new Hono<Env>()
 			return c.json({ message: "User not found" }, 404)
 		}
 
-		const res = await db.query.projects.findMany({
-			where: (projects, { eq }) => eq(projects.creatorId, id),
-			with: {
-				hackatimeLinks: true
-			}
-		})
+		const userProjects = await db.select().from(projects).where(eq(projects.creatorId, user.id))
 
-		const hackatimeRes = await sortedUserProjectTimes(user.slackId, res)
-		if (!hackatimeRes.ok) {
-			logger.error({ message: hackatimeRes.error, userId: id })
-			return c.json({ message: "Something went wrong" }, 500)
-		}
+
 
 
 		return c.json({
-			projects: res.map(p => {
-				const { hackatimeLinks, ...rest } = p
-				return { ...rest, timeSpent: hackatimeRes.timeRec ? hackatimeRes.timeRec[rest.id] || 0 : 0 }
-			})
+			userProjects
 		}, 200)
 	})
 	.get("/:id/devlogs", async (c) => {

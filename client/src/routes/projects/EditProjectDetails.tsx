@@ -34,7 +34,7 @@ function Page({ projectId }: { projectId: string }) {
 	const { isPending, /*error,*/ data } = useQuery({
 		queryKey: ["singleProject", projectId],
 		queryFn: async () => {
-			const res = await client.api.projects[":id"].time.$get({
+			const res = await client.api.projects[":id"].$get({
 				param: {
 					id: projectId
 				}
@@ -122,7 +122,7 @@ function Page({ projectId }: { projectId: string }) {
 							<label>Category</label>
 							<select className="border-2 border-egg-yellow p-4 w-full rounded-2xl" onChange={(ev) => setForm({ ...form, category: ev.currentTarget.value as ProjectCategories })} defaultValue={data?.project.category || undefined}>
 								{projectCategoryValues.map(category => (
-									<option value={category}>{category}</option>
+									<option value={category} key={category}>{category}</option>
 								))}
 							</select>
 						</div>

@@ -13,8 +13,5 @@ export function bumpStatus(shipState: ProjectShipStatus): ProjectShipStatus {
 			return "finished"
 		default:
 			throw new Error("ship status is final and cannot be bumped (finished and failed)")
-
-
 	}
-
 }

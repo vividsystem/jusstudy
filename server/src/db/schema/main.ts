@@ -2,6 +2,7 @@ import { boolean, integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } 
 import { users } from "./auth";
 import { relations } from "drizzle-orm";
 import { shopOrders } from "./shop";
+import { timeEntries, timeHackatimeLinks, timeShipSnapshots } from "./time";
 
 export const projectCategoryValues = ["CAD", "Game Development", "Web Development", "PCB Design", "App Development", "Desktop App Development"] as const
 export const categoryEnum = pgEnum("category", projectCategoryValues)
@@ -17,29 +18,15 @@ export const projects = pgTable("projects", {
 	repository: text().notNull(),
 	readmeLink: text(),
 	category: categoryEnum().notNull(),
+	totalTime: integer().default(0).notNull(), // cache for aggregate sum in time entries
 	creatorId: text().references(() => users.id, { onDelete: "cascade" }).notNull()
 })
 
 export const projectsRelations = relations(projects, ({ many }) => ({
-	hackatimeLinks: many(hackatimeProjectLinks),
 	devlogs: many(devlogs),
-	ships: many(projectShips)
-}));
-
-
-export const hackatimeProjectLinks = pgTable("hackatime_project_links", {
-	projectId: uuid().references(() => projects.id, { onDelete: "cascade" }).notNull(),
-	createdAt: timestamp().defaultNow().notNull(),
-	hackatimeProjectId: text().notNull(),
-}, (table) => [
-	primaryKey({ columns: [table.hackatimeProjectId, table.projectId] })
-])
-
-export const hackatimeProjectLinksRelations = relations(hackatimeProjectLinks, ({ one }) => ({
-	project: one(projects, {
-		fields: [hackatimeProjectLinks.projectId],
-		references: [projects.id],
-	}),
+	ships: many(projectShips),
+	timeEntries: many(timeEntries),
+	hackatimeLinks: many(timeHackatimeLinks)
 }));
 
 
@@ -47,8 +34,7 @@ export const devlogs = pgTable("project_devlogs", {
 	id: uuid().defaultRandom().primaryKey(),
 	createdAt: timestamp().defaultNow().notNull(),
 	projectId: uuid().references(() => projects.id, { onDelete: "cascade" }).notNull(),
-	timeSpent: integer().notNull(), // 0 to 10h per devlog
-	totalTimeSpent: integer().notNull(), // total amount of time spent up until that log
+	timeEntryId: uuid().references(() => timeEntries.id).notNull(),
 	content: text().notNull(),
 })
 
@@ -143,9 +129,6 @@ export type ProjectShipStatus = typeof shipStatus.enumValues[number]
 export const projectShips = pgTable("project_ships", {
 	id: uuid().defaultRandom().primaryKey(),
 	createdAt: timestamp().defaultNow().notNull(),
-	timeSpent: integer().notNull(),
-	totalTime: integer().notNull(),
-	loggedTime: integer().notNull(),
 	state: shipStatus().notNull().default("pre-initial").notNull(),
 	payout: integer(),
 	projectId: uuid().references(() => projects.id, { onDelete: "cascade" }).notNull()
@@ -156,5 +139,6 @@ export const projectShipRelations = relations(projectShips, ({ one, many }) => (
 		fields: [projectShips.projectId],
 		references: [projects.id]
 	}),
-	reviews: many(projectReviews)
+	reviews: many(projectReviews),
+	timeSnapshots: many(timeShipSnapshots)
 }))

@@ -22,7 +22,7 @@ export default function ProjectPreviewCard({ project, nDevlogs }: ProjectCardPro
 			)}
 			<div className="flex flex-items items-center gap-4">
 				<Clock className="size-8" />
-				<span>{secondsToFormatTime(project.timeSpent)}</span>
+				<span>{secondsToFormatTime(project.totalTime)}</span>
 			</div>
 		</a>
 	)
@@ -73,7 +73,7 @@ export function UserHistoryProjectCard({ locks, project, nDevlogs, ...props }: U
 			</div>
 			<div className="flex flex-items items-center gap-4">
 				<Clock className="size-8" />
-				<span>{secondsToFormatTime(project.timeSpent)}</span>
+				<span>{secondsToFormatTime(project.totalTime)}</span>
 			</div>
 		</a >
 	)

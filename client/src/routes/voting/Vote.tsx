@@ -198,7 +198,7 @@ export function VoteCard({ project, vote, setVoteRating: setVote, setVoteFeedbac
 					<div className="flex flex-row gap-2 text-4xl items-center">
 						<Clock />
 						<span>
-							{secondsToFormatTime(project.loggedTime)}
+							{secondsToFormatTime(project.totalTime)} (this ship: {secondsToFormatTime(project.timeSpent)})
 						</span>
 					</div>
 					<div className="flex flex-row gap-2">

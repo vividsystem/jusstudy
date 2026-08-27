@@ -39,7 +39,7 @@ export function DevlogCard({ devlog, project, user }: DevlogCardProps) {
 						</a>
 					)}
 
-					<p>logged {secondsToFormatTime(devlog.timeSpent)} for {project ? (
+					<p>logged {secondsToFormatTime(devlog.timeLogged)} for {project ? (
 						<a className="underline underline-offset-2" href={`/projects/${project.id}`}>{project.name}</a>
 					) : (
 						<span className="bg-egg-yellow h-6 w-32 animate-pulse rounded-md inline-block" />

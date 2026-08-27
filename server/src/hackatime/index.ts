@@ -1,34 +1,26 @@
-import { ProjectDetailsResponseSchema, StatsResponseSchema } from "./validation"
-import type { ProjectDetailsResponse, StatsResponse } from "./types"
-
-export type Features = "projects" | "languages"
+import { transformBase, type HoursParams, type ProjectsParams } from "./types/params";
+import type { HoursResponse, UserInfoResponse, StreakResponse, ProjectsResponse, LatestHeartbeatResponse, BaseResponse, Heartbeat } from "./types/responses";
 
 
-interface BaseCfg {
-	startDate?: Date,
-	endDate?: Date
-}
 
-interface UserStatsCfg extends BaseCfg {
-	features?: Features[]
-}
-
-class HackatimeClient {
+class HackatimeOAuthClient {
 	baseUrl: string
-	apiKey: string
-	constructor(apiKey: string, baseUrl?: string) {
-		this.baseUrl = baseUrl ?? "https://hackatime.hackclub.com/api/v1"
-		this.apiKey = apiKey
+	constructor(baseUrl?: string) {
+		this.baseUrl = baseUrl ?? "https://hackatime.hackclub.com/api/v1/"
 	}
 
 
-	private constructUrl(path: string, params?: Record<string, string | undefined>): URL {
+	private constructUrl(path: string, params?: Record<string, string | boolean | undefined>): URL {
 		const url = new URL(path, this.baseUrl);
 
 		if (params) {
 			Object.entries(params).forEach(([key, value]) => {
 				if (value !== undefined && value !== null) {
-					url.searchParams.append(key, value);
+					if (typeof value === "boolean") {
+						url.searchParams.append(key, "")
+					} else {
+						url.searchParams.append(key, value);
+					}
 				}
 			});
 		}
@@ -37,60 +29,130 @@ class HackatimeClient {
 	}
 
 
-	async userProjectDetails(user: string, cfg?: BaseCfg): Promise<ProjectDetailsResponse> {
-		const url = this.constructUrl(`${this.baseUrl}/users/${user}/projects/details`, {
-			start_date: cfg?.startDate?.toISOString().slice(0, 10),
-			end_date: cfg?.endDate?.toISOString().slice(0, 10),
-		})
+	private handleErroneousResponse(res: Response): Extract<Awaited<BaseResponse<unknown>>, { error: unknown }> {
+		if (res.status == 401) {
+			return { ok: false, error: "Missing or invalid OAuth access token", res }
+		} else if (res.status == 403) {
+			return { ok: false, error: "Insufficient scopes", res }
+		} else {
+			return { ok: false, error: "Unknown error", res }
+		}
+	}
+
+	async currentUserInfo(accessToken: string): BaseResponse<UserInfoResponse> {
+		const url = this.constructUrl("authenticated/me")
+
 
 		const res = await fetch(url, {
 			headers: {
-				"Authorization": `Bearer ${this.apiKey}`
+				"Authorization": `Bearer ${accessToken}`
 			}
 		})
+		if (!res.ok) {
+			return this.handleErroneousResponse(res)
+		}
 
 		const body = await res.json()
 
-		const parsed = ProjectDetailsResponseSchema.safeParse(body)
-		if (!parsed.success) {
-			return { success: false, error: JSON.stringify(parsed.error) }
+		return {
+			ok: true,
+			data: body as UserInfoResponse
+		}
+	}
+
+	async hours(accessToken: string, params: Partial<HoursParams>): BaseResponse<HoursResponse> {
+		const url = this.constructUrl("authenticated/hours", transformBase(params))
+
+		const res = await fetch(url, {
+			headers: {
+				"Authorization": `Bearer ${accessToken}`
+			}
+		})
+
+		if (!res.ok) {
+			return this.handleErroneousResponse(res)
 		}
 
-		return parsed.data
+		const body = await res.json()
+
+		return {
+			ok: true,
+			data: body as HoursResponse
+		}
+
 	}
 
 
-	async userStats(user: string, cfg?: UserStatsCfg): Promise<StatsResponse> {
-		const url = this.constructUrl(`${this.baseUrl}/users/${user}/stats`, {
-			start_date: cfg?.startDate?.toISOString().slice(0, 10),
-			end_date: cfg?.endDate?.toISOString().slice(0, 10),
-			features: cfg?.features?.join(",")
-		})
+	async streak(accessToken: string): BaseResponse<StreakResponse> {
+		const url = this.constructUrl("authenticated/streak")
+
+
 		const res = await fetch(url, {
 			headers: {
-				"Authorization": `Bearer ${this.apiKey}`
+				"Authorization": `Bearer ${accessToken}`
 			}
 		})
-		const contentType = res.headers.get("content-type")
-		if (!contentType || !contentType.includes("application/json")) {
-			const body = await res.text()
-			return { success: false, error: "invalid response format", body }
+
+		if (!res.ok) {
+			return this.handleErroneousResponse(res)
 		}
 
 		const body = await res.json()
 
+		return {
+			ok: true,
+			data: body as StreakResponse
+		}
 
-		const parsed = StatsResponseSchema.safeParse(body)
-		if (!parsed.success) {
+	}
+
+	async projects(accessToken: string, params: Partial<ProjectsParams>): BaseResponse<ProjectsResponse["projects"]> {
+		const url = this.constructUrl("authenticated/projects", transformBase(params))
+
+		const res = await fetch(url, {
+			headers: {
+				"Authorization": `Bearer ${accessToken}`
+			}
+		})
+
+		if (!res.ok) {
+			return this.handleErroneousResponse(res)
+		}
+
+		const body = await res.json() as ProjectsResponse
+
+		return {
+			ok: true,
+			data: body.projects
+		}
+	}
+
+	async latestHeartbeat(accessToken: string): BaseResponse<Heartbeat | null> {
+		const url = this.constructUrl("authenticated/heartbeat/latest")
+
+		const res = await fetch(url, {
+			headers: {
+				"Authorization": `Bearer ${accessToken}`
+			}
+		})
+
+		if (!res.ok) {
+			return this.handleErroneousResponse(res)
+		}
+
+		const body = await res.json() as LatestHeartbeatResponse
+		if ("heartbeat" in body) {
 			return {
-				success: false, error: JSON.stringify(parsed.error)
+				ok: true,
+				data: null
 			}
 		}
-		return parsed.data
+
+		return {
+			ok: true,
+			data: body
+		}
 
 	}
 }
-
-
-const hackatime = new HackatimeClient(process.env.HACKATIME_API_KEY!)
-export default hackatime
+export default HackatimeOAuthClient

@@ -2,23 +2,48 @@ import { zValidator } from "@hono/zod-validator";
 import type { auth } from "@server/auth";
 import db from "@server/db";
 import { projectReviews, projects, projectShips, projectLocks, type ProjectCategories } from "@server/db/schema";
-import { and, asc, eq, getTableColumns, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, inArray } from "drizzle-orm";
 import { NewReviewSchema, LockReviewSchema } from "@shared/validation/reviews"
 import { Hono } from "hono";
 import { bumpStatus } from "@server/lib/ships";
 import type { Env } from "..";
+import { getCurrentShipTime } from "@server/db/helpers/time";
+import { logger } from "@server/logger";
 
 export const reviewsRoute = new Hono<Env>()
 	.get("/pending", async (c) => {
+		const user = c.get("user")
+		if (!user) return c.json({ message: "Unauthorized" }, 401)
+		if (user.type === "participant") return c.json({ message: "Forbidden" }, 403)
+
+		const logger = c.get("logger")
+
 		const categories = c.req.queries("category") as ProjectCategories[] || []
 
-		const pending = await db.select().from(projectShips).innerJoin(projects, eq(projectShips.projectId, projects.id)).where(and(
-			eq(projectShips.state, "pre-initial"),
-			categories.length > 0 ? inArray(projects.category, categories) : undefined
-		)).orderBy(asc(projectShips.createdAt))
+		const pending = await db
+			.select()
+			.from(projectShips)
+			.innerJoin(projects, eq(projectShips.projectId, projects.id))
+			.where(and(
+				eq(projectShips.state, "pre-initial"),
+				categories.length > 0 ? inArray(projects.category, categories) : undefined
+			))
+			.orderBy(asc(projectShips.createdAt))
+
+		type PendingWithTime = typeof pending[number] & { timeShipped: number }
+		let pendingWithTime: PendingWithTime[] = []
+		for (const ship of pending) {
+			const time = await getCurrentShipTime(ship.projects.id)
+			if (!time.ok) {
+				logger.error({ project: ship.projects, ship: ship.project_ships, timeErr: time.error }, "Could not get time of current ship for pending reviews")
+				return c.json({ message: "Something went wrong" }, 500)
+			}
+
+			pendingWithTime.push({ ...ship, timeShipped: time.data })
+		}
 
 		return c.json({
-			pendingProjects: pending
+			pendingProjects: pendingWithTime
 		})
 	})
 export const projectReviewsRoute = new Hono<{

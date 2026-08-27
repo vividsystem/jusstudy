@@ -69,7 +69,7 @@ export function ProjectTimeline(props: ProjectTimelineProps) {
 					case "ship":
 						return <ShipCard ship={item.data} key={item.data.id} />
 					case "rating":
-						return <RatingCard rating={item.data} key={item.data.id} />
+						return <RatingCard rating={item.data} key={item.data.projectId} />
 				}
 			}
 			)}
@@ -93,7 +93,7 @@ export function ShipCard({ ship }: { ship: Ships[number] }) {
 			<div className="flex flex-row gap-8">
 				<div className="flex flex-row gap-2 items-center">
 					<Clock className="size-6" />
-					<p>{secondsToFormatTime(ship.loggedTime)}</p>
+					<p>{secondsToFormatTime(ship.timeShipped)}</p>
 				</div>
 				{ship.payout && (
 					<div className="flex flex-row gap-2 items-center">
@@ -140,7 +140,7 @@ function Page({ projectId }: { projectId: string }) {
 	const { /*isPending, error,*/ data: project } = useQuery({
 		queryKey: ["singleProject", projectId],
 		queryFn: async () => {
-			const res = await client.api.projects[":id"].time.$get({
+			const res = await client.api.projects[":id"].$get({
 				param: {
 					id: projectId
 				}
@@ -178,7 +178,7 @@ function Page({ projectId }: { projectId: string }) {
 		},
 	})
 
-	const { /*isPending, error,*/ data: ships } = useQuery({
+	const { data: ships } = useQuery({
 		queryKey: ["projectShips", projectId],
 		queryFn: async () => {
 			const res = await client.api.projects[":id"].ships.$get({
@@ -220,7 +220,7 @@ function Page({ projectId }: { projectId: string }) {
 	return (
 		<main className="w-full text-4xl flex flex-col items-center gap-4 p-4 relative">
 			{project?.project && (
-				<ProjectCard {...project!} editable={isOwner()} nDevlogs={devlogs?.length || 0} />
+				<ProjectCard {...project} editable={isOwner()} nDevlogs={devlogs?.length || 0} />
 			)
 			}
 			{isOwner() && (

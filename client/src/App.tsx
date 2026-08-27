@@ -27,6 +27,7 @@ import AdminShopPage from "./routes/admin/AdminShopPage";
 import AddShopItemPage from "./routes/admin/AddShopItemPage";
 import EditShopItemPage from "./routes/admin/EditShopItemPage";
 import AdminUserHistoryPage from "./routes/admin/AdminUserHistory";
+import Settings from "./routes/Settings";
 // import RSVP from "./routes/RSVP";
 
 function App() {
@@ -58,6 +59,7 @@ function App() {
 
 							<Route path="/explore" element={<ComingSoon />} />
 							<Route path="/guides" element={<ComingSoon />} />
+							<Route path="/settings" element={<Settings />} />
 
 							<Route path="/users/:id" element={<UserProfile />} />
 

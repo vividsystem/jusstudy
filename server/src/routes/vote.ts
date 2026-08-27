@@ -1,18 +1,18 @@
 import { zValidator } from "@hono/zod-validator";
 import db from "@server/db";
-import { hackatimeProjectLinks, joeFraudReviews, projects, projectShips } from "@server/db/schema/main";
+import { projects, projectShips } from "@server/db/schema/main";
 import { projectStats, ratings, userStats, votingRoundProjects, votingRounds } from "@server/db/schema/voting";
 import { balanceCategories, calculatePayout, SIGMA_TRESHOLD, STAR_BUDGET, weightedSample } from "@server/voting";
-import { and, desc, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, notInArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { publishVoteSchema } from "@shared/validation/votes"
 import { uniqueEntriesEqual } from "@server/lib/arr";
 import { rating, rate, ordinal } from "openskill"
 import { bumpStatus } from "@server/lib/ships";
 import { rankingsRoute } from "./rankings";
-import { users } from "@server/db/schema";
 import { requestFraudReview } from "@server/lib/joe";
 import type { Env } from "..";
+import { getCurrentShipTime } from "@server/db/helpers/time";
 
 const CANDIDATE_POOL_SIZE = 50;
 export const VOTES_FOR_PAYOUT_PER_SHIP = 10;
@@ -24,16 +24,16 @@ export const voteRoute = new Hono<Env>()
 		const logger = c.get("logger")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
-		const existing = await db.select().from(votingRounds).where(and(
+		const [existing] = await db.select().from(votingRounds).where(and(
 			eq(votingRounds.voterId, user.id),
 			isNull(votingRounds.completedAt)
 		))
-		if (existing.length > 0) {
-			return c.json({ message: "A session already exists", existing: existing[0]! }, 400)
+		if (existing) {
+			return c.json({ message: "A session already exists", existing }, 400)
 		}
 
 		const ownProjects = await db.select({ projectId: projects.id }).from(projects).where(eq(projects.creatorId, user.id))
-		// get candidates that haven't been looked at by the user/are owned by the user
+
 		const candidates = await db
 			.select({
 				projectId: projectStats.projectId,
@@ -45,7 +45,6 @@ export const voteRoute = new Hono<Env>()
 				eq(projectShips.state, "voting"),
 			))
 			.where(and(
-				// isNull(votingRoundProjects.projectId),
 				notInArray(projectStats.projectId, ownProjects.map(p => p.projectId)),
 			))
 			.orderBy(desc(projectStats.sigma))
@@ -67,51 +66,54 @@ export const voteRoute = new Hono<Env>()
 				throw new Error("Couldnt create voting round")
 			}
 
-			const roundProjects = await tx.insert(votingRoundProjects).values(pickedCandidates.map((c, i) => ({ projectId: c.projectId, position: i + 1, roundId: round.id }))).returning()
+			const roundProjects = await tx
+				.insert(votingRoundProjects)
+				.values(pickedCandidates.map((c, i) => ({ projectId: c.projectId, position: i + 1, roundId: round.id })))
+				.returning()
 
 			return { round, roundProjects }
 		})
 
+		type ProjectDetails = typeof projects.$inferSelect & { position: number, timeSpent: number }
+		let projectDetails: ProjectDetails[] = []
+		for (const project of roundProjects) {
+			const time = await getCurrentShipTime(project.projectId, { logger })
+			if (!time.ok) {
+				return c.json({ message: "Something went wrong" }, 500)
+			}
 
-		const projectDetails = await db.select().from(projects).innerJoin(projectShips, and(
-			eq(projectShips.projectId, projects.id),
-			eq(projectShips.state, "voting")
-		)).where(inArray(projects.id, roundProjects.map(c => c.projectId)))
+			const [details] = await db.select().from(projects).where(eq(projects.id, project.projectId))
+			if (!details) {
+				logger.error({ projectId: project.projectId }, "Project of round projects could not be found")
+				return c.json({ message: "Something went wrong" }, 500)
+			}
 
-
-		if (projectDetails.length < 4) {
-			logger.error({ candidates, projectDetails, roundProjects })
-			return c.json({ message: "Something went wrong" }, 500)
+			projectDetails.push({ ...details, position: project.position, timeSpent: time.data })
 		}
 
+
 		return c.json({
-			round, projects: projectDetails.map(s => ({
-				...s.projects,
-				timeSpent: s.project_ships.timeSpent,
-				loggedTime: s.project_ships.loggedTime,
-				position: roundProjects.find(p => p.projectId == s.projects.id)!.position
-			}))
+			round, projects: projectDetails
 		}, 201)
 	})
 	// post your voted results
 	.post("/rounds/:id/rate", zValidator("json", publishVoteSchema), async (c) => {
 		const user = c.get("user")
+		const logger = c.get("logger")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 		const { id } = c.req.param()
 		const data = c.req.valid("json")
 
-		const currentRound = await db
+		const [current] = await db
 			.select()
 			.from(votingRounds)
 			.where(eq(votingRounds.id, id))
-		if (currentRound.length == 0) {
+		if (!current) {
 			return c.json({ message: "Round not found" }, 404)
-		} else if (currentRound[0]!.completedAt != null) {
+		} else if (current.completedAt != null) {
 			return c.json({ message: "Round is already finished" }, 400)
 		}
-
-		const current = currentRound[0]!
 
 		const roundsProjects = await db
 			.select()
@@ -146,73 +148,41 @@ export const voteRoute = new Hono<Env>()
 		return await db.transaction(async (tx) => {
 			await tx.update(votingRounds).set({ completedAt: new Date() }).where(eq(votingRounds.id, current.id))
 			await tx.insert(ratings).values(data.ratings.map((c) => ({ ...c, roundId: current.id })))
-
-
 			await tx.update(userStats).set({ votesCast: sql`${userStats.votesCast} + 1` }).where(eq(userStats.userId, user.id))
+
 			return await Promise.all(
 				data.ratings.map(async (r, i) => {
 					const updated = updatedTeams[i]![0]!
 					const updatedOrdinal = ordinal(updated)
 					if (updated.sigma < SIGMA_TRESHOLD) {
-						const [ps] = await tx
-							.select({
-								id: projectShips.id,
-								timeLogged: projectShips.loggedTime
-							})
+						const [ship] = await tx
+							.select({ id: projectShips.id })
 							.from(projectShips)
 							.where(eq(projectShips.projectId, r.projectId))
-						if (!ps) {
-							tx.rollback()
-							Promise.reject()
-							return
-						}
-						const [fraudReviewInfo] = await tx.select({
-							submitter: {
-								slackId: users.slackId
-							},
-							name: projects.name,
-							codeLink: projects.repository,
-							demoLink: projects.demoLink,
-						}).from(projects)
-							.innerJoin(users, eq(users.id, projects.creatorId))
-							.where(eq(projects.id, r.projectId))
-						if (!fraudReviewInfo) {
+						if (!ship) {
+							logger.error({ projectId: r.projectId }, "Could not find ship")
 							tx.rollback()
 							Promise.reject()
 							return
 						}
 
-						const hackatimeProjects = await tx
-							.select({ hackatimeProject: hackatimeProjectLinks.hackatimeProjectId })
-							.from(hackatimeProjectLinks)
-							.where(eq(hackatimeProjectLinks.projectId, r.projectId))
-						if (hackatimeProjects.length == 0) {
+						const res = await requestFraudReview(ship.id, r.projectId, tx)
+						if (!res.ok) {
 							tx.rollback()
 							Promise.reject()
 							return
 						}
 
-						try {
-							const res = await requestFraudReview({
-								...fraudReviewInfo,
-								demoLink: fraudReviewInfo.demoLink || undefined,
-								hackatimeProjects: hackatimeProjects.map(p => p.hackatimeProject)
-							})
-
-							await tx.insert(joeFraudReviews).values({
-								shipId: ps.id,
-								joeProjectId: res.id
-							})
-						} catch (e) {
-							tx.rollback()
-							Promise.reject()
-							return
+						const timeRes = await getCurrentShipTime(r.projectId, { logger })
+						if (!timeRes.ok) {
+							return c.json({ message: "Something went wrong" }, 500)
 						}
+
 						await tx
 							.update(projectShips)
 							.set({
 								state: bumpStatus("voting"),
-								payout: calculatePayout(updatedOrdinal, 0, ps.timeLogged)
+								payout: calculatePayout(updatedOrdinal, 0, timeRes.data)
 							})
 							.where(eq(projectShips.projectId, r.projectId))
 					}
@@ -231,8 +201,7 @@ export const voteRoute = new Hono<Env>()
 					return c.json({ message: "Voted successfully" }, 200)
 				})
 				.catch(() => {
-					// LOG needed!
-					return c.json({ message: "Bad request" }, 400)
+					return c.json({ message: "Bad request" }, 500)
 				})
 		})
 
@@ -257,10 +226,22 @@ export const voteRoute = new Hono<Env>()
 			return c.json({ message: "Something went wrong" }, 500)
 		}
 
-		const projectDetails = await db.select().from(projects).innerJoin(projectShips, and(
-			eq(projectShips.projectId, projects.id),
-			eq(projectShips.state, "voting")
-		)).where(inArray(projects.id, roundProjects.map(c => c.projectId)))
+		type ProjectDetails = typeof projects.$inferSelect & { position: number, timeSpent: number }
+		let projectDetails: ProjectDetails[] = []
+		for (const project of roundProjects) {
+			const time = await getCurrentShipTime(project.projectId)
+			if (!time.ok) {
+				return c.json({ message: "Something went wrong" }, 500)
+			}
+
+			const [details] = await db.select().from(projects).where(eq(projects.id, project.projectId))
+			if (!details) {
+				logger.error({ projectId: project.projectId }, "Project of round projects could not be found")
+				return c.json({ message: "Something went wrong" }, 500)
+			}
+
+			projectDetails.push({ ...details, position: project.position, timeSpent: time.data })
+		}
 
 		if (projectDetails.length < 4) {
 			logger.error({ roundProjects, round, projectDetails }, "Less than 4 project details found")
@@ -268,12 +249,7 @@ export const voteRoute = new Hono<Env>()
 		}
 
 		return c.json({
-			round, projects: projectDetails.map(s => ({
-				...s.projects,
-				timeSpent: s.project_ships.timeSpent,
-				loggedTime: s.project_ships.loggedTime,
-				position: roundProjects.find(p => p.projectId == s.projects.id)!.position
-			}))
+			round, projects: projectDetails
 		}, 200)
 	})
 	.route("/rankings", rankingsRoute)
@@ -281,7 +257,6 @@ export const voteRoute = new Hono<Env>()
 export const projectRatingsRoute = new Hono<Env>()
 	.get("/", async (c) => {
 		const user = c.get("user")
-		const logger = c.get("logger")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 

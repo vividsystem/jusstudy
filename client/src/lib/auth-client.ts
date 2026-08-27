@@ -48,6 +48,11 @@ export const authClient = createAuthClient({
 					required: true,
 					input: false
 				},
+				nickname: {
+					type: "string",
+					required: true,
+					input: false
+				}
 			}
 		})
 	]
