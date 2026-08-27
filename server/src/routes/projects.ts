@@ -1,45 +1,29 @@
 import db from "@server/db";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator"
-import { devlogs, hackatimeProjectLinks, projectLocks, projects, users } from "@server/db/schema";
-import { and, eq, getTableColumns, isNull, sum } from "drizzle-orm";
+import { projectLocks, projects, timeEntries, timeHackatimeLinks } from "@server/db/schema";
+import { and, desc, eq, getTableColumns, isNull } from "drizzle-orm";
 import { HackatimeLinkRequestSchema, NewProjectRequestSchema, UpdateProjectRequestSchema } from "@shared/validation/projects";
 import { projectDevlogsRoute } from "./devlogs";
 import z from "zod";
 import { projectShipRoute } from "./ships";
 import { projectReviewsRoute } from "./reviews";
-import { singleProjectTime, sortedUserProjectTimes } from "@server/hackatime/client";
+import { singleProjectTime } from "@server/hackatime/client";
 import type { Env } from "..";
 import { projectRatingsRoute } from "./vote";
+import { auth } from "@server/auth";
 
 
 export const projectsRoute = new Hono<Env>()
 	//get all projects
 	.get("/", async (c) => {
 		const user = c.get("user")
-		const logger = c.get("logger")
 
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
-		const res = await db.query.projects.findMany({
-			where: (projects, { eq }) => eq(projects.creatorId, user.id),
-			with: {
-				hackatimeLinks: true
-			}
-		})
+		const res = await db.select().from(projects).where(eq(projects.creatorId, user.id))
 
-		const hackatimeRes = await sortedUserProjectTimes(user.slackId, res)
-		if (!hackatimeRes.ok) {
-			logger.error({ hackatimeRes, userId: user.id })
-			return c.json({ message: "Something went wrong" }, 500)
-		}
-
-		return c.json({
-			projects: res.map(p => {
-				const { hackatimeLinks, ...rest } = p
-				return { ...rest, timeSpent: hackatimeRes.timeRec ? hackatimeRes.timeRec[rest.id] || 0 : 0 }
-			})
-		}, 200)
+		return c.json({ projects: res }, 200)
 	})
 	.get("/locks", async (c) => {
 		const user = c.get("user")
@@ -57,14 +41,53 @@ export const projectsRoute = new Hono<Env>()
 
 	// get project by id
 	.get("/:id", async (c) => {
+		const user = c.get("user")
+		const logger = c.get("logger")
 		const id = c.req.param("id")
 
-		const res = await db.select().from(projects).where(eq(projects.id, id))
-		if (res.length == 0) {
+		const [project] = await db.select().from(projects).where(eq(projects.id, id))
+		if (!project) {
 			return c.json({ message: "Ressource not found" }, 404)
 		}
 
-		return c.json({ project: res[0]! }, 200)
+		if (!user || user.id !== project.creatorId) {
+			return c.json({ project: { unloggedTime: null, ...project } }, 200)
+		}
+
+		const htLinks = await db
+			.select({ name: timeHackatimeLinks.hackatimeProjectName })
+			.from(timeHackatimeLinks)
+			.where(eq(timeHackatimeLinks.projectId, project.id))
+
+		if (htLinks.length === 0) {
+			return c.json({ project: { unloggedTime: null, ...project } }, 200)
+		}
+
+		const accounts = await auth.api.listUserAccounts({ headers: c.req.raw.headers })
+		const htAccount = accounts.find((a) => a.providerId === "hackatime")
+		if (!htAccount) {
+			return c.json({ message: "Hackatime account needs to be linked!" }, 400)
+		}
+		const token = await auth.api.getAccessToken({
+			headers: c.req.raw.headers,
+			body: {
+				accountId: htAccount.id
+			}
+		})
+		const stats = await singleProjectTime(token.accessToken, htLinks.map((l) => l.name))
+		if (!stats.ok) {
+			logger.error({ project, htAccount, res_status: stats.res?.status, res_type: stats.res?.headers.get("Content-Type"), res_url: stats.res?.url }, stats.error)
+			return c.json({ message: "Hackatime fetching went wrong" }, 500)
+		}
+
+		const [lastEntry] = await db
+			.select()
+			.from(timeEntries)
+			.where(eq(timeEntries.projectId, project.id))
+			.orderBy(desc(timeEntries.createdAt))
+			.limit(1)
+
+		return c.json({ project: { ...project, unloggedTime: stats.data - (lastEntry?.timeAnchor || 0) } }, 200)
 	})
 	.get("/:id/locks", async (c) => {
 		const user = c.get("user")
@@ -135,40 +158,6 @@ export const projectsRoute = new Hono<Env>()
 		return c.json({ message: "Project unlocked." }, 200)
 
 	})
-	.get("/:id/time", async (c) => {
-		const id = c.req.param("id")
-
-		const res = await db
-			.select({
-				project: getTableColumns(projects),
-				timeLogged: sum(devlogs.timeSpent).mapWith(Number),
-				userSlackId: users.slackId,
-
-			})
-			.from(projects)
-			.leftJoin(users, eq(users.id, projects.creatorId))
-			.leftJoin(hackatimeProjectLinks, eq(hackatimeProjectLinks.projectId, projects.id))
-			.leftJoin(devlogs, eq(devlogs.projectId, projects.id))
-			.where(eq(projects.id, id))
-			.groupBy(projects.id, users.slackId)
-		if (res.length == 0) {
-			return c.json({ message: "Ressource not found" }, 404)
-		}
-
-		const links = await db
-			.select()
-			.from(hackatimeProjectLinks)
-			.where(eq(hackatimeProjectLinks.projectId, id))
-
-		const stats = await singleProjectTime(res[0]!.userSlackId!, links)
-		if (!stats.ok) {
-			return c.json({ message: "Hackatime fetching went wrong" }, 500)
-		}
-
-		return c.json({ project: res[0]!.project, timeSpent: stats.time, timeLogged: res[0]!.timeLogged }, 200)
-	})
-
-
 	//create a new project
 	.post("/", async (c) => {
 		//no auth required for now
@@ -254,37 +243,90 @@ export const projectsRoute = new Hono<Env>()
 	//link a hackatime project
 	.post("/:id/link", zValidator("json", HackatimeLinkRequestSchema), async (c) => {
 		const user = c.get("user")
+		const logger = c.get("logger")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 		const id = c.req.param("id")
 
-		const res = await db.select().from(projects).where(eq(projects.id, id))
-		if (res.length == 0) {
+		const [project] = await db.select().from(projects).where(eq(projects.id, id))
+		if (!project) {
 			return c.json({ message: "Ressource not found" }, 404)
 		}
-		const project = res[0]!
 		if (project.creatorId != user.id) {
 			return c.json({ message: "Forbidden" }, 403)
 		}
 
 		const data = c.req.valid('json')
 
-		const alreadyExisting = await db.select().from(hackatimeProjectLinks).where(and(
-			eq(hackatimeProjectLinks.hackatimeProjectId, data.id),
-			//add user eq?
-		))
+		const alreadyExisting = await db
+			.select()
+			.from(timeHackatimeLinks)
+			.where(and(
+				eq(timeHackatimeLinks.hackatimeProjectName, data.id),
+				eq(projects.creatorId, user.id)
+			))
+			.innerJoin(projects, eq(projects.id, timeHackatimeLinks.projectId))
 		if (alreadyExisting.length != 0) {
 			return c.json({ message: "This hackatime project has already been linked to another project!" }, 400)
 		}
 
-		const newLink = await db.insert(hackatimeProjectLinks).values({
-			projectId: id,
-			hackatimeProjectId: data.id
-		}).returning()
+		const accounts = await auth.api.listUserAccounts({ headers: c.req.raw.headers })
+		const htAccount = accounts.find((a) => a.providerId === "hackatime")
+		if (!htAccount) {
+			return c.json({ message: "Hackatime account needs to be linked!" }, 400)
+		}
+		const token = await auth.api.getAccessToken({
+			headers: c.req.raw.headers,
+			body: {
+				accountId: htAccount.id
+			}
+		})
+		const time = await singleProjectTime(token.accessToken, [data.id])
+		if (!time.ok) {
+			if (time.error == "Could not find hackatime projects") {
+				return c.json({ message: "Hackatime project does not exist" }, 404)
+			} else {
+				logger.error(accounts, time.error)
+				return c.json({ message: "Something went wrong" }, 500)
+			}
+		}
 
-		return c.json({
-			link: newLink
-		}, 201)
+		return await db.transaction(async (tx) => {
+			const [prevEntry] = await tx
+				.select()
+				.from(timeEntries)
+				.where(eq(timeEntries.projectId, project.id))
+				.orderBy(desc(timeEntries.createdAt))
+				.limit(1)
+
+			const [entry] = await db
+				.insert(timeEntries)
+				.values({
+					projectId: project.id,
+					duration: 0,
+					timeAnchor: (prevEntry?.timeAnchor || 0) + time.data,
+					createdBy: user.id,
+					type: "htlink"
+				}).returning()
+			if (!entry) {
+				logger.error({ entry, prevEntry, project, new_ht_project: data.id }, "Couldnt create new time entry")
+				tx.rollback()
+				return c.json({ message: "Something went wrong" }, 500)
+			}
+
+			const [newLink] = await db.insert(timeHackatimeLinks).values({
+				projectId: project.id,
+				link: true,
+				hackatimeProjectName: data.id,
+				timeEntryId: entry.id
+			}).returning()
+			if (!newLink) {
+				logger.error({ entry, prevEntry, project, new_ht_project: data.id }, "Couldnt create ht link")
+				return c.json({ message: "Something went wrong" }, 500)
+			}
+
+			return c.json({ message: "Successfully linked" }, 201)
+		})
 	})
 
 	// disabled to prevent fraud

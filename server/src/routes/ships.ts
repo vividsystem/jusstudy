@@ -1,31 +1,40 @@
 import db from "@server/db";
-import { devlogs, hackatimeProjectLinks, projectLocks, projects, projectShips, projectStats, ratings } from "@server/db/schema";
-import { and, desc, eq, getTableColumns, isNull } from "drizzle-orm";
+import { projectLocks, projects, projectShips, projectStats, timeEntries, timeHackatimeLinks, timeShipSnapshots } from "@server/db/schema";
+import { and, desc, eq, getTableColumns, isNull, lt } from "drizzle-orm";
 import { Hono } from "hono";
 import { shipReviewsRoute } from "./reviews";
 import { singleProjectTime } from "@server/hackatime/client";
 import type { Env } from "..";
+import { auth } from "@server/auth";
+import { getShipTime } from "@server/db/helpers/time";
 
 export const shipsRoute = new Hono<Env>()
 	.get("/:id", async (c) => {
 		const user = c.get("user")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
+		const logger = c.get("logger")
 
 		const id = c.req.param("id")
 
 		const [ship] = await db.select({
 			ship: getTableColumns(projectShips),
 			creatorId: projects.creatorId
-		}).from(projectShips).where(eq(projectShips.id, id)).innerJoin(projects, eq(projects.id, projectShips.projectId))
+		}).from(projectShips)
+			.where(eq(projectShips.id, id))
+			.innerJoin(projects, eq(projects.id, projectShips.projectId))
 		if (!ship) {
 			return c.json({ message: "Ship not found" }, 404)
 		} else if (ship.creatorId != user.id && user.type == "participant") {
 			return c.json({ message: "Forbidden" }, 403)
 		}
 
+		const time = await getShipTime(id, { logger })
+		if (!time.ok) {
+			logger.error({ ship }, "Could not get time for ship")
+			return c.json({ message: "Something went wrong" }, 500)
+		}
 
-		return c.json({ ship: ship.ship }, 200)
-
+		return c.json({ ship: { ...ship.ship, timeShipped: time.data } }, 200)
 	})
 	.route("/:id/reviews", shipReviewsRoute)
 
@@ -43,8 +52,6 @@ export const projectShipRoute = new Hono<Env>()
 		if (!id) {
 			return c.json({ message: "Bad request" }, 400)
 		}
-
-
 
 		const [project] = await db.select().from(projects).where(eq(projects.id, id))
 		if (!project) {
@@ -75,42 +82,57 @@ export const projectShipRoute = new Hono<Env>()
 			return c.json({ message: "This project has other unfinished ships" }, 400)
 		}
 
-		const [lastDevlog] = await db
-			.select()
-			.from(devlogs)
-			.where(eq(devlogs.projectId, project.id))
-			.orderBy(desc(devlogs.createdAt))
-			.limit(1)
+		const links = await db
+			.select({ htProjectId: timeHackatimeLinks.hackatimeProjectName })
+			.from(timeHackatimeLinks)
+			.where(eq(timeHackatimeLinks.projectId, id))
 
+		const accounts = await auth.api.listUserAccounts({ headers: c.req.raw.headers })
+		const htAccount = accounts.find((a) => a.providerId === "hackatime")
+		if (!htAccount) {
+			return c.json({ message: "Hackatime account needs to be linked!" }, 400)
+		}
 
-		const timeAlreadyShipped = lastShip?.timeSpent || 0
-		const loggedTime = (lastDevlog?.timeSpent || 0) - (lastShip?.loggedTime || 0)
+		const token = await auth.api.getAccessToken({
+			headers: c.req.raw.headers,
+			body: {
+				accountId: htAccount.id
+			}
+		})
 
-
-		const links = await db.select().from(hackatimeProjectLinks).where(eq(hackatimeProjectLinks.projectId, id))
-		const stats = await singleProjectTime(user.slackId, links)
-		if (!stats.ok) {
+		const time = await singleProjectTime(token.accessToken, links.map((l) => l.htProjectId))
+		if (!time.ok) {
+			logger.error({ project, htAccount, res_status: time.res?.status, res_type: time.res?.headers.get("Content-Type"), res_url: time.res?.url }, time.error)
 			return c.json({ message: "Hackatime fetching went wrong" }, 500)
 		}
 
-		const timeSpent = stats.time - timeAlreadyShipped
-		if (timeSpent <= 0) {
-			return c.json({ message: "No new time to be logged" }, 400)
-		}
 
-		const ship = await db
+		const [ship] = await db
 			.insert(projectShips)
 			.values({
-				timeSpent,
-				totalTime: stats.time,
-				loggedTime,
 				projectId: id,
 				state: "pre-initial"
 			}).returning()
-		if (ship.length == 0) {
-			logger.error({ stats, projectId: id }, "Couldnt create ship")
+		if (!ship) {
+			logger.error({ time, projectId: id }, "Couldnt create ship")
 			return c.json({ message: "Something went wrong" }, 500)
 		}
+		const [lastEntry] = await db
+			.select({ id: timeEntries.id })
+			.from(timeEntries)
+			.where(and(
+				lt(timeEntries.createdAt, ship.createdAt),
+				eq(timeEntries.projectId, ship.projectId)))
+			.orderBy(desc(timeEntries.createdBy))
+			.limit(1)
+		if (!lastEntry) {
+			return c.json({ message: "You need to have time logged to ship" }, 400)
+		}
+
+		await db.insert(timeShipSnapshots).values({
+			timeEntryId: lastEntry.id,
+			shipId: ship.id
+		})
 
 		const pStats = await db.select().from(projectStats).where(eq(projectStats.projectId, id))
 		if (pStats.length == 0) {
@@ -122,11 +144,12 @@ export const projectShipRoute = new Hono<Env>()
 
 
 		return c.json({
-			ship: ship[0]!
+			ship
 		}, 201)
 	})
 	.get("/", async (c) => {
 		const user = c.get("user")
+		const logger = c.get("logger")
 		if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 		const id = c.req.param("id")
@@ -140,7 +163,20 @@ export const projectShipRoute = new Hono<Env>()
 			.where(eq(projectShips.projectId, id))
 			.orderBy(desc(projectShips.createdAt))
 
-		return c.json({ ships: ships }, 200)
+
+		try {
+			return c.json({
+				ships: await Promise.all(ships.map(async (s) => {
+					const time = await getShipTime(s.id, { logger })
+					if (!time.ok) {
+						throw new Error(time.error.message)
+					}
+					return { ...s, timeShipped: time.data }
+				}))
+			}, 200)
+		} catch (e) {
+			return c.json({ message: "Something went wrong" }, 500)
+		}
 	})
 	.post("/payout", async (c) => {
 		const user = c.get("user")

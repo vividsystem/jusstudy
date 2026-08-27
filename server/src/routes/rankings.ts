@@ -43,7 +43,7 @@ export const rankingsRoute = new Hono<Env>()
 		const res = await db.select({
 			avgOrdinals: avg(projectStats.ordinal),
 			nProjects: count(),
-			matchups: sum(projectStats.matchups),
+			matchups: sum(projectStats.matchups).mapWith(Number),
 			userScore: sql<number>`${avg(projectStats.ordinal)} * ln(1 + ${count()})`,
 			creator: {
 				id: users.id,

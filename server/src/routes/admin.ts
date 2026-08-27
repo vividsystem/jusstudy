@@ -18,26 +18,26 @@ export const adminRoute = new Hono<Env>()
 			minPayout: min(projectShips.payout).mapWith(Number),
 			maxPayout: max(projectShips.payout).mapWith(Number),
 			avgPayout: avg(projectShips.payout).mapWith(Number),
-			avgLoggedTimePerShip: avg(projectShips.loggedTime).mapWith(Number),
-			totalShipTime: sum(projectShips.timeSpent).mapWith(Number),
-			totalLoggedShipTime: sum(projectShips.loggedTime).mapWith(Number)
 		}).from(projectShips)
 		if (shipStatsRes.length == 0) {
 			logger.error("Admin stats not working!")
 			return c.json({ message: "Something went wrong" }, 500)
 		}
-		const reviewStatsRes = await db.select({ n: count(), state: projectShips.state }).from(projectShips).groupBy(projectShips.state)
+		const reviewStats = await db.select({ n: count(), state: projectShips.state }).from(projectShips).groupBy(projectShips.state)
+		if (reviewStats.length === 0) {
+			logger.error("Cannot get ship stats")
+			return c.json({ message: "Something went wrong " }, 500)
+		}
 
-		const shipStats = shipStatsRes[0]!
 
 		return c.json({
-			...shipStats,
-			finishedShips: reviewStatsRes.filter((rs) => rs.state == "finished")[0]?.n || 0,
-			failedShips: reviewStatsRes.filter((rs) => rs.state == "failed")[0]?.n || 0,
-			shipsInVoting: reviewStatsRes.filter((rs) => rs.state == "voting")[0]?.n || 0,
-			shipsAwaitingNormalReview: reviewStatsRes.filter((rs) => rs.state == "pre-initial")[0]?.n || 0,
-			shipsAwaitingFraudReview: reviewStatsRes.filter((rs) => rs.state == "pre-fraud")[0]?.n || 0,
-			shipsAwaitingPayout: reviewStatsRes.filter((rs) => rs.state == "pre-payout")[0]?.n || 0,
+			...shipStatsRes,
+			finishedShips: reviewStats.find((rs) => rs.state == "finished")?.n || 0,
+			failedShips: reviewStats.find((rs) => rs.state == "failed")?.n || 0,
+			shipsInVoting: reviewStats.find((rs) => rs.state == "voting")?.n || 0,
+			shipsAwaitingNormalReview: reviewStats.find((rs) => rs.state == "pre-initial")?.n || 0,
+			shipsAwaitingFraudReview: reviewStats.find((rs) => rs.state == "pre-fraud")?.n || 0,
+			shipsAwaitingPayout: reviewStats.find((rs) => rs.state == "pre-payout")?.n || 0,
 		}, 200)
 
 	})

@@ -74,7 +74,7 @@ export default function ReviewPortal() {
 		queryFn: async () => {
 			const res = await client.api.reviews.pending.$get()
 			const data = await res.json();
-			return data;
+			return data.pendingProjects;
 		},
 	});
 
@@ -83,7 +83,7 @@ export default function ReviewPortal() {
 		return <Navigate to="/" />;
 	}
 
-	const pendingProjects = queryData?.pendingProjects ?? [];
+	const pendingProjects = queryData ?? [];
 
 	return <ReviewPortalContent pendingProjects={pendingProjects} isLoading={isPending} />;
 }
@@ -265,7 +265,7 @@ function ReviewPortalContent({
 				) : filtered.length > 0 ? (
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 						{filtered.map((entry) => (
-							<PreviewReviewCard key={entry.project_ships.id} ship={entry.project_ships} project={entry.projects} />
+							<PreviewReviewCard key={entry.project_ships.id} ship={{ ...entry.project_ships, timeShipped: entry.timeShipped }} project={entry.projects} />
 						))}
 					</div>
 				) : (

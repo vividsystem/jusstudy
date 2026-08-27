@@ -34,6 +34,8 @@ export default function UserIcon() {
 
 
 	return (
-		<Avatar imageURL={data.user.image} />
+		<a href="/settings">
+			<Avatar imageURL={data.user.image} />
+		</a>
 	)
 }

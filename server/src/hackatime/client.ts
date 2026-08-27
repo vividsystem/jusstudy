@@ -1,59 +1,26 @@
-import hackatime from "."
-interface HTLink {
-	hackatimeProjectId: unknown
-	[x: string]: unknown
-}
-interface ProjectWithHackatime {
-	id: string
-	hackatimeLinks: HTLink[]
-	[x: string]: unknown
-}
+import HackatimeOAuthClient from "."
 
-export async function sortedUserProjectTimes(slackId: string, res: ProjectWithHackatime[]): Promise<{ ok: true, timeRec: Record<string, number> } | { ok: false } & Omit<Exclude<Awaited<ReturnType<typeof hackatime.userStats>>, { success: true }>, "success">> {
-	const stats = await hackatime.userStats(slackId, {
-		startDate: new Date(process.env.START_DATE!),
-		features: ["projects"]
-	})
+const hackatime = new HackatimeOAuthClient()
 
-	if (!stats.success) {
-		const { success, ...rest } = stats
-		return { ok: false, ...rest }
+type ClientRes<T> = Promise<{
+	ok: true,
+	data: T
+} | {
+	ok: false,
+	error: string
+	res?: Response
+}>
+export async function singleProjectTime(accessToken: string, links: string[]): ClientRes<number> {
+	const res = await hackatime.projects(accessToken, { startDate: new Date(process.env.START_DATE!), projects: links.join(",") })
+	if (!res.ok) {
+		return { ok: false, error: res.error, res: res.res }
 	}
 
-
-	// to calc logged time in the future maybe make an aggregate function to sum up time each devlog
-	let timeRecord: Record<string, number> = {}
-	for (let project of res) {
-		const ids = project.hackatimeLinks.map((l) => l.hackatimeProjectId)
-
-		// sum time spent up
-		timeRecord[project.id] = stats.data.projects!
-			.filter(p => ids.includes(p.name))
-			.reduce((acc, p) => {
-				acc += p.total_seconds;
-				return acc;
-			}, timeRecord[project.id] ?? 0);
+	if (res.data.length != links.length) {
+		return { ok: false, error: "Could not find hackatime projects" }
 	}
 
-	return { ok: true, timeRec: timeRecord }
+	return { ok: true, data: res.data.reduce((acc, p) => acc + p.total_seconds, 0) }
 
 }
-
-export async function singleProjectTime(slackId: string, links: HTLink[]): Promise<{ ok: true, time: number } |
-	{ ok: false } & Omit<Exclude<Awaited<ReturnType<typeof hackatime.userProjectDetails>>, { success: true }>, "success">> {
-	const stats = await hackatime.userProjectDetails(slackId)
-	if (!stats.success) {
-		const { success, ...rest } = stats
-		return { ok: false, ...rest }
-	}
-
-	const linksArray = links.map(l => l.hackatimeProjectId)
-
-
-	let time = 0
-	stats.projects.filter(p => linksArray.includes(p.name)).forEach(p => {
-		time += p.total_seconds
-	})
-
-	return { ok: true, time }
-}
+export default hackatime;

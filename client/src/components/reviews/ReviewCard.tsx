@@ -42,7 +42,7 @@ function TimeStatSkeleton({ label }: { label: string }) {
 }
 
 interface ReviewProjectCardProps {
-	ship: Ship
+	ship: Ship & { timeShipped: number }
 	project: Project
 	creator: User
 }
@@ -51,7 +51,7 @@ export default function ReviewCard({ ship, project, creator }: ReviewProjectCard
 		<div className="border-dark-red bg-egg-yellow border-4 p-4 rounded-2xl w-fit flex flex-col gap-1 text-light-brown">
 			<div className="flex gap-2">
 				<h2 className="text-dark-red text-3xl font-bold">{project.name}</h2>
-				<ShipStateBadge status={"pre-fraud"} />
+				<ShipStateBadge status={ship.state} />
 				<ProjectCateogryBadge category={project.category} />
 			</div>
 			<div className="flex gap-2 items-center text-xl">
@@ -62,8 +62,8 @@ export default function ReviewCard({ ship, project, creator }: ReviewProjectCard
 				</Link>
 			</div>
 			<div className="flex flex-row gap-2 w-full">
-				<TimeStat label="shipped" seconds={ship.loggedTime} />
-				<TimeStat label="total" seconds={ship.totalTime} />
+				<TimeStat label="shipped" seconds={ship.timeShipped} />
+				<TimeStat label="total" seconds={project.totalTime} />
 			</div>
 			{project.description && (
 				<div>
@@ -134,8 +134,8 @@ export function PreviewReviewCard({ ship, project }: Omit<ReviewProjectCardProps
 				<div className="flex gap-2">
 				</div>
 				<div className="flex flex-row gap-2 w-full">
-					<TimeStat label="shipped" seconds={ship.loggedTime} />
-					<TimeStat label="total" seconds={ship.totalTime} />
+					<TimeStat label="shipped" seconds={ship.timeShipped} />
+					<TimeStat label="total" seconds={project.totalTime} />
 				</div>
 				{project.description && (
 					<div>

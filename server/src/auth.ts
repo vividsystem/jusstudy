@@ -107,12 +107,16 @@ export const auth = betterAuth({
 					clientSecret: process.env.HACKATIME_SECRET!,
 					authorizationUrl: "https://hackatime.hackclub.com/oauth/authorize",
 					userInfoUrl: "https://hackatime.hackclub.com/api/v1/authenticated/me",
+					tokenUrl: "https://hackatime.hackclub.com/oauth/token",
 					scopes: ["profile", "read"],
 					mapProfileToUser: async (p) => {
 						const profile = p as unknown as HackatimeProfile
 						// TODO map gh username
+						// TODO find the correct email
 
-						return {}
+						return {
+							email: profile.emails[0],
+						}
 
 					},
 					disableSignUp: true,
@@ -173,14 +177,6 @@ export const auth = betterAuth({
 				}
 			}
 
-			const session = ctx.context.session;
-			if (!session) {
-				return {
-					error: "authentication_required",
-					errorDescription: "You must be signed in to link an account"
-				}
-			}
-
 			const accounts = await auth.api.listUserAccounts({
 				headers: ctx.headers,
 			});
@@ -197,5 +193,13 @@ export const auth = betterAuth({
 			}
 		}
 	},
+	account: {
+		accountLinking: {
+			trustedProviders: ["hackatime"]
+		}
+	},
+	telemetry: {
+		enabled: false
+	}
 })
 export type AuthType = typeof auth

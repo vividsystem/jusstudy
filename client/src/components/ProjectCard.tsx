@@ -4,7 +4,7 @@ import { BookOpen, Pencil, Clock } from "lucide-react"
 import Button from "./Button"
 import type { InferResponseType } from "hono"
 
-type ProjectResponse = InferResponseType<typeof client.api.projects[":id"]["time"]["$get"]>
+type ProjectResponse = InferResponseType<typeof client.api.projects[":id"]["$get"]>
 type Project = Extract<ProjectResponse, { project: unknown }>
 
 type ProjectCardProps = Project &
@@ -13,7 +13,7 @@ type ProjectCardProps = Project &
 	nDevlogs: number
 }
 
-export default function ProjectCard({ project, timeSpent, timeLogged, nDevlogs, editable }: ProjectCardProps) {
+export default function ProjectCard({ project, nDevlogs, editable }: ProjectCardProps) {
 	return (
 		<div className="border-5 rounded-2xl bg-dark-red text-egg-yellow p-4 w-fit flex flex-col gap-4">
 			<div className="flex flex-row gap-16 justify-between items-center">
@@ -33,7 +33,7 @@ export default function ProjectCard({ project, timeSpent, timeLogged, nDevlogs, 
 				</div>
 				<div className="flex flex-items items-center gap-4 ">
 					<Clock className="size-8" />
-					<span>{secondsToFormatTime(timeSpent || 0)} ({secondsToFormatTime(timeLogged || 0)} logged)</span>
+					<span>{secondsToFormatTime(project.totalTime || 0)} {project.unloggedTime ? `(${secondsToFormatTime(project.unloggedTime)})` : ""}</span>
 				</div>
 			</div>
 			<p>{project.description}</p>

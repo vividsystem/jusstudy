@@ -27,6 +27,7 @@
     "@types/bun": "latest",
     "@types/pg": "^8.23.1",
     "drizzle-kit": "^0.31.10",
+    "jest": "^30.4.2",
     "tsx": "^4.23.12",
     "wrangler": "^4.125.0"
   }
