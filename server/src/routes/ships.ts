@@ -5,7 +5,6 @@ import { Hono } from "hono";
 import { shipReviewsRoute } from "./reviews";
 import { singleProjectTime } from "@server/hackatime/client";
 import type { Env } from "..";
-import { auth } from "@server/auth";
 import { getShipTime } from "@server/db/helpers/time";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { describeRoute } from "hono-openapi";

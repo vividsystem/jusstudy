@@ -7,7 +7,6 @@ import { Hono } from "hono";
 import { NewAddressRequestSchema, HackatimeProjectResponseSchema, UserStatsResponseSchema, UserStatsByIdResponseSchema, NewAddressResponseSchema, AddressesResponseSchema, UserSearchResponseSchema, BanUserResponseSchema, UserByIdResponseSchema, UserProjectsResponseSchema, UserDevlogsResponseSchema } from "@shared/validation"
 import z from "zod";
 import type { Env } from "..";
-import { auth } from "@server/auth";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { getHackatimeAccessToken } from "@server/lib/auth";
 

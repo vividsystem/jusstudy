@@ -10,7 +10,6 @@ import { uploadDevlogAttachmentToCDN, validImageAttachments } from "@server/lib/
 import { bodyLimit } from "hono/body-limit";
 import { MAX_FILE_SIZE } from "@shared/vars";
 import z from "zod";
-import { auth } from "@server/auth";
 import { mapAttachmentsToDevlogs } from "@server/lib/devlogs";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { getHackatimeAccessToken } from "@server/lib/auth";
