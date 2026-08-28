@@ -2,7 +2,7 @@ import Button from "@client/components/Button";
 import { Input } from "@client/components/Input";
 import { client } from "@client/lib/api-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
-import { NewAddressSchema } from "@shared/validation/addresses";
+import { NewAddressRequestSchema } from "@shared/validation";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -11,10 +11,10 @@ import z from "zod";
 export default function NewAddress() {
 	const navigate = useNavigate()
 	const { pushError } = useErrors()
-	const [form, setForm] = useState<Partial<z.infer<typeof NewAddressSchema>>>({})
+	const [form, setForm] = useState<Partial<z.infer<typeof NewAddressRequestSchema>>>({})
 	const { mutate } = useMutation({
 		mutationFn: async () => {
-			const parsed = NewAddressSchema.safeParse(form)
+			const parsed = NewAddressRequestSchema.safeParse(form)
 			if (!parsed.success) {
 				pushError(z.formatError(parsed.error).toString())
 				throw parsed.error
