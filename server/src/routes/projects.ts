@@ -13,6 +13,7 @@ import type { Env } from "..";
 import { projectRatingsRoute } from "./vote";
 import { auth } from "@server/auth";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
+import { getHackatimeAccessToken } from "@server/lib/auth";
 
 
 export const projectsRoute = new Hono<Env>()
@@ -90,20 +91,14 @@ export const projectsRoute = new Hono<Env>()
 				return c.json({ project: { unloggedTime: null, ...project } }, 200)
 			}
 
-			const accounts = await auth.api.listUserAccounts({ headers: c.req.raw.headers })
-			const htAccount = accounts.find((a) => a.providerId === "hackatime")
-			if (!htAccount) {
+			const token = await getHackatimeAccessToken(c.req.raw.headers)
+			if (!token) {
 				return c.json({ message: "Hackatime account needs to be linked!" }, 400)
 			}
-			const token = await auth.api.getAccessToken({
-				headers: c.req.raw.headers,
-				body: {
-					accountId: htAccount.id
-				}
-			})
+
 			const stats = await singleProjectTime(token.accessToken, htLinks.map((l) => l.name))
 			if (!stats.ok) {
-				logger.error({ project, htAccount, res_status: stats.res?.status, res_type: stats.res?.headers.get("Content-Type"), res_url: stats.res?.url }, stats.error)
+				logger.error({ project, res_status: stats.res?.status, res_type: stats.res?.headers.get("Content-Type"), res_url: stats.res?.url }, stats.error)
 				return c.json({ message: "Hackatime fetching went wrong" }, 500)
 			}
 
@@ -350,23 +345,17 @@ export const projectsRoute = new Hono<Env>()
 				return c.json({ message: "This hackatime project has already been linked to another project!" }, 400)
 			}
 
-			const accounts = await auth.api.listUserAccounts({ headers: c.req.raw.headers })
-			const htAccount = accounts.find((a) => a.providerId === "hackatime")
-			if (!htAccount) {
+			const token = await getHackatimeAccessToken(c.req.raw.headers)
+			if (!token) {
 				return c.json({ message: "Hackatime account needs to be linked!" }, 400)
 			}
-			const token = await auth.api.getAccessToken({
-				headers: c.req.raw.headers,
-				body: {
-					accountId: htAccount.id
-				}
-			})
+
 			const time = await singleProjectTime(token.accessToken, [data.id])
 			if (!time.ok) {
 				if (time.error == "Could not find hackatime projects") {
 					return c.json({ message: "Ressource not found" }, 404)
 				} else {
-					logger.error(accounts, time.error)
+					logger.error(time.error)
 					return c.json({ message: "Something went wrong" }, 500)
 				}
 			}
