@@ -5,13 +5,11 @@ import { projectLocks, projects, timeEntries, timeHackatimeLinks } from "@server
 import { and, desc, eq, getTableColumns, isNull } from "drizzle-orm";
 import { HackatimeLinkRequestSchema, NewProjectRequestSchema, UpdateProjectRequestSchema, ProjectsResponseSchema, LocksResponseSchema, ProjectByIdResponseSchema, LocksByProjectIdResponseSchema, ActiveProjectLockResponseSchema, NewProjectResponseSchema, UpdateProjectResponseSchema } from "@shared/validation";
 import { projectDevlogsRoute } from "./devlogs";
-import z from "zod";
 import { projectShipRoute } from "./ships";
 import { projectReviewsRoute } from "./reviews";
 import { singleProjectTime } from "@server/hackatime/client";
 import type { Env } from "..";
 import { projectRatingsRoute } from "./vote";
-import { auth } from "@server/auth";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { getHackatimeAccessToken } from "@server/lib/auth";
 
