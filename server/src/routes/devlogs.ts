@@ -13,6 +13,7 @@ import z from "zod";
 import { auth } from "@server/auth";
 import { mapAttachmentsToDevlogs } from "@server/lib/devlogs";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
+import { getHackatimeAccessToken } from "@server/lib/auth";
 
 
 export const devlogsRoute = new Hono<Env>()
@@ -127,17 +128,11 @@ export const projectDevlogsRoute = new Hono<Env>()
 				.where(eq(timeHackatimeLinks.projectId, projectId))
 
 
-			const accounts = await auth.api.listUserAccounts({ headers: c.req.raw.headers })
-			const htAccount = accounts.find((a) => a.providerId === "hackatime")
-			if (!htAccount) {
+			const token = await getHackatimeAccessToken(c.req.raw.headers)
+			if (!token) {
 				return c.json({ message: "Hackatime account needs to be linked!" }, 400)
 			}
-			const token = await auth.api.getAccessToken({
-				headers: c.req.raw.headers,
-				body: {
-					accountId: htAccount.id
-				}
-			})
+
 			const stats = await singleProjectTime(token.accessToken, links.map((l) => l.name))
 			if (!stats.ok) {
 				logger.error({ project, data, links }, stats.error)

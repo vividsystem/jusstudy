@@ -10,6 +10,7 @@ import { getShipTime } from "@server/db/helpers/time";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { describeRoute } from "hono-openapi";
 import { NewShipResponseSchema, ProjectShipsResponseSchema, ShipByIdResponseSchema } from "@shared/validation";
+import { getHackatimeAccessToken } from "@server/lib/auth";
 
 export const shipsRoute = new Hono<Env>()
 	.get(
@@ -113,22 +114,14 @@ export const projectShipRoute = new Hono<Env>()
 				.from(timeHackatimeLinks)
 				.where(eq(timeHackatimeLinks.projectId, id))
 
-			const accounts = await auth.api.listUserAccounts({ headers: c.req.raw.headers })
-			const htAccount = accounts.find((a) => a.providerId === "hackatime")
-			if (!htAccount) {
+			const token = await getHackatimeAccessToken(c.req.raw.headers)
+			if (!token) {
 				return c.json({ message: "Hackatime account needs to be linked!" }, 400)
 			}
 
-			const token = await auth.api.getAccessToken({
-				headers: c.req.raw.headers,
-				body: {
-					accountId: htAccount.id
-				}
-			})
-
 			const time = await singleProjectTime(token.accessToken, links.map((l) => l.htProjectId))
 			if (!time.ok) {
-				logger.error({ project, htAccount, res_status: time.res?.status, res_type: time.res?.headers.get("Content-Type"), res_url: time.res?.url }, time.error)
+				logger.error({ project, res_status: time.res?.status, res_type: time.res?.headers.get("Content-Type"), res_url: time.res?.url }, time.error)
 				return c.json({ message: "Hackatime fetching went wrong" }, 500)
 			}
 

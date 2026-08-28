@@ -9,6 +9,7 @@ import z from "zod";
 import type { Env } from "..";
 import { auth } from "@server/auth";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
+import { getHackatimeAccessToken } from "@server/lib/auth";
 
 const searchSchema = z.object({
 	q: z.string().min(1).max(100),
@@ -33,17 +34,11 @@ export const usersRoutes = new Hono<Env>()
 
 			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
-			const accounts = await auth.api.listUserAccounts({ headers: c.req.raw.headers })
-			const htAccount = accounts.find((a) => a.providerId === "hackatime")
-			if (!htAccount) {
+			const token = await getHackatimeAccessToken(c.req.raw.headers)
+			if (!token) {
 				return c.json({ message: "Hackatime account needs to be linked!" }, 400)
 			}
-			const token = await auth.api.getAccessToken({
-				headers: c.req.raw.headers,
-				body: {
-					accountId: htAccount.id
-				}
-			})
+
 			const res = await hackatime.projects(token.accessToken, { startDate: new Date(process.env.START_DATE!) })
 			if (!res.ok) {
 				logger.error({ userId: user.id }, res.error)
