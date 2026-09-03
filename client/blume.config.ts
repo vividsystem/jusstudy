@@ -11,6 +11,9 @@ export default defineConfig({
 		},
 		markdownComponents: {}
 	},
+	navigation: {
+		tabs: [{ label: "API Reference", path: "/guides/api" }]
+	},
 	seo: {
 		contentSignals: {
 			aiInput: false,
