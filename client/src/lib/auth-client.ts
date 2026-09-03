@@ -52,6 +52,11 @@ export const authClient = createAuthClient({
 					type: "string",
 					required: true,
 					input: false
+				},
+				regionId: {
+					type: "string",
+					required: false,
+					input: true
 				}
 			}
 		})

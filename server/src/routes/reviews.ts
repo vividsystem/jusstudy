@@ -54,7 +54,7 @@ export const reviewsRoute = new Hono<Env>()
 
 			return c.json({
 				pendingProjects: pendingWithTime
-			})
+			}, 200)
 		})
 export const projectReviewsRoute = new Hono<Env>()
 	.get(

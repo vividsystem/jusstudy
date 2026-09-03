@@ -74,8 +74,8 @@ You can use drizzle-kit with `push` or `migrate` (may not work due to custom mig
 
 ## Deployment
 ### Docker
-The `server/.env` variables still have to be set.
-`sudo docker compose up backend --build -d`
+The `server/.env` and `client/.env` variables still have to be set.
+`sudo docker compose up --build -d`
 ### Cloudflare
 1. Do this
 ```bash

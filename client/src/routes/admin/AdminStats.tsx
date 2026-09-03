@@ -1,6 +1,5 @@
 import { client } from "@client/lib/api-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
-import { secondsToFormatTime } from "@client/lib/time"
 import { useQuery } from "@tanstack/react-query"
 export default function AdminStatsPage() {
 
@@ -38,7 +37,6 @@ export default function AdminStatsPage() {
 				<div className="p-4 bg-egg-yellow text-light-brown border-dark-red border-4 w-fit rounded-4xl h-fit">
 					<h2 className="bold text-6xl text-dark-brown">Ships</h2>
 					<p>Number of ships made: {stats.shipsMade} ({stats.finishedShips} finished; {stats.failedShips} failed)</p>
-					<p>Average (logged) time per ship: {secondsToFormatTime(stats.avgLoggedTimePerShip)}</p>
 					<p>In voting: {stats.shipsInVoting}</p>
 					<p>Awaiting normal review: {stats.shipsAwaitingNormalReview}</p>
 					<p>Awaiting fraud review: {stats.shipsAwaitingFraudReview}</p>

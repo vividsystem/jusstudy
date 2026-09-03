@@ -13,6 +13,9 @@ export default function Shop() {
 	if (data == null) {
 		return <Navigate to={"/"} />
 	}
+	if (!data.user.regionId) {
+		return <Navigate to={"/onboarding"} />
+	}
 
 	const { data: regions } = useQuery({
 		queryKey: ["shopRegions"],
@@ -26,10 +29,10 @@ export default function Shop() {
 	})
 
 
-	return regions ? <Page userCoins={data.user.coins} regions={regions} /> : <p>loading regions</p>
+	return regions ? <Page userCoins={data.user.coins} regions={regions} userRegion={data.user.regionId} /> : <p>loading regions</p>
 }
-function Page({ userCoins, regions }: { userCoins: number, regions: ShopRegion[] }) {
-	const [selectedRegion, setSelectedRegion] = useState(regions[0]!.id)
+function Page({ userCoins, userRegion, regions }: { userCoins: number, userRegion: string, regions: ShopRegion[] }) {
+	const [selectedRegion, setSelectedRegion] = useState(userRegion)
 	const { isPending, /*error,*/ data: shopItems, refetch: refetchItems } = useQuery({
 		queryKey: ["shopItems"],
 		queryFn: async () => {

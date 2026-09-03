@@ -160,6 +160,11 @@ export const auth = betterAuth({
 				type: "string",
 				required: true,
 				input: false
+			},
+			regionId: {
+				type: "string",
+				required: false,
+				input: true
 			}
 		},
 		validateUserInfo: async ({ source }, ctx) => {

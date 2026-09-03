@@ -4,9 +4,9 @@ import type { Env } from "..";
 import db from "@server/db";
 import { describeRoute } from "hono-openapi";
 import { internalServerError, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
-import { NewRegionResponseSchema, NewRegionRequestSchema, RegionsByIdResponseSchema, RegionsResponseSchemma, RegionalItemsResponseSchema } from "@shared/validation";
+import { NewRegionResponseSchema, NewRegionRequestSchema, RegionsByIdResponseSchema, RegionsResponseSchemma, RegionalItemsResponseSchema, RegionalItemByIdResponseSchema } from "@shared/validation";
 import { regionalItemAvailabilities, shopItems, shopRegions } from "@server/db/schema";
-import { eq, getTableColumns } from "drizzle-orm";
+import { and, eq, getTableColumns } from "drizzle-orm";
 
 export const regionRoutes = new Hono<Env>()
 	.post("/",
@@ -88,3 +88,36 @@ export const regionRoutes = new Hono<Env>()
 
 			return c.json({ items }, 200)
 		})
+	.get("/:id/items/:itemId",
+		describeRoute({
+			responses: {
+				200: successResponse(RegionalItemByIdResponseSchema),
+				404: notFoundError
+			}
+		}),
+		async (c) => {
+
+			const { id, itemId } = c.req.param()
+			const { createdAt, itemId: _iId, regionId, ...av } = getTableColumns(regionalItemAvailabilities)
+			const [item] = await db
+				.select({
+					...(getTableColumns(shopItems)),
+					availableSince: createdAt,
+					...av
+
+				})
+				.from(shopItems)
+				.innerJoin(regionalItemAvailabilities, eq(shopItems.id, regionalItemAvailabilities.itemId))
+				.where(and(
+					eq(regionalItemAvailabilities.regionId, id),
+					eq(shopItems.id, itemId)
+				))
+			if (!item) {
+				return c.json({ message: "Ressource not found" }, 404)
+			}
+
+
+			return c.json({ item }, 200)
+
+		}
+	)

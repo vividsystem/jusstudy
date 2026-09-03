@@ -11,8 +11,8 @@ import { ProjectCateogryBadge, ShipStateBadge, BadgeSkeleton } from "./Badges";
 
 type ShipResponse = InferResponseType<typeof client.api.ships[":id"]["$get"]>
 type Ship = Extract<ShipResponse, { ship: unknown }>["ship"]
-type ProjectResponse = InferResponseType<typeof client.api.projects[":id"]["$get"]>
-type Project = Extract<ProjectResponse, { project: unknown }>["project"]
+type ProjectResponse = InferResponseType<typeof client.api.reviews.pending["$get"]>
+type Project = Extract<ProjectResponse, { pendingProjects: unknown }>["pendingProjects"][number]["projects"]
 type UserResponse = InferResponseType<typeof client.api.users[":id"]["$get"]>
 type User = Extract<UserResponse, { user: unknown }>["user"]
 

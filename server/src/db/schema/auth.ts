@@ -1,8 +1,8 @@
 import { relations, sql } from "drizzle-orm";
-import { text, timestamp, boolean, index, pgTable, integer, pgEnum, customType, uniqueIndex } from "drizzle-orm/pg-core";
+import { text, timestamp, boolean, index, pgTable, integer, pgEnum, customType, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { addresses, projectReviews } from "./main";
 import { userStats } from "./voting";
-import { shopOrders } from "./shop";
+import { shopOrders, shopRegions } from "./shop";
 
 
 const tsvector = customType<{ data: string }>({
@@ -31,6 +31,7 @@ export const users = pgTable("users", {
 	type: userType().default("participant").notNull(),
 	banned: boolean().default(false),
 	coins: integer().notNull().default(0),
+	regionId: uuid().references(() => shopRegions.id),
 	searchVector: tsvector("search_vector")
 		.generatedAlwaysAs(
 			() => sql`to_tsvector('english',name || email || id || slack_id || nickname)`

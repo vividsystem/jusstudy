@@ -32,14 +32,14 @@ export const adminRoute = new Hono<Env>()
 			if (!user) return c.json({ message: "Unauthorized" }, 401)
 			if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
 
-			const shipStatsRes = await db.select({
+			const [shipStatsRes] = await db.select({
 				payoutsGiven: sum(projectShips.payout).mapWith(Number),
 				shipsMade: count(),
 				minPayout: min(projectShips.payout).mapWith(Number),
 				maxPayout: max(projectShips.payout).mapWith(Number),
 				avgPayout: avg(projectShips.payout).mapWith(Number),
 			}).from(projectShips)
-			if (shipStatsRes.length == 0) {
+			if (!shipStatsRes) {
 				logger.error("Admin stats not working!")
 				return c.json({ message: "Something went wrong" }, 500)
 			}
@@ -50,7 +50,7 @@ export const adminRoute = new Hono<Env>()
 			}
 
 
-			return c.json({
+			const stats = {
 				...shipStatsRes,
 				finishedShips: reviewStats.find((rs) => rs.state == "finished")?.n || 0,
 				failedShips: reviewStats.find((rs) => rs.state == "failed")?.n || 0,
@@ -58,6 +58,9 @@ export const adminRoute = new Hono<Env>()
 				shipsAwaitingNormalReview: reviewStats.find((rs) => rs.state == "pre-initial")?.n || 0,
 				shipsAwaitingFraudReview: reviewStats.find((rs) => rs.state == "pre-fraud")?.n || 0,
 				shipsAwaitingPayout: reviewStats.find((rs) => rs.state == "pre-payout")?.n || 0,
+			}
+			return c.json({
+				...stats
 			}, 200)
 
 		})

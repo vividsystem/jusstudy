@@ -1,6 +1,6 @@
 import { describeRoute, validator as zValidator } from "hono-openapi";
 import db from "@server/db";
-import { addresses, devlogAttachments, devlogs, projectLocks, projects, projectShips, shopOrders, timeHackatimeLinks, users, userStats } from "@server/db/schema";
+import { addresses, devlogAttachments, devlogs, projectLocks, projects, projectShips, shopOrders, timeEntries, timeHackatimeLinks, users, userStats } from "@server/db/schema";
 import hackatime from "@server/hackatime/client";
 import { and, count, desc, eq, getTableColumns, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { Hono } from "hono";
@@ -353,13 +353,16 @@ export const usersRoutes = new Hono<Env>()
 
 			const d = await db
 				.select({
-					...getTableColumns(devlogs), project: {
+					...getTableColumns(devlogs),
+					timeLogged: timeEntries.duration,
+					project: {
 						id: projects.id,
 						name: projects.name
 					}
 				})
 				.from(devlogs)
 				.innerJoin(projects, eq(projects.id, devlogs.projectId))
+				.innerJoin(timeEntries, eq(timeEntries.id, devlogs.timeEntryId))
 				.where(eq(projects.creatorId, id))
 				.orderBy(desc(devlogs.createdAt))
 
