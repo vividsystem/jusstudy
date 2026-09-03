@@ -1,6 +1,6 @@
 {
-  "id": "22ce3944-d19f-4ac2-b979-f702e8e79e2a",
-  "prevId": "f0036431-a261-4a28-8660-204bfb9052bc",
+  "id": "9b9fbf08-300f-441f-a521-72e6dc75b54f",
+  "prevId": "8bcf17b3-978f-4e17-bbe8-da3220a7815e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1493,13 +1493,13 @@
           "name": "itemId",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "regionId": {
           "name": "regionId",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "createdAt": {
           "name": "createdAt",
@@ -1512,7 +1512,7 @@
           "name": "available",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": false
         },
         "quantity": {

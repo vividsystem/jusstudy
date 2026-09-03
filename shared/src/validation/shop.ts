@@ -1,27 +1,6 @@
 import z from "zod";
+import { regionalItemAvailabilitySchema } from "./regions";
 
-export const itemOptionSchema = z.object({
-	id: z.uuid(),
-	name: z.string().nonempty(),
-	itemId: z.uuid()
-})
-
-export const optionVariantSchema = z.object({
-	id: z.uuid(),
-	name: z.string().nonoptional(),
-	additionalPrice: z.number().nonnegative(),
-	optionId: z.uuid()
-})
-
-export const NewVariantRequest = optionVariantSchema.omit({
-	id: true,
-	optionId: true
-})
-
-export const NewOptionRequest = z.object({
-	name: z.string().nonempty(),
-	variants: z.array(NewVariantRequest).nonempty()
-})
 
 export const shopItemSchema = z.object({
 	id: z.uuid(),
@@ -29,80 +8,114 @@ export const shopItemSchema = z.object({
 	name: z.string().nonempty(),
 	description: z.string().nonempty(),
 	image: z.url().nullable(),
-	basePrice: z.number().positive(),
-	quantity: z.number().nonnegative().nullable(),
 })
 
-export const NewShopItemRequest = shopItemSchema.omit({ id: true, createdAt: true }).extend({
-	options: z.array(NewOptionRequest).optional()
+export type ShopItem = z.infer<typeof shopItemSchema>
+
+export const itemOptionSchema = z.object({
+	id: z.uuid(),
+	name: z.string().nonempty(),
+	itemId: z.uuid()
 })
 
-export const NewShopItemResponse = z.object({
-	shopItem: shopItemSchema,
-	options: z.array(itemOptionSchema).nullable(),
-	variants: z.array(optionVariantSchema).nullable()
+export type ItemOption = z.infer<typeof itemOptionSchema>
+
+export const optionVariantSchema = z.object({
+	id: z.uuid(),
+	name: z.string().nonoptional(),
+	optionId: z.uuid()
 })
 
-export const ShopItemsResponseSchema = z.object({
-	items: z.array(shopItemSchema)
+export const optionVariantWithPrices = optionVariantSchema.extend({
+	prices: z.record(z.uuid(), z.number().nonnegative())
 })
 
+export type OptionVariantWithPrices = z.infer<typeof optionVariantWithPrices>
 
-export const optionWithVariants = itemOptionSchema.extend({
-	variants: z.array(optionVariantSchema)
+export const NewVariantRequestSchema = optionVariantWithPrices.omit({
+	id: true,
+	optionId: true,
 })
-export const NewOptionResponseSchema = z.object({
-	option: optionWithVariants
-})
-
-export const ShopItemByIdResponseSchema = z.object({
-	item: shopItemSchema.extend({
-		options: z.array(optionWithVariants)
-	})
-})
-
+export type NewVariantRequest = z.infer<typeof NewVariantRequestSchema>
 
 export const NewVariantResponseSchema = z.object({
 	variant: optionVariantSchema
 })
 
-export const UpdateShopItemRequest = NewShopItemRequest.extend({
-	quantity: z.number().positive().nullable(), // set to positive
-}).partial().strip()
+export const NewOptionRequestSchema = z.object({
+	name: z.string().nonempty(),
+	variants: z.array(NewVariantRequestSchema).nonempty()
+})
+
+export type NewOptionRequest = z.infer<typeof NewOptionRequestSchema>
+
+export const optionWithVariants = itemOptionSchema.extend({
+	variants: z.array(optionVariantSchema)
+})
+
+export type ItemOptionWithVariants = z.infer<typeof optionWithVariants>
+
+export const optionWithVariantsPrices = itemOptionSchema.extend({
+	variants: z.array(optionVariantWithPrices)
+})
+
+export type ItemOptionWithVariantsPrices = z.infer<typeof optionWithVariantsPrices>
+
+export const NewOptionResponseSchema = z.object({
+	option: itemOptionSchema
+})
+
+
+export const NewShopItemRequestSchema = shopItemSchema.omit({ id: true, createdAt: true }).extend({
+	regions: z.record(z.uuid(), regionalItemAvailabilitySchema.omit({ createdAt: true, itemId: true, regionId: true })),
+	options: z.array(NewOptionRequestSchema).optional()
+})
+
+export type NewShopItemRequest = z.infer<typeof NewShopItemRequestSchema>
+
+export const NewShopItemResponse = z.object({
+	shopItem: shopItemSchema,
+
+	options: z.array(itemOptionSchema).nullable(),
+	variants: z.array(optionVariantSchema).nullable()
+})
+
+export const ShopItemsResponseSchema = z.object({
+	items: z.array(z.union([
+		shopItemSchema,
+		shopItemSchema.extend({
+			prices: z.array(regionalItemAvailabilitySchema)
+		})
+	]))
+})
+
+export const shopItemWithOptions = shopItemSchema.extend({
+	options: z.array(optionWithVariants)
+})
+export type ShopItemWithOptions = z.infer<typeof shopItemWithOptions>
+
+export const shopItemWithOptionsPrices = shopItemSchema.extend({
+	options: z.array(optionWithVariantsPrices)
+})
+
+export type ShopItemWithOptionsPrices = z.infer<typeof shopItemWithOptionsPrices>
+
+export const ShopItemByIdResponseSchema = z.object({
+	item: shopItemWithOptionsPrices
+})
+
+export const UpdateShopItemRequest = shopItemSchema.omit({ id: true, createdAt: true }).partial().strip()
 
 export const UpdateShopItemResponseSchema = z.object({
 	item: shopItemSchema
 })
 
-
-export const PlaceOrderRequest = z.object({
-	itemId: z.uuid().nonempty(),
-	optionVariants: z.record(z.uuid(), z.uuid()).optional(), // option uuid: variant uuid
-
-	quantity: z.number().positive(),
-	addressId: z.uuid().nonempty(),
-	orderNotes: z.string().optional()
-})
-
-export const orderSchema = z.object({
-	id: z.uuid(),
-	quantity: z.number().positive(),
-	userId: z.string().nonempty(),
-	placedAt: z.date(),
-	fulfilledAt: z.date().nullable(),
-	itemId: z.uuid(),
-	addressId: z.uuid(),
-	price: z.number().positive(),
-	trackingId: z.string().nonempty().nullable(),
-	orderNotes: z.string().nonempty().nullable()
-
-})
-
-export const PlaceOrderResponseSchema = z.object({
-	order: orderSchema
-})
-
-export const OrderByIdResponseSchema = PlaceOrderResponseSchema
-export const UserOrdersResponseSchema = z.object({
-	orders: z.array(orderSchema)
+export const RegionalItemsResponseSchema = z.object({
+	items: shopItemSchema.extend({
+		regionalItemAvailabilitySchema,
+		available: z.boolean(),
+		quantity: z.number().nonnegative().nullable(),
+		price: z.number().positive(),
+		availableSince: z.date()
+	})
 })

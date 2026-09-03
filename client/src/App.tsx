@@ -28,6 +28,8 @@ import AddShopItemPage from "./routes/admin/AddShopItemPage";
 import EditShopItemPage from "./routes/admin/EditShopItemPage";
 import AdminUserHistoryPage from "./routes/admin/AdminUserHistory";
 import Settings from "./routes/Settings";
+import AdminShopItems from "./routes/admin/AdminShopItems";
+import AdminShopRegions from "./routes/admin/AdminShopRegions";
 // import RSVP from "./routes/RSVP";
 
 function App() {
@@ -71,8 +73,10 @@ function App() {
 								<Route path="/admin/stats" element={<AdminStatsPage />} />
 								<Route path="/admin/user-history/:id" element={<AdminUserHistoryPage />} />
 								<Route path="/admin/shop" element={<AdminShopPage />} />
-								<Route path="/admin/shop/new" element={<AddShopItemPage />} />
-								<Route path="/admin/shop/item/:id/edit" element={<EditShopItemPage />} />
+								<Route path="/admin/shop/regions" element={<AdminShopRegions />} />
+								<Route path="/admin/shop/items/new" element={<AddShopItemPage />} />
+								<Route path="/admin/shop/items" element={<AdminShopItems />} />
+								<Route path="/admin/shop/items/:id/edit" element={<EditShopItemPage />} />
 							</Route>
 						</Route>
 					</Route>

@@ -1,1 +1,0 @@
-ALTER TABLE "project_ships" DROP COLUMN "timeSpent";

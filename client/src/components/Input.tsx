@@ -56,14 +56,14 @@ export const Checkbox = (props: CheckboxProps) => {
 }
 
 
-type CheckableInputProps = {
+type CheckableInputProps<T> = {
 	checkboxLabel: JSX.Element | string
 	defaultChecked?: boolean
-	onInput: (v?: string) => void
+	fallbackValue: T
+	onInput: (v: string | T) => void
 
 } & InputProps
-export const CheckableInput = (props: CheckableInputProps) => {
-	const { checkboxLabel, defaultChecked, onInput, ...rest } = props
+export function CheckableInput<T>({ checkboxLabel, defaultChecked, onInput, fallbackValue, ...rest }: CheckableInputProps<T>) {
 	const [checked, setChecked] = useState(defaultChecked)
 
 
@@ -75,7 +75,7 @@ export const CheckableInput = (props: CheckableInputProps) => {
 
 	const onCheck = (v: boolean) => {
 		if (!v) {
-			onInput(undefined)
+			onInput(fallbackValue)
 		}
 		setChecked(v)
 

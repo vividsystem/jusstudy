@@ -1,6 +1,6 @@
 import { typeValues } from "@server/db/schema";
 import z from "zod";
-import { orderSchema } from "./shop";
+import { orderSchema } from "./orders";
 import { projectSchema } from "./projects";
 import { devlogSchema } from "./devlogs";
 

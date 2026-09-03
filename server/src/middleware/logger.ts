@@ -28,18 +28,6 @@ export const requestLogger = (): MiddlewareHandler<Env> => {
 			responseTime,
 			userId: user?.id || undefined
 		}
-		// asssume shit is logged in the routes individualy
-		// const status = c.res.status;
-		// const level = status >= 500 ? "error" : status >= 400 ? "warn" : "info";
-		// if (status >= 500) {
-		// 	logger.error(logMsg)
-		// } else if (status >= 400) {
-		// 	logger.warn(logMsg)
-		// } else {
-		// 	logger.info(logMsg)
-		//
-		// }
-
 
 		logger.info(logMsg, "Request processed")
 	};
