@@ -7,11 +7,12 @@ import type { ProjectCategories, ProjectShipStatus } from "@server/db/schema";
 import { Search, X } from "lucide-react";
 import { type InferResponseType } from "hono";
 import { PreviewReviewCard, CardSkeleton } from "@client/components/reviews/ReviewCard";
+import { useErrors } from "@client/lib/context/ErrorContext";
 
 type PendingReviewResponse = InferResponseType<
 	typeof client.api.reviews.pending["$get"]
 >
-type PendingProjectEntry = PendingReviewResponse["pendingProjects"][number]
+type PendingProjectEntry = Extract<PendingReviewResponse, { pendingProjects: unknown }>["pendingProjects"][number]
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const CATEGORY_META: Record<ProjectCategories, { color: string; dot: string }> = {
@@ -67,12 +68,18 @@ function FilterPill({
 
 // ── Main Page ──────────────────────────────────────────────────────────────
 export default function ReviewPortal() {
+	const { pushError } = useErrors();
 	const { data: session } = authClient.useSession();
 
 	const { data: queryData, isPending } = useQuery({
 		queryKey: ["pendingReviews"],
 		queryFn: async () => {
 			const res = await client.api.reviews.pending.$get()
+			if (!res.ok) {
+				const data = await res.json();
+				pushError(data.message)
+				throw new Error(data.message)
+			}
 			const data = await res.json();
 			return data.pendingProjects;
 		},

@@ -16,6 +16,8 @@ export const regionalItemAvailabilitySchema = z.object({
 	price: z.number().positive()
 })
 
+export type RegionalItemAvailability = z.infer<typeof regionalItemAvailabilitySchema>
+
 export const regionalVariantAvailabilitySchema = z.object({
 	variantId: z.uuid(),
 	regionId: z.uuid(),

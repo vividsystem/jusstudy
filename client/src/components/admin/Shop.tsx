@@ -247,6 +247,7 @@ interface OptionDisplayBoxProps {
 	option: ItemOptionWithVariantsPrices
 	variants: NewVariant[]
 	updateVariants: (v: NewVariant[]) => void
+	availabilities: AddRegionAvailability[]
 	addedAvailabilities: AddRegionAvailability[]
 	regions: ShopRegion[]
 	newVariantAvailabilities: NewVariantRegion[]
@@ -274,13 +275,14 @@ function OptionDisplayBox({ option, variants, updateVariants, ...props }: Option
 					key={v.id}
 					variant={v}
 					regions={props.regions}
+					availabilities={props.availabilities}
 					addedAvailabilities={props.addedAvailabilities}
 					newVariantAvailabilities={props.newVariantAvailabilities.filter(a => a.variantId === v.id)}
 					setNewVariantAvailabilities={props.setNewVariantAvailabilities}
 				/>
 			))}
 			{variants.filter((v) => v.optionId === option.id).map((v) => (
-				<Variant key={v.id} variant={v} update={updateSingle} delete={del} regions={props.regions} addedAvailabilities={props.addedAvailabilities} />
+				<Variant key={v.id} variant={v} update={updateSingle} delete={del} regions={props.regions} addedAvailabilities={[...props.availabilities, ...props.addedAvailabilities]} />
 			))}
 
 			<div className="flex flex-row gap-2 items-center">
@@ -300,6 +302,7 @@ function OptionDisplayBox({ option, variants, updateVariants, ...props }: Option
 interface VariantDisplayProps {
 	variant: OptionVariantWithPrices
 	regions: ShopRegion[]
+	availabilities: AddRegionAvailability[]
 	addedAvailabilities: AddRegionAvailability[]
 	newVariantAvailabilities: NewVariantRegion[]
 	setNewVariantAvailabilities: React.Dispatch<React.SetStateAction<NewVariantRegion[]>>
@@ -339,7 +342,7 @@ function VariantDisplay({ variant, regions, ...props }: VariantDisplayProps) {
 				</div>))
 			}
 
-			{props.addedAvailabilities.filter(a => !Object.keys(variant.prices).includes(a.regionId)).map(a => (<div className="flex items-center gap-2 text-2xl">
+			{props.addedAvailabilities.map(a => (<div className="flex items-center gap-2 text-2xl">
 				<CornerDownRight className="invisible" />
 				<CornerDownRight className="visible" />
 				<div className="flex gap-2 items-center border-egg-yellow border-2 rounded-md bg-dark-red p-2">
@@ -367,6 +370,7 @@ interface BaseOptionsFormProps {
 	setNewOpts: React.Dispatch<React.SetStateAction<NewOption[]>>
 	addedAvailabilities: AddRegionAvailability[]
 	regions: ShopRegion[]
+	availabilities?: AddRegionAvailability[]
 }
 
 type NewVariantRegion = AddVariantRegionAvailability & { variantId: string }
@@ -403,6 +407,7 @@ export function OptionsForm({ newOpts, setNewOpts, addedAvailabilities, ...props
 						variants={props.newVariants}
 						updateVariants={props.setNewVariants}
 						addedAvailabilities={addedAvailabilities}
+						availabilities={props.availabilities || []}
 						regions={props.regions}
 						newVariantAvailabilities={props.newVariantAvailabilities}
 						setNewVariantAvailabilities={props.setNewVariantAvailabilities}
@@ -414,7 +419,7 @@ export function OptionsForm({ newOpts, setNewOpts, addedAvailabilities, ...props
 						key={o.id}
 						delete={del}
 						update={updateOption}
-						addedAvailabilities={addedAvailabilities}
+						addedAvailabilities={[...props.availabilities || [], ...addedAvailabilities]}
 						regions={props.regions}
 					/>
 				))}

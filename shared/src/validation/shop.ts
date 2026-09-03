@@ -101,7 +101,7 @@ export const shopItemWithOptionsPrices = shopItemSchema.extend({
 export type ShopItemWithOptionsPrices = z.infer<typeof shopItemWithOptionsPrices>
 
 export const ShopItemByIdResponseSchema = z.object({
-	item: shopItemWithOptionsPrices
+	item: shopItemWithOptionsPrices.extend({ availabilities: z.array(regionalItemAvailabilitySchema) })
 })
 
 export const UpdateShopItemRequest = shopItemSchema.omit({ id: true, createdAt: true }).partial().strip()
@@ -118,4 +118,14 @@ export const RegionalItemsResponseSchema = z.object({
 		price: z.number().positive(),
 		availableSince: z.date()
 	})
+})
+
+export const RegionalItemByIdResponseSchema = z.object({
+	item: shopItemSchema.extend({
+		availableSince: z.date(),
+		available: z.boolean(),
+		quantity: z.number().nonnegative().nullable(),
+		price: z.number().positive()
+	})
+
 })

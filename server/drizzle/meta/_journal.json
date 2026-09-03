@@ -183,6 +183,13 @@
       "when": 1788422687166,
       "tag": "0025_broken_lockjaw",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1788428042583,
+      "tag": "0026_zippy_nick_fury",
+      "breakpoints": true
     }
   ]
 }

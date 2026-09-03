@@ -127,7 +127,7 @@ function Page(props: { id: string }) {
 
 			const data = await res.json()
 
-			return data.projects
+			return data.userProjects
 		}
 
 	})
@@ -168,7 +168,7 @@ function Page(props: { id: string }) {
 }
 
 interface ProjectsGridProps {
-	projects?: Extract<InferResponseType<typeof client.api.users[":id"]["projects"]["$get"]>, { projects: unknown }>["projects"]
+	projects?: Extract<InferResponseType<typeof client.api.users[":id"]["projects"]["$get"]>, { userProjects: unknown }>["userProjects"]
 	locks?: Extract<InferResponseType<typeof client.api.users[":id"]["locks"]["$get"]>, { locks: unknown }>["locks"]
 }
 

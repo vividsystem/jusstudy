@@ -6,6 +6,10 @@ function Home() {
 	if (data == null) {
 		return <Navigate to={"/"} />
 	}
+	if (!data.user.regionId) {
+		return <Navigate to={"/onboarding"} />
+	}
+
 	return (
 		<div className="max-w-xl mx-auto flex flex-col gap-6 items-center justify-center min-h-screen">
 			{data.user.banned && (<>

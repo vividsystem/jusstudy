@@ -140,7 +140,7 @@ function Page(props: { id: string }) {
 
 			const data = await res.json()
 
-			return data.projects
+			return data.userProjects
 		}
 
 	})
@@ -176,7 +176,10 @@ function Page(props: { id: string }) {
 					<Button onClick={() => setShowDevlogs(true)} className={`${showDevlogs ? "bg-dark-red border-egg-yellow" : "bg-dark-brown border-light-brown"} border-4`}>Devlogs</Button>
 					<Button onClick={() => setShowDevlogs(false)} className={`${!showDevlogs ? "bg-dark-red border-egg-yellow" : "bg-dark-brown border-light-brown"} border-4`}>Projects</Button>
 				</div>
-				{showDevlogs ? (<DevlogTimeline devlogs={devlogs} user={user} />) : (<ProjectsGrid projects={projects} />)}
+				{devlogs && projects && (showDevlogs
+					? (<DevlogTimeline devlogs={devlogs} user={user} />)
+					: (<ProjectsGrid projects={projects} devlogs={devlogs || []} />)
+				)}
 			</div>
 
 		</main>
@@ -201,7 +204,7 @@ function DevlogTimeline({ devlogs, user }: DevlogTimelineProps) {
 }
 
 interface ProjectsGridProps {
-	projects?: Extract<InferResponseType<typeof client.api.users[":id"]["projects"]["$get"]>, { projects: unknown }>["projects"]
+	projects?: Extract<InferResponseType<typeof client.api.users[":id"]["projects"]["$get"]>, { userProjects: unknown }>["userProjects"]
 	devlogs: Devlogs
 }
 
@@ -282,7 +285,7 @@ function UserProfileCard({ user, stats, devlogs }: UserProfileCardProps) {
 				</div>
 				<div className="h-full items-center justify-center flex">
 					{devlogs ? (
-						<span className="text-3xl">{secondsToFormatTime(devlogs.reduce((acc, d) => acc + d.timeSpent, 0))}</span>
+						<span className="text-3xl">{secondsToFormatTime(devlogs.reduce((acc, d) => acc + d.timeLogged, 0))}</span>
 					) : (
 						<MultiCharacterSkeleton />
 					)}

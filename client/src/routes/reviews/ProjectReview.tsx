@@ -111,7 +111,7 @@ function Page({ id }: PageProps) {
 
 			<div className="w-full grid grid-cols-2 2xl:grid-cols-3 p-4 gap-4">
 				<div>
-					<ReviewCard project={project} ship={ship} timeShipped={ship.timeShipped} creator={creator} />
+					<ReviewCard project={project} ship={ship} creator={creator} />
 				</div>
 
 				<div className="flex flex-col gap-4">

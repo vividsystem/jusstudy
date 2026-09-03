@@ -11,13 +11,27 @@ import { Navigate, useParams, useNavigate } from "react-router"
 type ShopItem = Extract<InferResponseType<typeof client.api.shop.items[":itemId"]["$get"]>, { item: unknown }>["item"]
 
 export default function BuyItem() {
-	const { pushError } = useErrors()
-	const navigate = useNavigate()
 	const { data } = authClient.useSession()
 	const { itemId } = useParams()
 
+	if (data == null) {
+		return <Navigate to={"/"} />
+	} else if (!data.user.regionId) {
+		return <Navigate to={"/onboarding"} />
+	} else if (!itemId) {
+		return <Navigate to={"/shop"} />
+	}
+
+
+
+	return (<RegionWrapper regionId={data.user.regionId} itemId={itemId} userCoins={data.user.coins} />)
+}
+
+function RegionWrapper({ regionId, itemId, userCoins }: { regionId: string, itemId: string, userCoins: number }) {
+	const { pushError } = useErrors()
+	const navigate = useNavigate()
 	const { data: item } = useQuery({
-		queryKey: ["shopItems", itemId],
+		queryKey: ["shopItem", itemId],
 		queryFn: async () => {
 			if (!itemId) {
 				pushError("ItemId undefined")
@@ -39,19 +53,16 @@ export default function BuyItem() {
 			return data.item
 		},
 	})
-	if (data == null) {
-		return <Navigate to={"/"} />
-	}
-	if (!itemId) {
+
+	if (item && (!item.availabilities.some(a => a.regionId === regionId) || !item.availabilities.find(a => a.regionId === regionId)!.available)) {
+		pushError("Product not available in your region.")
 		return <Navigate to={"/shop"} />
 	}
-
-
 
 	return (
 		<main className="flex flex-col items-center p-4 w-full min-h-screen">
 			{item ? (
-				<ShopItemContainer item={item} userCoins={data.user.coins} />
+				<ShopItemContainer item={item} regionId={regionId} userCoins={userCoins} availability={item.availabilities.find(a => a.regionId === regionId)!} />
 			)
 				: (
 					<p>loading</p>
@@ -59,15 +70,16 @@ export default function BuyItem() {
 			}
 		</main >
 	)
+
 }
-
-
 
 interface ShopItemContainerProps {
 	item: ShopItem
+	availability: ShopItem["availabilities"][number]
 	userCoins: number
+	regionId: string
 }
-export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
+export function ShopItemContainer({ item, userCoins, regionId, availability }: ShopItemContainerProps) {
 
 	const navigate = useNavigate()
 	const [quantity, setQuantity] = useState(1)
@@ -77,7 +89,7 @@ export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
 
 	const setOption = (oId: string, vId: string) => {
 		const opt = opts.find((o) => o.optionId === oId)
-		const addPrice = item.options.find((o) => o.id === oId)?.variants.find((v) => v.id === vId)?.additionalPrice
+		const addPrice = item.options.find((o) => o.id === oId)?.variants.find((v) => v.id === vId)?.prices[regionId]
 		if (!opt) {
 			setOpts((prev) => [...prev, { optionId: oId, variantId: vId, additionalPrice: (addPrice || 0) }])
 		} else {
@@ -90,6 +102,7 @@ export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
 
 	const [addressId, setAddressId] = useState("")
 	const { pushError } = useErrors()
+
 	const { data: addresses } = useQuery({
 		queryKey: ["address"],
 		queryFn: async () => {
@@ -132,6 +145,7 @@ export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
 			const res = await client.api.shop.orders.$post({
 				json: {
 					itemId: item.id,
+					regionId,
 					quantity,
 					optionVariants: optRecord,
 					addressId
@@ -167,7 +181,7 @@ export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
 
 							<option value="">Select a variant please</option>
 							{o.variants.map((v) => (
-								<option value={v.id}>{v.name} (+ {v.additionalPrice} Books)</option>
+								<option value={v.id}>{v.name} (+ {v.prices[regionId] || 0} Books)</option>
 							))}
 						</select>
 					</>
@@ -188,15 +202,15 @@ export function ShopItemContainer({ item, userCoins }: ShopItemContainerProps) {
 
 				<Button href={"/addresses"} className="border-beige border-2">Edit Addresses</Button>
 				<div className="py-4 px-2 border-2 rounded-2xl">
-					<p>Item price: {item.basePrice}</p>
-					<p>Order cost: {quantity}x{item.basePrice + variantPrice} = {quantity * (item.basePrice + variantPrice)}</p>
+					<p>Item price: {availability.price}</p>
+					<p>Order cost: {quantity}x{availability.price + variantPrice} = {quantity * (availability.price + variantPrice)}</p>
 				</div>
 				<Button onClick={(ev) => {
 					ev.preventDefault()
 					buyItem()
 					navigate("/shop")
 
-				}} className="border-egg-yellow border-2 disabled:bg-beige disabled:text-light-brown" disabled={userCoins < (quantity * (item.basePrice + variantPrice))}>Buy</Button>
+				}} className="border-egg-yellow border-2 disabled:bg-beige disabled:text-light-brown" disabled={userCoins < (quantity * (availability.price + variantPrice))}>Buy</Button>
 			</div >
 		</div>
 	)

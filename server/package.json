@@ -5,7 +5,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "bun --hot run src/index.ts & tsc --watch"
+    "dev": "bun --watch run src/index.ts & tsc --watch"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.7.1",

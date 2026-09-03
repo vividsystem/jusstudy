@@ -151,17 +151,26 @@ export const shopRoute = new Hono<Env>()
 		async (c) => {
 			const logger = c.get("logger")
 			const itemId = c.req.param("itemId")
-			const [item] = await db.select().from(shopItems).where(eq(shopItems.id, itemId))
+
+			const [item] = await db
+				.select()
+				.from(shopItems)
+				.where(eq(shopItems.id, itemId))
 			if (!item) {
 				return c.json({ message: "Ressource not found" }, 404)
 			}
+
+			const availabilities = await db
+				.select()
+				.from(regionalItemAvailabilities)
+				.where(eq(regionalItemAvailabilities.itemId, itemId))
 			const options = await db
 				.select()
 				.from(shopItemOptions)
 				.where(eq(shopItemOptions.itemId, itemId))
 
 			if (!options) {
-				return c.json({ item: { ...item, options: [] } }, 200)
+				return c.json({ item: { ...item, options: [], availabilities } }, 200)
 			}
 
 			const variants = await db
@@ -181,13 +190,13 @@ export const shopRoute = new Hono<Env>()
 
 			const vars = variants.map((v) => ({
 				...v,
-				prices: Object.fromEntries(variantPrices.filter(p => p.variantId === v.id).map(p => [p.regionId, p.price]))
+				prices: Object.fromEntries(variantPrices.filter(p => p.variantId === v.id).map(p => [p.regionId, p.price])) as Record<string, number>,
 			}))
 
 
 			const opts = options.map((opt) => ({ ...opt, variants: vars.filter(v => v.optionId == opt.id) }))
 
-			return c.json({ item: { ...item, options: opts } }, 200)
+			return c.json({ item: { ...item, options: opts, availabilities } }, 200)
 		})
 	.post(
 		"/items/:itemId/options",

@@ -13,7 +13,6 @@ export default function EditShopItemPage() {
 	const navigate = useNavigate()
 
 
-
 	const { isPending, /*error,*/ data: shopItem } = useQuery({
 		queryKey: ["shopItems", id],
 		queryFn: async () => {
@@ -42,7 +41,7 @@ export default function EditShopItemPage() {
 	})
 
 	if (!isPending && !shopItem || !id) {
-		return <Navigate to={"/admin/shop"} />
+		return <Navigate to={"/admin/shop/items"} />
 	}
 
 
@@ -115,12 +114,17 @@ function EditItemForm(props: { item: ShopItemWithOptionsPrices, availabilities: 
 
 			for (const variantAv of newVariantAvailabilities) {
 				const variantAvRes = await client.api.shop.variants[":variantId"].availabilities.$post({ json: variantAv, param: { variantId: variantAv.variantId } })
+				if (!variantAvRes.ok) {
+					const data = await variantAvRes.json()
+					pushError(data.message)
+					throw new Error(data.message)
+				}
 			}
 
 
 
 
-			navigate("/admin/shop")
+			navigate("/admin/shop/items")
 		}
 	})
 	return (
@@ -143,7 +147,8 @@ function EditItemForm(props: { item: ShopItemWithOptionsPrices, availabilities: 
 					setNewVariants={setNewVariants}
 					newVariantAvailabilities={newVariantAvailabilities}
 					setNewVariantAvailabilities={setNewVariantAvailabilities}
-					addedAvailabilities={[...selectedRegions, ...props.availabilities]}
+					addedAvailabilities={selectedRegions}
+					availabilities={props.availabilities}
 					regions={regions}
 				/>
 			</>) : (<p>loading regions...</p>)}
