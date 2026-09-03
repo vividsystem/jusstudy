@@ -76,25 +76,3 @@ You can use drizzle-kit with `push` or `migrate` (may not work due to custom mig
 ### Docker
 The `server/.env` and `client/.env` variables still have to be set.
 `sudo docker compose up --build -d`
-### Cloudflare
-1. Do this
-```bash
-openssl rand -base64 32 | bunx wrangler secret put BETTER_AUTH_SECRET
-bunx wrangler secret put HACKCLUB_AUTH_CLIENT_ID
-bunx wrangler secret put HACKCLUB_AUTH_CLIENT_SECRET
-bunx wrangler secret put DATABASE_URL
-bunx wrangler secret put HACKATIME_API_KEY
-
-```
-2. Add env variables to [wrangler.jsonc](./wrangler.jsonc)
-```jsonc
-//...
-  "vars": {
-  	"VITE_CLIENT_URL": "my-variable", // this does unfortunately not work currently because VITE_ variables get read on compile time...
-    "CORS_ORIGIN": "SAME AS VITE_CLIENT_URL"
-    "START_DATE": "2026-01-01" // the start date of the ysws
-  }
-//...
-```
-NOTE: enviromental loading doesnt work correctly yet as environmental variables passed to the frontend via vite get bundled at compile time so cloudflare variables dont have any effect
-
