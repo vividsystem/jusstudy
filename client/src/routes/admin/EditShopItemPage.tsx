@@ -13,6 +13,7 @@ export default function EditShopItemPage() {
 	const navigate = useNavigate()
 
 
+
 	const { isPending, /*error,*/ data: shopItem } = useQuery({
 		queryKey: ["shopItems", id],
 		queryFn: async () => {
