@@ -6,5 +6,8 @@ export default defineConfig({
 	plugins: [react(), tailwindcss()],
 	resolve: {
 		tsconfigPaths: true
+	},
+	build: {
+		outDir: "client-dist"
 	}
 });
