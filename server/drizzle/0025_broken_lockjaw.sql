@@ -1,0 +1,1 @@
+ALTER TABLE "shop_item_regional_availabilities" ALTER COLUMN "available" SET NOT NULL;

@@ -10,7 +10,6 @@ export async function getHackatimeAccessToken(headers: Headers) {
 	const token = await auth.api.getAccessToken({
 		headers: headers,
 		body: {
-			providerId: htAccount.providerId,
 			accountId: htAccount.id
 		}
 	})

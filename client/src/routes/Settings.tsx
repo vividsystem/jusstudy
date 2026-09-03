@@ -3,9 +3,10 @@ import { authClient } from "@client/lib/auth-client";
 import { clientURL } from "@client/lib/urls";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Navigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 
 export default function Settings() {
+	const navigate = useNavigate()
 	const { data: accounts } = useQuery({
 		queryKey: ["userAccounts"],
 		queryFn: async () => {
@@ -14,12 +15,13 @@ export default function Settings() {
 		}
 	})
 
+	const connected = useMemo(() => accounts?.some((a) => a.providerId === "hackatime"), [accounts])
+
 	const { data: session } = authClient.useSession()
 	if (!session) {
 		return <Navigate to={"/"} />
 	}
 
-	const connected = useMemo(() => accounts?.some((a) => a.providerId === "hackatime") || false, [accounts])
 
 	return <main className="w-full p-4 min-h-screen flex flex-col gap-2">
 		<h1 className="text-4xl">Settings</h1>
@@ -48,5 +50,15 @@ export default function Settings() {
 				)}
 			</div>
 		</div>
+		<Button
+			className="bg-dark-red w-fit text-egg-yellow border-4"
+			onClick={async (ev) => {
+				ev.preventDefault()
+				await authClient.signOut()
+				navigate("/")
+			}}
+		>
+			Sign-out
+		</Button >
 	</main >
 }

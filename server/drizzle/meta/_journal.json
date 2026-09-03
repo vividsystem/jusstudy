@@ -166,8 +166,22 @@
     {
       "idx": 23,
       "version": "7",
-      "when": 1787755294715,
-      "tag": "0023_broad_sally_floyd",
+      "when": 1788119244097,
+      "tag": "0023_fair_mach_iv",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1788422654089,
+      "tag": "0024_normal_gwen_stacy",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1788422687166,
+      "tag": "0025_broken_lockjaw",
       "breakpoints": true
     }
   ]

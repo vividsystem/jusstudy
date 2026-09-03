@@ -38,15 +38,15 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260702.1",
     "bun-types": "latest",
-    "turbo": "^2.10.11",
-    "wrangler": "^4.125.0"
+    "turbo": "^2.10.12",
+    "wrangler": "^4.127.1"
   },
   "peerDependencies": {
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "better-auth": "^1.7.1",
-    "hono": "^4.13.4",
-    "zod": "^4.4.3"
+    "better-auth": "^1.7.2",
+    "hono": "^4.13.5",
+    "zod": "^4.5.4"
   }
 }

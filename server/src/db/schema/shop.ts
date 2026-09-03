@@ -1,17 +1,32 @@
 import { relations } from "drizzle-orm"
-import { integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core"
+import { boolean, integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core"
 import { addresses } from "./main"
 import { users } from "./auth"
+
+
+export const shopRegions = pgTable("shop_regions", {
+	id: uuid().defaultRandom().primaryKey(),
+	name: text().notNull()
+})
 
 export const shopItems = pgTable("shop_items", {
 	id: uuid().defaultRandom().primaryKey(),
 	createdAt: timestamp().defaultNow().notNull(),
-	quantity: integer(), // null means unlimited
 	name: text().notNull(),
 	description: text().notNull(),
-	basePrice: integer().notNull(),
 	image: text(),
 })
+
+export const regionalItemAvailabilities = pgTable("shop_item_regional_availabilities", {
+	itemId: uuid().references(() => shopItems.id).notNull(),
+	regionId: uuid().references(() => shopRegions.id).notNull(),
+	createdAt: timestamp().defaultNow().notNull(),
+	available: boolean().default(false).notNull(),
+	quantity: integer(), // null means unlimited
+	price: integer().notNull()
+}, (table) => [
+	primaryKey({ columns: [table.itemId, table.regionId] })
+])
 
 export const shopItemOptions = pgTable("shop_item_options", {
 	id: uuid().defaultRandom().primaryKey(),
@@ -27,10 +42,22 @@ export const itemVariants = pgTable("shop_item_variants", {
 	id: uuid().defaultRandom().primaryKey(),
 	optionId: uuid().references(() => shopItemOptions.id).notNull(),
 	name: text().notNull(),
-	additionalPrice: integer().default(0).notNull()
 })
 
+export const itemVariantRelations = relations(itemVariants, ({ many }) => ({
+	availabilities: many(regionalItemVariantAvailabilities)
+}))
+
+export const regionalItemVariantAvailabilities = pgTable("shop_item_variant_regional_availabilities", {
+	variantId: uuid().references(() => itemVariants.id),
+	regionId: uuid().references(() => shopRegions.id),
+	price: integer().notNull()
+}, (table) => [
+	primaryKey({ columns: [table.variantId, table.regionId] })
+])
+
 export const shopItemRelations = relations(shopItems, ({ many }) => ({
+	availabilities: many(regionalItemAvailabilities),
 	orders: many(shopOrders),
 	options: many(shopItemOptions)
 }))
