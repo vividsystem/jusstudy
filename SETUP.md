@@ -1,7 +1,5 @@
 # Setup 
-
-
-## Local
+## Local Build
 1. Clone the repo (yeah obviously)
 ```bash
 git clone https://github.com/vividsystem/jusstudy.git
@@ -30,9 +28,14 @@ paste the following into `server/.env`:
 adjust the base origin to the url that you are going to expose
 to make a strong secret you can use something like: `openssl rand -base64 32`
 ```env
+CLIENT_URL=SAME AS VITE_CLIENT_URL
 CORS_ORIGIN=http://localhost:5173
 DATABASE_URL=your_database_url
 BETTER_AUTH_SECRET=your_secret
+BOT_HOST=
+BOT_ACCESS_TOKEN=
+HACKATIME_UID=
+HACKATIME_SECRET=
 HACKCLUB_AUTH_CLIENT_ID=your_client_id
 HACKCLUB_AUTH_CLIENT_SECRET=your_client_secret
 START_DATE=2026-04-08
@@ -47,7 +50,13 @@ HACKCLUB_CDN_API_KEY=YOUR_API_KEY
 bun run build
 ```
 
-### Local Development
+5. Apply DB schema (this overwrites existing. use this to setup new dbs only. to migrate use `bunx drizzle-kit migrate`)
+```bash
+cd server
+bunx drizzle-kit push
+```
+
+## Local Development
 (follow steps 1 to 3 from Local)
 ```bash
 # Run all workspaces in development mode with Turbo
@@ -68,11 +77,10 @@ bun run type-check
 bun run test
 ```
 
-
 ## Databases
 You can use drizzle-kit with `push` or `migrate` (may not work due to custom migrations) or use the sql-files
 
 ## Deployment
 ### Docker
 The `server/.env` and `client/.env` variables still have to be set.
-`sudo docker compose up --build -d`
+`sudo docker compose up --build -d` serves all endpoints on :8080 through nginx.
