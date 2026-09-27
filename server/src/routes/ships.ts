@@ -126,6 +126,17 @@ export const projectShipRoute = new Hono<Env>()
 			}
 
 
+			const [lastEntry] = await db
+				.select({ id: timeEntries.id })
+				.from(timeEntries)
+				.where(and(
+					eq(timeEntries.projectId, id)))
+				.orderBy(desc(timeEntries.createdBy))
+				.limit(1)
+			if (!lastEntry) {
+				return c.json({ message: "You need to have time logged to ship" }, 400)
+			}
+
 			const [ship] = await db
 				.insert(projectShips)
 				.values({
@@ -135,17 +146,6 @@ export const projectShipRoute = new Hono<Env>()
 			if (!ship) {
 				logger.error({ time, projectId: id }, "Couldnt create ship")
 				return c.json({ message: "Something went wrong" }, 500)
-			}
-			const [lastEntry] = await db
-				.select({ id: timeEntries.id })
-				.from(timeEntries)
-				.where(and(
-					lt(timeEntries.createdAt, ship.createdAt),
-					eq(timeEntries.projectId, ship.projectId)))
-				.orderBy(desc(timeEntries.createdBy))
-				.limit(1)
-			if (!lastEntry) {
-				return c.json({ message: "You need to have time logged to ship" }, 400)
 			}
 
 			await db.insert(timeShipSnapshots).values({
