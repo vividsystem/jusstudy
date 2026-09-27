@@ -15,6 +15,8 @@ import type { Env } from "..";
 import { getCurrentShipTime } from "@server/db/helpers/time";
 import { baseResponse, internalServerError, successResponse, singleMessageSchema, unauthorizedError, notFoundError, messageResponse, missingPermissionsError } from "@server/lib/responses";
 import z from "zod";
+import { notifyVotingFinished } from "@server/lib/notify";
+import { users } from "@server/db/schema";
 
 const CANDIDATE_POOL_SIZE = 50;
 export const VOTES_FOR_PAYOUT_PER_SHIP = 10;
@@ -210,13 +212,36 @@ export const voteRoute = new Hono<Env>()
 								return
 							}
 
+							const payout = calculatePayout(updatedOrdinal, 0, timeRes.data)
 							await tx
 								.update(projectShips)
 								.set({
 									state: bumpStatus("voting"),
-									payout: calculatePayout(updatedOrdinal, 0, timeRes.data)
+									payout
 								})
 								.where(eq(projectShips.projectId, r.projectId))
+
+
+
+							const [creator] = await db
+								.select({ id: users.id, slackId: users.slackId, projectName: projects.name })
+								.from(users)
+								.innerJoin(projects, eq(projects.id, r.projectId))
+								.where(eq(users.id, projects.creatorId))
+							if (!creator) {
+								logger.warn({ roundId: id, shipId: ship.id, projectId: r.projectId }, "creator of voting finished project does not exist")
+							} else {
+								const nRes = await notifyVotingFinished({
+									slackUserId: creator.slackId,
+									projectId: r.projectId,
+									projectName: creator.projectName,
+									rating: String(updatedOrdinal),
+									payout
+								})
+								if (!nRes.ok) {
+									logger.warn({ roundId: id, shipId: ship.id, projectId: r.projectId, creatorId: creator.id, res }, "notification voting finished failed")
+								}
+							}
 						}
 
 						await tx.update(projectStats)

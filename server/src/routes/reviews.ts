@@ -1,7 +1,7 @@
 import { describeRoute, validator as zValidator } from "hono-openapi";
 import type { auth } from "@server/auth";
 import db from "@server/db";
-import { projectReviews, projects, projectShips, projectLocks, type ProjectCategories } from "@server/db/schema";
+import { projectReviews, projects, projectShips, projectLocks, type ProjectCategories, users } from "@server/db/schema";
 import { and, asc, eq, getTableColumns, inArray } from "drizzle-orm";
 import { NewReviewSchema, LockReviewSchema, PendingShipsResponseSchema, ProjectReviewsResponseSchema, ShipReviewsResponseSchema } from "@shared/validation"
 import { Hono } from "hono";
@@ -9,6 +9,7 @@ import { bumpStatus } from "@server/lib/ships";
 import type { Env } from "..";
 import { getCurrentShipTime } from "@server/db/helpers/time";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
+import { notifyReviewAccept, notifyReviewReject } from "@server/lib/notify";
 
 export const reviewsRoute = new Hono<Env>()
 	.get(
@@ -101,12 +102,7 @@ export const projectReviewsRoute = new Hono<Env>()
 			return c.json({ reviews: (reviews as (typeof projectReviews.$inferSelect)[]) }, 200)
 		})
 
-export const shipReviewsRoute = new Hono<{
-	Variables: {
-		user: typeof auth.$Infer.Session.user | null;
-		session: typeof auth.$Infer.Session.session | null
-	}
-}>()
+export const shipReviewsRoute = new Hono<Env>()
 	.get(
 		"/",
 		describeRoute({
@@ -160,6 +156,8 @@ export const shipReviewsRoute = new Hono<{
 			const user = c.get("user")
 			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
+			const logger = c.get("logger")
+
 			const id = c.req.param("id")
 			if (!id) {
 				return c.json({ message: "Bad request" }, 400)
@@ -178,11 +176,34 @@ export const shipReviewsRoute = new Hono<{
 
 			const data = c.req.valid("json")
 
+
+
 			await db.insert(projectReviews).values({ ...data, shipId: id, reviewerId: user.id }).returning()
 			if (!data.passed) {
 				await db.update(projectShips).set({ state: "failed" }).where(eq(projectShips.id, id))
+
+
 			} else {
 				await db.update(projectShips).set({ state: bumpStatus(res.project_ships.state) }).where(eq(projectShips.id, id))
+			}
+			const [creator] = await db.select({ id: users.id, slackId: users.slackId }).from(users).where(eq(users.id, res.projects.creatorId))
+
+			if (!creator) {
+				logger.warn({ shipId: id, projectId: res.projects.id, creatorId: res.projects.creatorId, reviewerId: user.id }, "creator of reviewed project does not exist")
+			} else {
+
+				const b = {
+					slackUserId: creator.slackId,
+					slackReviewerId: user.slackId,
+					comment: data.comment,
+					projectId: res.projects.id,
+					projectName: res.projects.name
+				}
+				const nRes = data.passed ? await notifyReviewAccept(b) : await notifyReviewReject(b)
+
+				if (!nRes.ok) {
+					logger.warn({ nRes, shipId: res.project_ships.id, userId: user.id }, "notification review failed")
+				}
 			}
 
 			return c.json({ message: "Review created" }, 201)
@@ -202,6 +223,7 @@ export const shipReviewsRoute = new Hono<{
 		zValidator("json", LockReviewSchema),
 		async (c) => {
 			const user = c.get("user")
+			const logger = c.get("logger")
 			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const id = c.req.param("id")
@@ -209,7 +231,11 @@ export const shipReviewsRoute = new Hono<{
 				return c.json({ message: "Bad request" }, 400)
 			}
 
-			const [res] = await db.select().from(projectShips).where(eq(projectShips.id, id)).innerJoin(projects, eq(projects.id, projectShips.projectId))
+			const [res] = await db
+				.select()
+				.from(projectShips)
+				.where(eq(projectShips.id, id))
+				.innerJoin(projects, eq(projects.id, projectShips.projectId))
 			if (!res) {
 				return c.json({ message: "Ressource not found" }, 404)
 			}
@@ -222,9 +248,28 @@ export const shipReviewsRoute = new Hono<{
 			const data = c.req.valid("json")
 
 
-			await db.insert(projectReviews).values({ ...data, passed: false, shipId: id, reviewerId: user.id }).returning()
+			await db.insert(projectReviews).values({ ...data, passed: false, shipId: id, reviewerId: user.id })
 			await db.update(projectShips).set({ state: "failed" }).where(eq(projectShips.id, id))
 			await db.insert(projectLocks).values({ projectId: res.projects.id, shipId: id })
+
+			const [creator] = await db.select({ id: users.id, slackId: users.slackId }).from(users).where(eq(users.id, res.projects.creatorId))
+			if (!creator) {
+				logger.warn({ shipId: id, projectId: res.projects.id, creatorId: res.projects.creatorId, reviewerId: user.id }, "creator of now locked project does not exist")
+			} else {
+				const nRes = await notifyReviewReject({
+					slackUserId: creator.slackId,
+					slackReviewerId: user.slackId,
+					comment: data.comment,
+					projectId: res.projects.id,
+					projectName: res.projects.name
+				})
+
+				if (!nRes.ok) {
+					logger.warn({ res: nRes, shipId: id, projectId: res.projects.id, reviewerId: user.id, creatorId: creator.id }, "notification review reject on lock failed")
+
+				}
+			}
+
 
 			return c.json({ message: "Project locked" }, 201)
 		})
