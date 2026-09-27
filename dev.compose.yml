@@ -3,8 +3,8 @@ services:
     build:
       context: ./
       dockerfile: ./server/Dockerfile
-    expose:
-      - "3000"
+    ports:
+      - "3000:3000"
     env_file: "./server/.env"
     networks:
       - public
@@ -13,6 +13,7 @@ services:
     depends_on:
       - loki
       - grafana
+      - emi
   frontend:
     build:
       context: ./
@@ -23,6 +24,13 @@ services:
     networks: 
       - public
     depends_on:
+      - backend
+  emi:
+    build: ./emi
+    env_file: "./emi/.env"
+    ports:
+      - "8000:8000"
+    networks:
       - backend
   loki:
     image: grafana/loki:3.0.0
@@ -41,6 +49,8 @@ services:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_LOG_LEVEL=debug
+      - GF_LOG_MODE=console
     entrypoint:
       - sh
       - -euc

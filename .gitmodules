@@ -1,0 +1,4 @@
+[submodule "emi"]
+	path = emi
+	url = git@gitub.com:vividsystem/emi
+	branch = main
