@@ -148,6 +148,7 @@ export const auth = betterAuth({
 				input: false,
 			},
 			coins: {
+				input: false,
 				type: "number",
 				defaultValue: 0,
 			},
