@@ -125,7 +125,7 @@ export const shipReviewsRoute = new Hono<Env>()
 			const [ship] = await db.select({
 				ship: getTableColumns(projectShips),
 				creatorId: projects.creatorId
-			}).from(projectShips).where(eq(projectShips.id, id)).innerJoin(projects, eq(projects.id, projectShips.id))
+			}).from(projectShips).where(eq(projectShips.id, id)).innerJoin(projects, eq(projects.id, projectShips.projectId))
 			if (!ship) {
 				return c.json({ message: "Ressource not found" }, 404)
 			} else if (ship.creatorId != user.id && user.type == "participant") {
