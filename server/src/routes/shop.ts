@@ -35,14 +35,14 @@ export const shopRoute = new Hono<Env>()
 
 
 			return await db.transaction(async (tx) => {
-				const [newItem] = await db.insert(shopItems).values({ ...data }).returning()
+				const [newItem] = await tx.insert(shopItems).values({ ...data }).returning()
 				if (!newItem) {
 					logger.error({ userId: user.id, data: { options, ...data } })
 					tx.rollback()
 					return c.json({ message: "Something went wrong" }, 500)
 				}
 
-				await db
+				await tx
 					.insert(regionalItemAvailabilities)
 					.values(Object.entries(data.regions).map(([regionId, av]) => ({
 						itemId: newItem.id,
@@ -64,7 +64,7 @@ export const shopRoute = new Hono<Env>()
 					}
 				}
 
-				const newOptions = await db
+				const newOptions = await tx
 					.insert(shopItemOptions)
 					.values(options.map((o) => ({ name: o.name, itemId: newItem.id })))
 					.returning()
@@ -86,7 +86,7 @@ export const shopRoute = new Hono<Env>()
 					}
 
 					for (const variant of option.variants) {
-						const [newVariant] = await db.insert(itemVariants).values({ ...variant, optionId }).returning()
+						const [newVariant] = await tx.insert(itemVariants).values({ ...variant, optionId }).returning()
 						if (!newVariant) {
 							logger.error({ userId: user.id, option: { ...option, id: optionId }, variant }, "Could not create new variant")
 							tx.rollback()
@@ -248,7 +248,7 @@ export const shopRoute = new Hono<Env>()
 				}
 
 				for (const v of data.variants) {
-					const [variant] = await tx.insert(itemVariants).values({ ...data, optionId: option.id }).returning()
+					const [variant] = await tx.insert(itemVariants).values({ ...v, optionId: option.id }).returning()
 					if (!variant) {
 						logger.error({ data, option }, "new variant couldnt be created")
 						tx.rollback()
