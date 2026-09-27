@@ -15,6 +15,7 @@ export const addressSchema = z.object({
 
 
 export const NewAddressRequestSchema = addressSchema.omit({
+	id: true,
 	userId: true
 })
 

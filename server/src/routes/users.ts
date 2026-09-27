@@ -163,7 +163,7 @@ export const usersRoutes = new Hono<Env>()
 				userId: user.id
 			}).returning()
 			if (!address) {
-				logger.error({ userId: user.id, data }, "Couldn't insert address")
+				logger.error({ userId: user.id }, "Couldn't insert address")
 				return c.json({ message: "Something went wrong" }, 500)
 			}
 
