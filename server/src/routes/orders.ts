@@ -107,7 +107,7 @@ export const orderRoutes = new Hono<Env>()
 					return c.json({ message: "Some options do not correspond to the item to be ordered" }, 400)
 				}
 
-				const variants = await db
+				const variants = await tx
 					.select({
 						...getTableColumns(itemVariants),
 						additionalPrice: regionalItemVariantAvailabilities.price
