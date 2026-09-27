@@ -2,7 +2,11 @@
 ## Local Build
 1. Clone the repo (yeah obviously)
 ```bash
-git clone https://github.com/vividsystem/jusstudy.git
+git clone --recurse-submodules https://github.com/vividsystem/jusstudy.git
+```
+or if you forgot `--recursive-submodules`:
+```bash
+git submodule update --init emi
 ```
 
 2. Install dependencies
@@ -26,7 +30,7 @@ VITE_HIDE_LOGIN=yes # if you want to disable login
 > Set up .env for the server
 paste the following into `server/.env`:
 adjust the base origin to the url that you are going to expose
-to make a strong secret you can use something like: `openssl rand -base64 32`
+to make a strong secret you can use something like: `openssl rand -base64 32`.
 ```env
 CLIENT_URL=SAME AS VITE_CLIENT_URL
 CORS_ORIGIN=http://localhost:5173
@@ -44,6 +48,9 @@ JOE_EVENT_ID=JOE_EVENT_ID
 GRAFANA_LOKI_HOST=GRAFANA_HOST
 HACKCLUB_CDN_API_KEY=YOUR_API_KEY
 ```
+
+> Set up .env for `emi`
+See [emi/README.md](emi/README.md)
 
 4. Build
 ```bash
@@ -83,4 +90,13 @@ You can use drizzle-kit with `push` or `migrate` (may not work due to custom mig
 ## Deployment
 ### Docker
 The `server/.env` and `client/.env` variables still have to be set.
-`sudo docker compose up --build -d` serves all endpoints on :8080 through nginx.
+
+Set `BOT_HOST` to `http://emi:8000`
+**For Prod:** 
+Make sure you setup a firewall like `ufw` and only allow `8080` and block the grafana ui (use a vpn to access)
+```bash
+echo "your grafana pw here" | docker secret create grafana_admin_password
+sudo docker compose -f prod.compose.yml up --build -d
+```
+`sudo docker compose -f prod.compose.yml up --build -d` serves all endpoints on `:8080` through nginx.
+
