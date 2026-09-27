@@ -72,7 +72,7 @@ export const orderRoutes = new Hono<Env>()
 					.where(eq(shopItems.id, data.itemId))
 				if (!item) {
 					return c.json({ message: "Item not found or not available" }, 404)
-				} else if (item.quantity && item.quantity < data.quantity) {
+				} else if (item.quantity !== null && item.quantity < data.quantity) {
 					return c.json({ message: "Order too large" }, 400)
 				}
 
@@ -168,7 +168,7 @@ export const orderRoutes = new Hono<Env>()
 				}
 
 				await tx.update(users).set({ coins: u.coins - cost }).where(eq(users.id, u.id))
-				if (item.quantity) {
+				if (item.quantity != null) {
 					await tx
 						.update(regionalItemAvailabilities)
 						.set({ quantity: item.quantity - placedOrder.quantity })
