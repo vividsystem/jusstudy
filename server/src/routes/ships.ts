@@ -10,6 +10,7 @@ import { internalServerError, messageResponse, missingPermissionsError, notFound
 import { describeRoute } from "hono-openapi";
 import { NewShipResponseSchema, ProjectShipsResponseSchema, ShipByIdResponseSchema } from "@shared/validation";
 import { getHackatimeAccessToken } from "@server/lib/auth";
+import { notifyShipCreate } from "@server/lib/notify";
 
 export const shipsRoute = new Hono<Env>()
 	.get(
@@ -160,6 +161,15 @@ export const projectShipRoute = new Hono<Env>()
 				await db.update(projectStats).set({ sigma: 25 / 3, ordinal: pStats[0]!.mu - 3 * (25 / 3) }).where(eq(projectStats.projectId, id))
 			}
 
+
+			const res = await notifyShipCreate({
+				slackUserId: user.slackId,
+				projectId: project.id,
+				projectName: project.name
+			})
+			if (!res.ok) {
+				logger.warn({ res, shipId: ship.id, userId: user.id }, "could not notify ship creation")
+			}
 
 			return c.json({
 				ship

@@ -6,6 +6,7 @@ import { OrderByIdResponseSchema, PlaceOrderRequest, PlaceOrderResponseSchema, U
 import db from "@server/db";
 import { addresses, itemVariants, orderVariantSelection, shopItemOptions, shopItems, shopOrders, shopRegions, users, regionalItemAvailabilities, regionalItemVariantAvailabilities } from "@server/db/schema";
 import { and, count, desc, eq, getTableColumns, inArray } from "drizzle-orm";
+import { notifyOrderCreated } from "@server/lib/notify";
 
 export const orderRoutes = new Hono<Env>()
 	.post(
@@ -175,6 +176,17 @@ export const orderRoutes = new Hono<Env>()
 							eq(regionalItemAvailabilities.regionId, region.id),
 							eq(regionalItemAvailabilities.itemId, item.id)
 						))
+				}
+
+				const res = await notifyOrderCreated({
+					slackUserId: user.slackId,
+					orderId: placedOrder.id,
+					itemName: item.name,
+					quantity: placedOrder.quantity,
+					cost
+				})
+				if (!res.ok) {
+					logger.warn({ orderId: placedOrder.id, res, userId: user.id }, "notificaton order creation failed")
 				}
 
 				return c.json({ order: placedOrder }, 201)
