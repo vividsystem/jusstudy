@@ -121,6 +121,7 @@ export const voteRoute = new Hono<Env>()
 			responses: {
 				200: messageResponse("Success", ["Voted successfully"]),
 				401: unauthorizedError,
+				403: missingPermissionsError,
 				404: notFoundError,
 				400: messageResponse("Bad request", ["Round is already finished", "Invalid projects", "Too many stars used"]),
 				500: internalServerError,
@@ -143,6 +144,8 @@ export const voteRoute = new Hono<Env>()
 				return c.json({ message: "Ressource not found" }, 404)
 			} else if (current.completedAt != null) {
 				return c.json({ message: "Round is already finished" }, 400)
+			} else if (current.voterId !== user.id) {
+				return c.json({ message: "Forbidden" }, 403)
 			}
 
 			const roundsProjects = await db
