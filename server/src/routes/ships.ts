@@ -105,7 +105,7 @@ export const projectShipRoute = new Hono<Env>()
 				.where(eq(projectShips.projectId, project.id))
 				.orderBy(desc(projectShips.createdAt))
 				.limit(1)
-			if (lastShip && (lastShip.state == "finished" || lastShip.state == "failed")) {
+			if (lastShip && (lastShip.state != "finished" && lastShip.state != "failed")) {
 				return c.json({ message: "This project has other unfinished ships" }, 400)
 			}
 
