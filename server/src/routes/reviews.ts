@@ -148,7 +148,8 @@ export const shipReviewsRoute = new Hono<Env>()
 				400: messageResponse("Bad request"),
 				401: unauthorizedError,
 				403: missingPermissionsError,
-				404: notFoundError
+				404: notFoundError,
+				409: messageResponse("Already reviewed")
 			}
 		}),
 		zValidator("json", NewReviewSchema),
@@ -162,7 +163,10 @@ export const shipReviewsRoute = new Hono<Env>()
 			if (!id) {
 				return c.json({ message: "Bad request" }, 400)
 			}
-			const [res] = await db.select().from(projectShips).where(eq(projectShips.id, id)).innerJoin(projects, eq(projects.id, projectShips.projectId))
+			const [res] = await db.select()
+				.from(projectShips)
+				.where(eq(projectShips.id, id))
+				.innerJoin(projects, eq(projects.id, projectShips.projectId))
 			if (!res) {
 				return c.json({ message: "Ressource not found" }, 404)
 			} else if (res.project_ships.state != "pre-initial") {
@@ -176,17 +180,22 @@ export const shipReviewsRoute = new Hono<Env>()
 
 			const data = c.req.valid("json")
 
+			const result = await db.transaction(async (tx) => {
+				const [claimed] = await tx
+					.update(projectShips)
+					.set({ state: data.passed ? bumpStatus("pre-initial") : "failed" })
+					.where(and(eq(projectShips.id, id), eq(projectShips.state, "pre-initial")))
+					.returning({ id: projectShips.id })
+				if (!claimed) return null // there already exists claim for review
+				await tx.insert(projectReviews).values({ ...data, shipId: id, reviewerId: user.id })
+				return claimed
+			})
+			if (!result) return c.json({ message: "Already reviewed" }, 409)
 
-
-			await db.insert(projectReviews).values({ ...data, shipId: id, reviewerId: user.id }).returning()
-			if (!data.passed) {
-				await db.update(projectShips).set({ state: "failed" }).where(eq(projectShips.id, id))
-
-
-			} else {
-				await db.update(projectShips).set({ state: bumpStatus(res.project_ships.state) }).where(eq(projectShips.id, id))
-			}
-			const [creator] = await db.select({ id: users.id, slackId: users.slackId }).from(users).where(eq(users.id, res.projects.creatorId))
+			const [creator] = await db
+				.select({ id: users.id, slackId: users.slackId })
+				.from(users)
+				.where(eq(users.id, res.projects.creatorId))
 
 			if (!creator) {
 				logger.warn({ shipId: id, projectId: res.projects.id, creatorId: res.projects.creatorId, reviewerId: user.id }, "creator of reviewed project does not exist")
@@ -202,7 +211,7 @@ export const shipReviewsRoute = new Hono<Env>()
 				const nRes = data.passed ? await notifyReviewAccept(b) : await notifyReviewReject(b)
 
 				if (!nRes.ok) {
-					logger.warn({ nRes, shipId: res.project_ships.id, userId: user.id }, "notification review failed")
+					logger.warn({ nRes, shipId: result.id, userId: user.id }, "notification review failed")
 				}
 			}
 
@@ -218,6 +227,7 @@ export const shipReviewsRoute = new Hono<Env>()
 				401: unauthorizedError,
 				403: missingPermissionsError,
 				404: notFoundError,
+				409: messageResponse("Already reviewed")
 			}
 		}),
 		zValidator("json", LockReviewSchema),
@@ -247,10 +257,26 @@ export const shipReviewsRoute = new Hono<Env>()
 
 			const data = c.req.valid("json")
 
+			const result = await db.transaction(async (tx) => {
+				const [bumped] = await tx
+					.update(projectShips)
+					.set({ state: "failed" })
+					.where(and(
+						eq(projectShips.id, id),
+						eq(projectShips.state, "pre-initial")
+					))
+					.returning({ id: projectShips.id })
+				if (!bumped) return null
 
-			await db.insert(projectReviews).values({ ...data, passed: false, shipId: id, reviewerId: user.id })
-			await db.update(projectShips).set({ state: "failed" }).where(eq(projectShips.id, id))
-			await db.insert(projectLocks).values({ projectId: res.projects.id, shipId: id })
+				await tx
+					.insert(projectReviews)
+					.values({ ...data, passed: false, shipId: bumped.id, reviewerId: user.id })
+
+				await tx.insert(projectLocks)
+					.values({ projectId: res.projects.id, shipId: id })
+			})
+			if (!result) return c.json({ message: "Already reviewed" }, 409)
+
 
 			const [creator] = await db.select({ id: users.id, slackId: users.slackId }).from(users).where(eq(users.id, res.projects.creatorId))
 			if (!creator) {
