@@ -122,7 +122,7 @@ export const voteRoute = new Hono<Env>()
 				200: messageResponse("Success", ["Voted successfully"]),
 				401: unauthorizedError,
 				404: notFoundError,
-				400: messageResponse("Bad request", ["Round is already finished", "Invalid projects", "Too many stars used"]),
+				400: messageResponse("Bad request", ["Round is already finished", "Invalid projects", "Too many stars used", "Round already finished"]),
 				500: internalServerError,
 			}
 		}),
@@ -175,74 +175,37 @@ export const voteRoute = new Hono<Env>()
 
 			const updatedTeams = rate(teams, { score: scores })
 
-			return await db.transaction(async (tx) => {
-				await tx.update(votingRounds).set({ completedAt: new Date() }).where(eq(votingRounds.id, current.id))
-				await tx.insert(ratings).values(data.ratings.map((c) => ({ ...c, roundId: current.id })))
-				await tx.update(userStats).set({ votesCast: sql`${userStats.votesCast} + 1` }).where(eq(userStats.userId, user.id))
+			class RoundAlreadyFinishedError extends Error {
+				constructor() {
+					super("Round already finished");
+					this.name = "RoundAlreadyFinishedError";
+					Object.setPrototypeOf(this, RoundAlreadyFinishedError.prototype);
+				}
+			}
 
-				return await Promise.all(
-					data.ratings.map(async (r, i) => {
+			type Finished = { projectId: string, shipId: string, ordinal: number, payout: number }
+			let finished: Finished[]
+			try {
+				finished = await db.transaction(async (tx) => {
+					const [claimed] = await tx
+						.update(votingRounds)
+						.set({ completedAt: new Date() })
+						.where(and(
+							eq(votingRounds.id, current.id),
+							eq(votingRounds.voterId, user.id),
+							isNull(votingRounds.completedAt)
+						))
+						.returning({ id: votingRounds.id })
+					if (!claimed) throw new RoundAlreadyFinishedError()
+
+					await tx.insert(ratings).values(data.ratings.map((c) => ({ ...c, roundId: current.id })))
+					await tx.update(userStats).set({ votesCast: sql`${userStats.votesCast} + 1` }).where(eq(userStats.userId, user.id))
+
+
+					const done: Finished[] = []
+					for (const [i, r] of data.ratings.entries()) {
 						const updated = updatedTeams[i]![0]!
 						const updatedOrdinal = ordinal(updated)
-						if (updated.sigma < SIGMA_TRESHOLD) {
-							const [ship] = await tx
-								.select({ id: projectShips.id })
-								.from(projectShips)
-								.where(eq(projectShips.projectId, r.projectId))
-							if (!ship) {
-								logger.error({ projectId: r.projectId }, "Could not find ship")
-								tx.rollback()
-								Promise.reject()
-								return
-							}
-
-							const res = await requestFraudReview(ship.id, r.projectId, tx)
-							if (!res.ok) {
-								logger.error({ projectId: r.projectId, shipId: ship.id }, "Could not request fraud review")
-								tx.rollback()
-								Promise.reject()
-								return
-							}
-
-							const timeRes = await getCurrentShipTime(r.projectId, { logger })
-							if (!timeRes.ok) {
-								logger.error({ projectId: r.projectId, shipId: ship.id }, "Could not get current ship time")
-								tx.rollback()
-								Promise.reject()
-								return
-							}
-
-							const payout = calculatePayout(updatedOrdinal, 0, timeRes.data)
-							await tx
-								.update(projectShips)
-								.set({
-									state: bumpStatus("voting"),
-									payout
-								})
-								.where(eq(projectShips.projectId, r.projectId))
-
-
-
-							const [creator] = await db
-								.select({ id: users.id, slackId: users.slackId, projectName: projects.name })
-								.from(users)
-								.innerJoin(projects, eq(projects.id, r.projectId))
-								.where(eq(users.id, projects.creatorId))
-							if (!creator) {
-								logger.warn({ roundId: id, shipId: ship.id, projectId: r.projectId }, "creator of voting finished project does not exist")
-							} else {
-								const nRes = await notifyVotingFinished({
-									slackUserId: creator.slackId,
-									projectId: r.projectId,
-									projectName: creator.projectName,
-									rating: String(updatedOrdinal),
-									payout
-								})
-								if (!nRes.ok) {
-									logger.warn({ roundId: id, shipId: ship.id, projectId: r.projectId, creatorId: creator.id, res }, "notification voting finished failed")
-								}
-							}
-						}
 
 						await tx.update(projectStats)
 							.set({
@@ -252,18 +215,69 @@ export const voteRoute = new Hono<Env>()
 								matchups: sql`${projectStats.matchups} + 1`
 							})
 							.where(eq(projectStats.projectId, r.projectId))
-					})
-				)
-					.then(() => {
-						return c.json({ message: "Voted successfully" }, 200)
-					})
-					.catch(() => {
-						return c.json({ message: "Something went wrong" }, 500)
-					})
-			})
 
+						if (updated.sigma < SIGMA_TRESHOLD) {
+							const [ship] = await tx
+								.select({ id: projectShips.id })
+								.from(projectShips)
+								.where(eq(projectShips.projectId, r.projectId))
+							if (!ship) {
+								logger.error({ projectId: r.projectId }, "Could not find ship finishing vote round")
+								throw new Error(`no ship found in voting for ${r.projectId}`)
+							}
+
+							const timeRes = await getCurrentShipTime(r.projectId, { logger })
+							if (!timeRes.ok) {
+								logger.error({ projectId: r.projectId, shipId: ship.id, timeResError: timeRes.error }, "Could not get current ship time")
+								throw timeRes.error
+							}
+
+							const payout = calculatePayout(updatedOrdinal, 0, timeRes.data)
+							await tx
+								.update(projectShips)
+								.set({
+									state: bumpStatus("voting"),
+									payout
+								})
+								.where(eq(projectShips.id, ship.id))
+							done.push({ shipId: ship.id, projectId: r.projectId, payout, ordinal: updatedOrdinal })
+						}
+					}
+					return done
+				})
+			} catch (e) {
+				if (e instanceof RoundAlreadyFinishedError) return c.json({ message: "Round already finished" }, 400)
+				return c.json({ message: "Something went wrong" }, 500)
+			}
+			for (const f of finished) {
+				const res = await requestFraudReview(f.shipId, f.projectId, db)
+				if (!res.ok) {
+					logger.error({ projectId: f.projectId, shipId: f.shipId }, "fraud review request failed; ship might go stale")
+					return c.json({ message: "Something went wrong" }, 500)
+				}
+
+				const [creator] = await db
+					.select({ id: users.id, slackId: users.slackId, projectName: projects.name })
+					.from(users)
+					.innerJoin(projects, eq(projects.id, f.projectId))
+					.where(eq(users.id, projects.creatorId))
+				if (!creator) {
+					logger.warn({ roundId: id, shipId: f.shipId, projectId: f.projectId }, "creator of voting finished project does not exist")
+				} else {
+					const nRes = await notifyVotingFinished({
+						slackUserId: creator.slackId,
+						projectId: f.projectId,
+						projectName: creator.projectName,
+						rating: String(f.ordinal),
+						payout: f.payout
+					})
+					if (!nRes.ok) {
+						logger.warn({ roundId: id, shipId: f.shipId, projectId: f.projectId, creatorId: creator.id, res }, "notification voting finished failed")
+					}
+				}
+			}
+			return c.json({ message: "Voted successfully" }, 200)
 		})
-
 	//get current session
 	.get(
 		"/rounds/active",
