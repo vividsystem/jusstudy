@@ -59,11 +59,13 @@ const MIN_PAYOUT = 0.7;
 const MAX_SCORE = 50;
 const MIN_SCORE = SIGMA_TRESHOLD * -3;
 
+const clamp = (val: number, max: number, min: number) => Math.min(Math.max(val, min), max)
+
 export function multiplierPerHour(ordinal: number) {
-	return (MAX_PAYOUT - MIN_PAYOUT) / (MAX_SCORE - MIN_SCORE) * (ordinal - MIN_SCORE) + MIN_PAYOUT
+	return clamp((MAX_PAYOUT - MIN_PAYOUT) / (MAX_SCORE - MIN_SCORE) * (ordinal - MIN_SCORE) + MIN_PAYOUT, MAX_PAYOUT, MIN_PAYOUT)
 }
 
 const MAX_PAYOUT_F = 1.0; // in books; for first 10h
 export function first10hMultiplierPerHour(ordinal: number) {
-	return (MAX_PAYOUT_F - MIN_PAYOUT) / (MAX_SCORE - MIN_SCORE) * (ordinal - MIN_SCORE) + MIN_PAYOUT
+	return clamp((MAX_PAYOUT_F - MIN_PAYOUT) / (MAX_SCORE - MIN_SCORE) * (ordinal - MIN_SCORE) + MIN_PAYOUT, MAX_PAYOUT_F, MIN_PAYOUT)
 }
