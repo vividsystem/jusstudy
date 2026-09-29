@@ -4,7 +4,7 @@ import type { Env } from "..";
 import db from "@server/db";
 import { describeRoute } from "hono-openapi";
 import { internalServerError, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
-import { NewRegionResponseSchema, NewRegionRequestSchema, RegionsByIdResponseSchema, RegionsResponseSchemma, RegionalItemsResponseSchema, RegionalItemByIdResponseSchema } from "@shared/validation";
+import { NewRegionResponseSchema, NewRegionRequestSchema, RegionsByIdResponseSchema, RegionsResponseSchema, RegionalItemsResponseSchema, RegionalItemByIdResponseSchema } from "@shared/validation";
 import { regionalItemAvailabilities, shopItems, shopRegions } from "@server/db/schema";
 import { and, eq, getTableColumns } from "drizzle-orm";
 
@@ -41,7 +41,7 @@ export const regionRoutes = new Hono<Env>()
 	.get("/",
 		describeRoute({
 			responses: {
-				200: successResponse(RegionsResponseSchemma)
+				200: successResponse(RegionsResponseSchema)
 			}
 		}),
 		async (c) => {

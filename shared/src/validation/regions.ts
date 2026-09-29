@@ -24,7 +24,7 @@ export const regionalVariantAvailabilitySchema = z.object({
 	price: z.number().nonnegative()
 })
 
-export const RegionsResponseSchemma = z.object({
+export const RegionsResponseSchema = z.object({
 	regions: z.array(shopRegionSchema)
 })
 
