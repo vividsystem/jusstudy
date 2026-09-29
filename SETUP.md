@@ -4,7 +4,7 @@
 ```bash
 git clone --recurse-submodules https://github.com/vividsystem/jusstudy.git
 ```
-or if you forgot `--recursive-submodules`:
+or if you forgot `--recurse-submodules`:
 ```bash
 git submodule update --init emi
 ```
@@ -98,5 +98,6 @@ Make sure you setup a firewall like `ufw` and only allow `8080` and block the gr
 echo "your grafana pw here" | docker secret create grafana_admin_password
 sudo docker compose -f prod.compose.yml up --build -d
 ```
+Also add a `.env` file with `GRAFANA_ADMIN_PASSWORD`.
 `sudo docker compose -f prod.compose.yml up --build -d` serves all endpoints on `:8080` through nginx.
 
