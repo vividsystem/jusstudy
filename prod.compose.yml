@@ -31,11 +31,15 @@ services:
   loki:
     image: grafana/loki:3.0.0
     command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - observability
   prometheus:
     image: prom/prometheus:v2.47.0
     command:
       - --web.enable-remote-write-receiver
       - --config.file=/etc/prometheus/prometheus.yml
+    networks:
+      - observability
   grafana:
     env_file: .env
     environment:
@@ -77,6 +81,8 @@ services:
     image: grafana/grafana:11.0.0
     ports:
       - "3001:3000"
+    networks:
+      - observability
 networks:
   observability:
     driver: bridge
