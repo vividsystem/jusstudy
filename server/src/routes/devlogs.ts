@@ -114,7 +114,7 @@ export const projectDevlogsRoute = new Hono<Env>()
 			const [lastEntry] = await db
 				.select()
 				.from(timeEntries)
-				.where(eq(projects.id, project.id))
+				.where(eq(timeEntries.projectId, project.id))
 				.orderBy(desc(timeEntries.createdAt))
 				.limit(1)
 
