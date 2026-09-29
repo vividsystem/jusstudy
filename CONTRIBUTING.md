@@ -10,28 +10,28 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 ## Branch Workflow
 
-**Important**: Never commit directly to the `main` branch. All changes must go through pull requests.
+**Important**: Never commit directly to the `master` branch. All changes must go through pull requests.
 
 ### Creating a Feature Branch
 
 > [!NOTE]
 > You should have git pull set to rebase
 > `git config pull.rebase true`
-1. **Update main branch**:
+1. **Update master branch**:
    ```bash
-   git checkout main
-   git pull upstream main
+   git checkout master 
+   git pull origin master 
    ```
 
 2. **Create a new branch** with a descriptive name:
    ```bash
-   git checkout -b feature/your-feature-name
+   git checkout -b feat/your-feature-name
    ```
 
 ### Branch Naming Convention
 
 Use one of these prefixes:
-- `feature/` - New features (e.g., `feature/user-authentication`)
+- `feat/` - New features (e.g., `feature/user-authentication`)
 - `fix/` - Bug fixes (e.g., `fix/login-error`)
 - `docs/` - Documentation changes (e.g., `docs/api-guide`)
 - `refactor/` - Code refactoring (e.g., `refactor/database-queries`)
@@ -98,7 +98,7 @@ Closes #123
 
 1. **Push your branch**:
    ```bash
-   git push origin feature/your-feature-name
+   git push origin feat/your-feature-name
    ```
 
 2. **Create Pull Request**: Go to the repository on GitHub and click "New Pull Request"
@@ -111,12 +111,12 @@ Closes #123
 
 4. **Address review comments**: Make requested changes and push new commits
 
-5. **Keep PR updated**: Rebase or merge main into your branch if conflicts arise
+5. **Keep PR updated**: Rebase or merge master into your branch if conflicts arise
    ```bash
-   git fetch upstream
-   git rebase upstream/main
+   git fetch origin
+   git rebase origin/master
    # or
-   git merge upstream/main
+   git merge origin/master
    ```
 
 ### Pull Request Guidelines
