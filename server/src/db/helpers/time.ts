@@ -57,6 +57,8 @@ export async function getShipTime(shipId: string, cfg?: HelperCfg): Promise<Help
 		.select()
 		.from(projectShips)
 		.where(eq(projectShips.id, shipId))
+		.orderBy(desc(projectShips.createdAt))
+		.limit(1)
 	if (!ship) {
 		return { ok: false, error: { message: "Ship not found", code: CODE_NOT_FOUND } }
 	}
