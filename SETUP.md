@@ -99,5 +99,6 @@ echo "your grafana pw here" | docker secret create grafana_admin_password
 sudo docker compose -f prod.compose.yml up --build -d
 ```
 Also add a `.env` file with `GRAFANA_ADMIN_PASSWORD`.
-`sudo docker compose -f prod.compose.yml up --build -d` serves all endpoints on `:8080` through nginx.
+`sudo docker compose -f prod.compose.yml up --build -d` serves all public endpoints on `:8080` through nginx.
+Grafana can be accessed via `localhost:3001`
 
