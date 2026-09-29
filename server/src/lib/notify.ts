@@ -15,7 +15,8 @@ async function makeRequest<V>(path: string, body: V) {
 	const res = await fetch(url, {
 		method: "POST",
 		headers: {
-			"Authorization": `Bearer ${process.env.BOT_ACCESS_TOKEN}`
+			"Authorization": `Bearer ${process.env.BOT_ACCESS_TOKEN}`,
+			"Content-Type": "application/json"
 		},
 		body: JSON.stringify(body)
 	})
@@ -63,7 +64,6 @@ export async function notifyReviewAccept(b: NotsReviewRequestBody) {
 		project_link: createProjectLink(b.projectId),
 		reviewer_id: b.slackReviewerId,
 		feedback: b.comment,
-		currencies: createCurrencyMessage(b.coinsRewarded)
 	})
 
 	if ("ok" in d) {
