@@ -51,7 +51,7 @@ export const devlogsRoute = new Hono<Env>()
 				.innerJoin(projects, eq(projects.id, devlogs.projectId))
 				.where(eq(devlogs.id, id))
 			if (!devlog) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			} else if (devlog.ownerId != user.id) {
 				return c.json({ message: "Forbidden" }, 403)
 			}

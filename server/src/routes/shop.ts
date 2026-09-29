@@ -157,7 +157,7 @@ export const shopRoute = new Hono<Env>()
 				.from(shopItems)
 				.where(eq(shopItems.id, itemId))
 			if (!item) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 			const availabilities = await db
@@ -221,7 +221,7 @@ export const shopRoute = new Hono<Env>()
 
 			const [item] = await db.select().from(shopItems).where(eq(shopItems.id, itemId))
 			if (!item) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 			const itemRegions = await db
@@ -296,12 +296,12 @@ export const shopRoute = new Hono<Env>()
 
 			const [option] = await db.select().from(shopItemOptions).where(eq(shopItemOptions.id, optionId))
 			if (!option) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 			const [item] = await db.select().from(shopItems).where(eq(shopItems.id, option.itemId))
 			if (!item) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 			const itemRegions = await db
@@ -359,7 +359,7 @@ export const shopRoute = new Hono<Env>()
 
 			const [item] = await db.select().from(shopItems).where(eq(shopItems.id, itemId))
 			if (!item) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 			await db
@@ -420,7 +420,7 @@ export const shopRoute = new Hono<Env>()
 
 			const [item] = await db.select().from(shopItems).where(eq(shopItems.id, itemId))
 			if (!item) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 			await db
@@ -465,7 +465,7 @@ export const shopRoute = new Hono<Env>()
 
 			const [variant] = await db.select().from(itemVariants).where(eq(itemVariants.id, variantId))
 			if (!variant) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 			await db

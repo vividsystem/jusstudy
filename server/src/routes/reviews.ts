@@ -1,5 +1,4 @@
 import { describeRoute, validator as zValidator } from "hono-openapi";
-import type { auth } from "@server/auth";
 import db from "@server/db";
 import { projectReviews, projects, projectShips, projectLocks, type ProjectCategories, users } from "@server/db/schema";
 import { and, asc, eq, getTableColumns, inArray } from "drizzle-orm";
@@ -80,7 +79,7 @@ export const projectReviewsRoute = new Hono<Env>()
 
 			const res = await db.select().from(projects).where(eq(projects.id, id))
 			if (res.length == 0) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 			const project = res[0]!
 			if (project.creatorId != user.id && user.type == "participant") {
@@ -127,7 +126,7 @@ export const shipReviewsRoute = new Hono<Env>()
 				creatorId: projects.creatorId
 			}).from(projectShips).where(eq(projectShips.id, id)).innerJoin(projects, eq(projects.id, projectShips.id))
 			if (!ship) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			} else if (ship.creatorId != user.id && user.type == "participant") {
 				return c.json({ message: "Forbidden" }, 403)
 			}
@@ -168,7 +167,7 @@ export const shipReviewsRoute = new Hono<Env>()
 				.where(eq(projectShips.id, id))
 				.innerJoin(projects, eq(projects.id, projectShips.projectId))
 			if (!res) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			} else if (res.project_ships.state != "pre-initial") {
 				return c.json({ message: "Bad request" }, 400)
 			}
@@ -247,7 +246,7 @@ export const shipReviewsRoute = new Hono<Env>()
 				.where(eq(projectShips.id, id))
 				.innerJoin(projects, eq(projects.id, projectShips.projectId))
 			if (!res) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 			const staff = user.type != "participant" && res.projects.creatorId != user.id
 

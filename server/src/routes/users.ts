@@ -79,7 +79,7 @@ export const usersRoutes = new Hono<Env>()
 
 			if (!stats) {
 				logger.error({ message: "User doesnt have userStats", userId: user.id })
-				return c.json({ message: "Ressource not found" }, 500)
+				return c.json({ message: "Resource not found" }, 500)
 			}
 
 
@@ -106,7 +106,7 @@ export const usersRoutes = new Hono<Env>()
 
 			const [user] = await db.select().from(users).where(eq(users.id, id))
 			if (!user) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 			const [stats] = await db.select().from(userStats).where(eq(userStats.userId, id))
@@ -228,7 +228,7 @@ export const usersRoutes = new Hono<Env>()
 				.limit(limit)
 				.offset(offset);
 			if (results.length === 0) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 			return c.json({ results, query: q }, 200);
 		})
@@ -252,7 +252,7 @@ export const usersRoutes = new Hono<Env>()
 
 			class NotFoundError extends Error {
 				constructor() {
-					super("Ressource not found");
+					super("Resource not found");
 					this.name = "NotFoundError";
 					Object.setPrototypeOf(this, NotFoundError.prototype);
 				}
@@ -281,7 +281,7 @@ export const usersRoutes = new Hono<Env>()
 				})
 			} catch (e) {
 				if (e instanceof NotFoundError) {
-					return c.json({ message: "Ressource not found" }, 404)
+					return c.json({ message: "Resource not found" }, 404)
 				}
 				logger.error({ adminId: user.id, userId: id, error: e }, "User ban failed")
 				return c.json({ message: "Something went wrong" }, 500)
@@ -310,7 +310,7 @@ export const usersRoutes = new Hono<Env>()
 				...rest
 			}).from(users).where(eq(users.id, id))
 			if (!user) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 			return c.json({ user }, 200)
@@ -375,7 +375,7 @@ export const usersRoutes = new Hono<Env>()
 
 			const [user] = await db.select().from(users).where(eq(users.id, id))
 			if (!user) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 

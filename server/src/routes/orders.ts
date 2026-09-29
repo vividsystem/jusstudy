@@ -230,7 +230,7 @@ export const orderRoutes = new Hono<Env>()
 			const { addressId, orderNotes, ...rest } = getTableColumns(shopOrders)
 			const order = await db.select(rest).from(shopOrders).where(eq(shopOrders.id, orderId))
 			if (order.length == 0) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			} else if (order[0]!.userId != user.id) {
 				return c.json({ message: "Forbidden" }, 403)
 			}
