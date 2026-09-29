@@ -1,6 +1,6 @@
 import db from "@server/db";
-import { projects, projectStats, users } from "@server/db/schema";
-import { and, avg, count, desc, eq, getTableColumns, ne, sql, sum } from "drizzle-orm";
+import { projectLocks, projects, projectStats, users } from "@server/db/schema";
+import { and, avg, count, desc, eq, getTableColumns, isNotNull, isNull, ne, or, sql, sum } from "drizzle-orm";
 import { Hono } from "hono";
 import type { Env } from "..";
 import { successResponse, unauthorizedError } from "@server/lib/responses";
@@ -72,8 +72,13 @@ export const rankingsRoute = new Hono<Env>()
 			}).from(projects)
 				.innerJoin(projectStats, eq(projectStats.projectId, projects.id))
 				.innerJoin(users, eq(projects.creatorId, users.id))
+				.leftJoin(projectLocks, eq(projectLocks.projectId, projects.id))
 				.where(and(
 					ne(projectStats.matchups, 0),
+					or(
+						isNull(projectLocks.lockedAt),
+						isNotNull(projectLocks.unlockedAt)
+					),
 					eq(users.banned, false)
 				))
 				.groupBy(users.id)
