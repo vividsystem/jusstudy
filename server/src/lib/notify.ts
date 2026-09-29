@@ -148,7 +148,7 @@ interface NotsFulfillmentFailedRequestBody extends NotsOrderRequestBody {
 	comment: string
 }
 export async function notifyFulfillmentRejected(b: NotsFulfillmentFailedRequestBody) {
-	const d = await makeRequest("/fulfill_rejected", {
+	const d = await makeRequest("/fulfill_reject", {
 		user_id: b.slackUserId,
 		order_id: b.orderId,
 		item_name: b.itemName,
@@ -167,7 +167,7 @@ interface NotsOrderFulfilledRequestBody extends NotsOrderRequestBody {
 	trackingDetails: string
 }
 export async function notifyOrderFulfilled(b: NotsOrderFulfilledRequestBody) {
-	const d = await makeRequest("/fulfill_finished", {
+	const d = await makeRequest("/fulfill_fullfilled", {
 		user_id: b.slackUserId,
 		order_id: b.orderId,
 		item_name: b.itemName,
@@ -217,6 +217,4 @@ export async function notifyVotingFinished(b: NotsVotingFinishedRequestBody) {
 	} else {
 		return { ...d, ok: false }
 	}
-	throw new Error("this is not implemented yet")
-	// const d = makeRequest("/voting")
 }
