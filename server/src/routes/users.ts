@@ -236,27 +236,54 @@ export const usersRoutes = new Hono<Env>()
 			responses: {
 				401: unauthorizedError,
 				403: missingPermissionsError,
+				404: notFoundError,
 				200: successResponse(BanUserResponseSchema)
 			}
 		}),
 		async (c) => {
 			const user = c.get("user")
+			const logger = c.get("logger")
 			if (!user) return c.json({ message: "Unauthorized" }, 401)
 			if (user.type != "fraud" && user.type != "admin") return c.json({ message: "Forbidden" }, 403)
 
 			const { id } = c.req.param()
 
-			await db.update(users).set({ banned: true, type: "participant", coins: 0 }).where(eq(users.id, id))
-			await db.delete(shopOrders).where(and(
-				eq(shopOrders.userId, id),
-				isNull(shopOrders.fulfilledAt)
-			))
+			class NotFoundError extends Error {
+				constructor() {
+					super("Ressource not found");
+					this.name = "NotFoundError";
+					Object.setPrototypeOf(this, NotFoundError.prototype);
+				}
+			}
+			// do error handling
+			let alreadyFulfilled: typeof shopOrders.$inferSelect[];
+			try {
+				alreadyFulfilled = await db.transaction(async (tx) => {
+					const [banned] = await db
+						.update(users)
+						.set({ banned: true, type: "participant", coins: 0 })
+						.where(eq(users.id, id))
+						.returning({ id: users.id })
+					if (!banned) throw new NotFoundError()
 
-			const alreadyFulfilled = db.select().from(shopOrders).where(and(
-				eq(shopOrders.userId, id),
-				isNotNull(shopOrders.fulfilledAt)
-			))
+					await db.delete(shopOrders).where(and(
+						eq(shopOrders.userId, id),
+						isNull(shopOrders.fulfilledAt)
+					))
 
+					return await db.select().from(shopOrders).where(and(
+						eq(shopOrders.userId, id),
+						isNotNull(shopOrders.fulfilledAt)
+					))
+
+				})
+			} catch (e) {
+				if (e instanceof NotFoundError) {
+					return c.json({ message: "Ressource not found" }, 404)
+				}
+				logger.error({ adminId: user.id, userId: id, error: e }, "User ban failed")
+				return c.json({ message: "Something went wrong" }, 500)
+			}
 			return c.json({ message: "User successfully banned!", alreadyFulfilledOrders: alreadyFulfilled }, 200)
 		})
 	.get(
