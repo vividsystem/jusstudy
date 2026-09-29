@@ -73,7 +73,7 @@ export const projectsRoute = new Hono<Env>()
 
 			const [project] = await db.select().from(projects).where(eq(projects.id, id))
 			if (!project) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 			if (!user || user.id !== project.creatorId) {
@@ -127,7 +127,7 @@ export const projectsRoute = new Hono<Env>()
 
 			const [project] = await db.select({ creatorId: projects.creatorId }).from(projects).where(eq(projects.id, id))
 			if (!project) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			} else if (user.type != "admin" && user.id !== project.creatorId) {
 				return c.json({ message: "Forbidden" }, 403)
 			}
@@ -142,7 +142,7 @@ export const projectsRoute = new Hono<Env>()
 			responses: {
 				200: successResponse(ActiveProjectLockResponseSchema),
 				401: unauthorizedError,
-				404: messageResponse("Not found", ["Ressource not found", "Not locked"]),
+				404: messageResponse("Not found", ["Resource not found", "Not locked"]),
 			}
 		}),
 		async (c) => {
@@ -153,7 +153,7 @@ export const projectsRoute = new Hono<Env>()
 
 			const [project] = await db.select({ creatorId: projects.creatorId }).from(projects).where(eq(projects.id, id))
 			if (!project) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			} else if (user.type != "admin" && user.id !== project.creatorId) {
 				return c.json({ message: "Forbidden" })
 			}
@@ -265,7 +265,7 @@ export const projectsRoute = new Hono<Env>()
 				.from(projects)
 				.where(eq(projects.id, id))
 			if (!project) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			} else if (project.creatorId != user.id) {
 				return c.json({ message: "Forbidden" }, 403)
 			}
@@ -323,7 +323,7 @@ export const projectsRoute = new Hono<Env>()
 
 			const [project] = await db.select().from(projects).where(eq(projects.id, id))
 			if (!project) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 			if (project.creatorId != user.id) {
 				return c.json({ message: "Forbidden" }, 403)
@@ -351,7 +351,7 @@ export const projectsRoute = new Hono<Env>()
 			const time = await singleProjectTime(token.accessToken, [data.id])
 			if (!time.ok) {
 				if (time.error == "Could not find hackatime projects") {
-					return c.json({ message: "Ressource not found" }, 404)
+					return c.json({ message: "Resource not found" }, 404)
 				} else {
 					logger.error(time.error)
 					return c.json({ message: "Something went wrong" }, 500)
@@ -405,7 +405,7 @@ export const projectsRoute = new Hono<Env>()
 	//
 	// 	const res = await db.select().from(projects).where(eq(projects.id, id))
 	// 	if (res.length == 0) {
-	// 		return c.json({ message: "Ressource not found" }, 404)
+	// 		return c.json({ message: "Resource not found" }, 404)
 	// 	}
 	// 	const project = res[0]!
 	// 	if (project.creatorId != user.id) {

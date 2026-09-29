@@ -38,7 +38,7 @@ export const shipsRoute = new Hono<Env>()
 				.where(eq(projectShips.id, id))
 				.innerJoin(projects, eq(projects.id, projectShips.projectId))
 			if (!ship) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			} else if (ship.creatorId != user.id && user.type == "participant") {
 				return c.json({ message: "Forbidden" }, 403)
 			}
@@ -82,7 +82,7 @@ export const projectShipRoute = new Hono<Env>()
 
 			const [project] = await db.select().from(projects).where(eq(projects.id, id))
 			if (!project) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			} else if (project.creatorId != user.id) {
 				return c.json({ message: "Forbidden" }, 403)
 			}

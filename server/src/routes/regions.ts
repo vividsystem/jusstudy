@@ -60,7 +60,7 @@ export const regionRoutes = new Hono<Env>()
 
 			const [region] = await db.select().from(shopRegions).where(eq(shopRegions.id, id))
 			if (!region) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 			return c.json({ region }, 200)
@@ -113,7 +113,7 @@ export const regionRoutes = new Hono<Env>()
 					eq(shopItems.id, itemId)
 				))
 			if (!item) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 
 

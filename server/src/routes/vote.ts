@@ -141,7 +141,7 @@ export const voteRoute = new Hono<Env>()
 				.from(votingRounds)
 				.where(eq(votingRounds.id, id))
 			if (!current) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			} else if (current.completedAt != null) {
 				return c.json({ message: "Round is already finished" }, 400)
 			} else if (current.voterId !== user.id) {
@@ -302,7 +302,7 @@ export const voteRoute = new Hono<Env>()
 				isNull(votingRounds.completedAt)
 			))
 			if (!round) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			}
 			const roundProjects = await db.select().from(votingRoundProjects).where(eq(votingRoundProjects.roundId, round.id))
 			if (roundProjects.length < 4) {
@@ -363,7 +363,7 @@ export const projectRatingsRoute = new Hono<Env>()
 
 			const [proj] = await db.select().from(projects).where(eq(projects.id, id))
 			if (!proj) {
-				return c.json({ message: "Ressource not found" }, 404)
+				return c.json({ message: "Resource not found" }, 404)
 			} else if (proj.creatorId != user.id && user.type != "admin") {
 				return c.json({ message: "Forbidden" }, 403)
 			}

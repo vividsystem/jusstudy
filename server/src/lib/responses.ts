@@ -43,5 +43,5 @@ export const successResponse = (schema: z.ZodObject): ErrorResponse =>
 
 export const unauthorizedError = messageResponse("Unauthorized")
 export const internalServerError = messageResponse("Internal Server Error", ["Something went wrong"])
-export const notFoundError = messageResponse("Ressource not found")
+export const notFoundError = messageResponse("Resource not found")
 export const missingPermissionsError = messageResponse("Missing permissions", ["Forbidden"])
