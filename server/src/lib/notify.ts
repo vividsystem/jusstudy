@@ -209,7 +209,7 @@ export async function notifyVotingFinished(b: NotsVotingFinishedRequestBody) {
 		project_name: b.projectName,
 		project_link: createProjectLink(b.projectId),
 		rating: b.rating,
-		payout: `${b.payout} Books`
+		payout: createCurrencyMessage(b.payout)
 	})
 
 	if ("ok" in d) {
