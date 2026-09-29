@@ -5,7 +5,7 @@ import { successResponse, messageResponse, unauthorizedError, missingPermissions
 import { OrderByIdResponseSchema, PlaceOrderRequest, PlaceOrderResponseSchema, UserOrdersResponseSchema } from "@shared/validation";
 import db from "@server/db";
 import { addresses, itemVariants, orderVariantSelection, shopItemOptions, shopItems, shopOrders, shopRegions, users, regionalItemAvailabilities, regionalItemVariantAvailabilities } from "@server/db/schema";
-import { and, count, desc, eq, getTableColumns, inArray } from "drizzle-orm";
+import { and, count, desc, eq, getTableColumns, gte, inArray, sql } from "drizzle-orm";
 import { notifyOrderCreated } from "@server/lib/notify";
 
 export const orderRoutes = new Hono<Env>()
@@ -167,15 +167,34 @@ export const orderRoutes = new Hono<Env>()
 					}
 				}
 
-				await tx.update(users).set({ coins: u.coins - cost }).where(eq(users.id, u.id))
+
+				const [charged] = await tx
+					.update(users)
+					.set({ coins: sql`${users.coins} - ${cost}` })
+					.where(and(
+						eq(users.id, u.id),
+						gte(users.coins, cost)
+					))
+					.returning({ id: users.id })
+
+				if (!charged) {
+					tx.rollback()
+					return c.json({ message: "Order too expensive" }, 400)
+				}
 				if (item.quantity != null) {
-					await tx
+					const [reservedStock] = await tx
 						.update(regionalItemAvailabilities)
-						.set({ quantity: item.quantity - placedOrder.quantity })
+						.set({ quantity: sql`${regionalItemAvailabilities.quantity} - ${data.quantity}` })
 						.where(and(
 							eq(regionalItemAvailabilities.regionId, region.id),
-							eq(regionalItemAvailabilities.itemId, item.id)
-						))
+							eq(regionalItemAvailabilities.itemId, item.id),
+							gte(regionalItemAvailabilities.quantity, data.quantity)
+						)).returning({ itemId: regionalItemAvailabilities.itemId })
+					if (!reservedStock) {
+						tx.rollback()
+						return c.json({ message: "Order too large" }, 400)
+					}
+
 				}
 
 				const res = await notifyOrderCreated({
