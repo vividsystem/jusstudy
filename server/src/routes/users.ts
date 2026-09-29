@@ -192,13 +192,15 @@ export const usersRoutes = new Hono<Env>()
 			responses: {
 				200: successResponse(UserSearchResponseSchema),
 				401: unauthorizedError,
+				403: missingPermissionsError,
 				404: notFoundError
 			}
 		}),
 		zValidator("query", searchSchema),
 		async (c) => {
 			const user = c.get("user")
-			if (!user || user.type != "admin") return c.json({ message: "Unauthorized" }, 401)
+			if (!user) return c.json({ message: "Unauthorized" }, 401)
+			if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
 
 			const { q, limit, offset } = c.req.valid("query");
 
@@ -216,13 +218,13 @@ export const usersRoutes = new Hono<Env>()
 					slackId: users.slackId,
 					type: users.type,
 					image: users.image,
-					rank: sql<number>`ts_rank(search_vector, to_tsquery('english', ${tsQuery}))`,
+					rank: sql<number>`ts_rank(search_vector, plainto_tsquery('english', ${tsQuery}))`,
 				})
 				.from(users)
 				.where(
-					sql`search_vector @@ to_tsquery('english', ${tsQuery})`
+					sql`search_vector @@ plainto_tsquery('english', ${tsQuery})`
 				)
-				.orderBy(desc(sql`ts_rank(search_vector, to_tsquery('english', ${tsQuery}))`))
+				.orderBy(desc(sql`ts_rank(search_vector, plainto_tsquery('english', ${tsQuery}))`))
 				.limit(limit)
 				.offset(offset);
 			if (results.length === 0) {
