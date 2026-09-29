@@ -117,7 +117,7 @@ export async function notifyOrderCreated(b: NotsOrderRequestBody) {
 		user_id: b.slackUserId,
 		order_id: b.orderId,
 		item_name: b.itemName,
-		quantity: String(b.quantity),
+		qty: String(b.quantity),
 		cost: createCurrencyMessage(b.cost)
 	})
 
@@ -133,7 +133,7 @@ export async function notifyOrderApproved(b: NotsOrderRequestBody) {
 		user_id: b.slackUserId,
 		order_id: b.orderId,
 		item_name: b.itemName,
-		quantity: String(b.quantity),
+		qty: String(b.quantity),
 		cost: createCurrencyMessage(b.cost)
 	})
 
@@ -152,7 +152,7 @@ export async function notifyFulfillmentRejected(b: NotsFulfillmentFailedRequestB
 		user_id: b.slackUserId,
 		order_id: b.orderId,
 		item_name: b.itemName,
-		quantity: String(b.quantity),
+		qty: String(b.quantity),
 		cost: createCurrencyMessage(b.cost),
 		comment: b.comment
 	})
@@ -171,7 +171,7 @@ export async function notifyOrderFulfilled(b: NotsOrderFulfilledRequestBody) {
 		user_id: b.slackUserId,
 		order_id: b.orderId,
 		item_name: b.itemName,
-		quantity: String(b.quantity),
+		qty: String(b.quantity),
 		cost: createCurrencyMessage(b.cost),
 		fulfilled_by: b.fulfillerName,
 		tracking_details: b.trackingDetails
