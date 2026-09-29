@@ -90,7 +90,7 @@ app.get(
 )
 
 app.onError((err, c) => {
-	logger.error({ err, url: c.req.url })
+	logger.error({ err, url: c.req.url }, err.message)
 	return c.json({ message: "Something went wrong" }, 500)
 })
 
