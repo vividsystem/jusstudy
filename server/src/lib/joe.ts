@@ -1,6 +1,8 @@
-import type { Transaction } from "@server/db"
 import { joeFraudReviews, projects, timeHackatimeLinks, users } from "@server/db/schema"
-import { eq } from "drizzle-orm"
+import * as schema from "@server/db/schema"
+import { eq, type ExtractTablesWithRelations } from "drizzle-orm"
+import type { NodePgQueryResultHKT } from "drizzle-orm/node-postgres"
+import type { PgDatabase } from "drizzle-orm/pg-core"
 
 interface FraudRequestBody {
 	name: string
@@ -37,7 +39,7 @@ export async function postFraudReviewRequest(body: FraudRequestBody) {
 }
 
 
-export async function requestFraudReview(shipId: string, projectId: string, tx: Transaction) {
+export async function requestFraudReview(shipId: string, projectId: string, tx: PgDatabase<NodePgQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>) {
 	const [fraudReviewInfo] = await tx.select({
 		submitter: {
 			slackId: users.slackId
@@ -64,7 +66,8 @@ export async function requestFraudReview(shipId: string, projectId: string, tx: 
 		const res = await postFraudReviewRequest({
 			...fraudReviewInfo,
 			demoLink: fraudReviewInfo.demoLink || undefined,
-			hackatimeProjects: hackatimeProjects.map(p => p.hackatimeProject)
+			hackatimeProjects: hackatimeProjects.map(p => p.hackatimeProject),
+			organizerPlatformId: shipId
 		})
 
 		await tx.insert(joeFraudReviews).values({
