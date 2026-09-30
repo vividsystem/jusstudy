@@ -1,9 +1,7 @@
 import db from "@server/db"
 import { projectShips, timeEntries } from "../schema"
-import { and, desc, eq, gt, lt, or, sum } from "drizzle-orm"
+import { and, desc, eq, gt, lt, ne, or, sum } from "drizzle-orm"
 import type { HelperCfg } from "@server/lib"
-
-
 
 type Error = {
 	message: string
@@ -20,7 +18,11 @@ export async function getCurrentShipTime(projectId: string, cfg?: HelperCfg): Pr
 	const ships = await db
 		.select()
 		.from(projectShips)
-		.where(eq(projectShips.projectId, projectId))
+		.where(and(
+			eq(projectShips.projectId, projectId),
+			ne(projectShips.state, "failed"),
+
+		))
 		.orderBy(desc(projectShips.createdAt))
 		.limit(2) // current and last
 
@@ -30,7 +32,6 @@ export async function getCurrentShipTime(projectId: string, cfg?: HelperCfg): Pr
 	}
 
 	const startDate = ships[1]?.createdAt || new Date(process.env.START_DATE!)
-
 
 	const [entry] = await db
 		.select({ timeSpent: sum(timeEntries.duration).mapWith(Number) })
@@ -67,8 +68,11 @@ export async function getShipTime(shipId: string, cfg?: HelperCfg): Promise<Help
 		.from(projectShips)
 		.where(and(
 			eq(projectShips.projectId, ship.projectId),
-			lt(projectShips.createdAt, ship.createdAt)
+			lt(projectShips.createdAt, ship.createdAt),
+			ne(projectShips.state, "failed")
 		))
+		.orderBy(desc(projectShips.createdAt))
+		.limit(1)
 
 	const startDate = prevShip?.createdAt || new Date(process.env.START_DATE!)
 
@@ -85,5 +89,5 @@ export async function getShipTime(shipId: string, cfg?: HelperCfg): Promise<Help
 		return { ok: false, error: { message: "Could not get time spent on ship", code: CODE_NOT_FOUND } }
 	}
 
-	return { ok: true, data: entry.timeSpent }
+	return { ok: true, data: entry.timeSpent ?? 0 /* if the number of rows is 0 entry will return null*/ }
 }
