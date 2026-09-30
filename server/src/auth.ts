@@ -54,6 +54,12 @@ interface TrustGreen {
 const CORS_ORIGIN = process.env.CORS_ORIGIN!
 //default redirectUri: /api/auth/oauth2/callback/hackclub-auth
 export const auth = betterAuth({
+	baseURL: {
+		allowedHosts: [
+			process.env.SERVER_HOST!
+		],
+		protocol: process.env.NODE_ENV === "development" ? "http" : "https"
+	},
 	database: drizzleAdapter(db, {
 		provider: "pg",
 		schema: {

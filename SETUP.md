@@ -33,6 +33,7 @@ adjust the base origin to the url that you are going to expose
 to make a strong secret you can use something like: `openssl rand -base64 32`.
 ```env
 CLIENT_URL=SAME AS VITE_CLIENT_URL
+SERVER_HOST=localhost:3000 # this should not contain a protocol
 CORS_ORIGIN=http://localhost:5173
 DATABASE_URL=your_database_url
 BETTER_AUTH_SECRET=your_secret
