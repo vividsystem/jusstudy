@@ -131,7 +131,7 @@ export const projectShipRoute = new Hono<Env>()
 				.from(timeEntries)
 				.where(and(
 					eq(timeEntries.projectId, id)))
-				.orderBy(desc(timeEntries.createdBy))
+				.orderBy(desc(timeEntries.createdAt))
 				.limit(1)
 			if (!lastEntry) {
 				return c.json({ message: "You need to have time logged to ship" }, 400)
