@@ -4,6 +4,10 @@ services:
       context: ./
       dockerfile: ./server/Dockerfile
     env_file: "./server/.env"
+    environment:
+      - GRAFANA_LOKI_HOST=http://loki:3100
+      - BOT_HOST=http://emi:8000
+      - NODE_ENV=production
     networks:
       - public
       - backend
@@ -19,6 +23,8 @@ services:
     ports:
       - "8080:8080"
     env_file: "./client/.env"
+    environment:
+      - NODE_ENV=production
     networks: 
       - public
     depends_on:

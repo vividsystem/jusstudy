@@ -6,6 +6,9 @@ services:
     ports:
       - "3000:3000"
     env_file: "./server/.env"
+    environment:
+      - GRAFANA_LOKI_HOST=http://loki:3100
+      - BOT_HOST=http://emi:8000
     networks:
       - public
       - backend
