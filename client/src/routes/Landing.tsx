@@ -45,7 +45,7 @@ const LandingContent = () => (
 				RSVP / Join YSWS
 			</Button>
 			<Button
-				href="/docs"
+				href="/guides"
 				className="w-full sm:w-auto text-center bg-dark-red text-egg-yellow border-4 border-egg-yellow"
 			>
 				See Beginner Guides
