@@ -273,6 +273,8 @@ export const shipReviewsRoute = new Hono<Env>()
 
 				await tx.insert(projectLocks)
 					.values({ projectId: res.projects.id, shipId: id })
+
+				return bumped
 			})
 			if (!result) return c.json({ message: "Already reviewed" }, 409)
 
