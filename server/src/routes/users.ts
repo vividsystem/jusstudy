@@ -257,23 +257,22 @@ export const usersRoutes = new Hono<Env>()
 					Object.setPrototypeOf(this, NotFoundError.prototype);
 				}
 			}
-			// do error handling
 			let alreadyFulfilled: typeof shopOrders.$inferSelect[];
 			try {
 				alreadyFulfilled = await db.transaction(async (tx) => {
-					const [banned] = await db
+					const [banned] = await tx
 						.update(users)
 						.set({ banned: true, type: "participant", coins: 0 })
 						.where(eq(users.id, id))
 						.returning({ id: users.id })
 					if (!banned) throw new NotFoundError()
 
-					await db.delete(shopOrders).where(and(
+					await tx.delete(shopOrders).where(and(
 						eq(shopOrders.userId, id),
 						isNull(shopOrders.fulfilledAt)
 					))
 
-					return await db.select().from(shopOrders).where(and(
+					return await tx.select().from(shopOrders).where(and(
 						eq(shopOrders.userId, id),
 						isNotNull(shopOrders.fulfilledAt)
 					))
