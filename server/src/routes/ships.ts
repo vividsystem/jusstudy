@@ -1,6 +1,6 @@
 import db from "@server/db";
 import { projectLocks, projects, projectShips, projectStats, timeEntries, timeHackatimeLinks, timeShipSnapshots } from "@server/db/schema";
-import { and, desc, eq, getTableColumns, isNull, lt } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, isNull } from "drizzle-orm";
 import { Hono } from "hono";
 import { shipReviewsRoute } from "./reviews";
 import { singleProjectTime } from "@server/hackatime/client";
