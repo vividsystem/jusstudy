@@ -58,7 +58,7 @@ export const orderRoutes = new Hono<Env>()
 				return c.json({ message: "Region not found" }, 404)
 			}
 
-			return db.transaction(async (tx) => {
+			const { placedOrder, item, cost } = await db.transaction(async (tx) => {
 				const [item] = await tx
 					.select({
 						...getTableColumns(shopItems),
@@ -72,9 +72,9 @@ export const orderRoutes = new Hono<Env>()
 					))
 					.where(eq(shopItems.id, data.itemId))
 				if (!item) {
-					return c.json({ message: "Item not found or not available" }, 404)
+					throw new HTTPException(404, { message: "Item not found or not available" })
 				} else if (item.quantity !== null && item.quantity < data.quantity) {
-					return c.json({ message: "Order too large" }, 400)
+					throw new HTTPException(400, { message: "Order too large" })
 				}
 
 				const [expectedOptions] = await tx
@@ -83,15 +83,15 @@ export const orderRoutes = new Hono<Env>()
 					.where(eq(shopItemOptions.itemId, data.itemId))
 				if (!expectedOptions) {
 					logger.error({ message: "aggreggate count sql query didnt return anything", data })
-					return c.json({ message: "Something went wrong" }, 500)
+					throw new HTTPException(500, { message: "Something went wrong" })
 				}
 				if (expectedOptions.n > 0 && !data.optionVariants) {
-					return c.json({ message: "You need to specify options and their variants!" }, 400)
+					throw new HTTPException(500, { message: "You need to specify options and their variants!" })
 				}
 
 				const optIds = Object.keys(data.optionVariants || [])
 				if (optIds.length != expectedOptions.n) {
-					return c.json({ message: "Not all options (or too many) given" }, 400)
+					throw new HTTPException(400, { message: "Not all options (or too many) given" })
 				}
 				const variantIds = Object.values(data.optionVariants || [])
 
@@ -100,12 +100,12 @@ export const orderRoutes = new Hono<Env>()
 					.from(shopItemOptions)
 					.where(inArray(shopItemOptions.id, optIds))
 				if (options.length != expectedOptions.n) {
-					return c.json({ message: "Not all options exist" }, 400)
+					throw new HTTPException(400, { message: "Not all options exist" })
 				}
 
 				const validOptions = !options.some(opt => opt.itemId != item.id)
 				if (!validOptions) {
-					return c.json({ message: "Some options do not correspond to the item to be ordered" }, 400)
+					throw new HTTPException(400, { message: "Some options do not correspond to the item to be ordered" })
 				}
 
 				const variants = await tx
@@ -120,7 +120,7 @@ export const orderRoutes = new Hono<Env>()
 					))
 					.where(inArray(itemVariants.id, variantIds))
 				if (variants.length != expectedOptions.n) {
-					return c.json({ message: "Not all variants exist" }, 400)
+					throw new HTTPException(400, { message: "Not all variants exist" })
 				}
 
 				const validVariants = !variants.some(variant => (
@@ -128,7 +128,7 @@ export const orderRoutes = new Hono<Env>()
 					data.optionVariants[variant.optionId] != variant.id
 				))
 				if (!validVariants) {
-					return c.json({ message: "Some variants are not valid" }, 400)
+					throw new HTTPException(400, { message: "Some variants are not valid" })
 				}
 
 				const variantCost: number = variants.reduce((acc, curr) => curr.additionalPrice + acc, 0)
@@ -136,10 +136,9 @@ export const orderRoutes = new Hono<Env>()
 
 				const [u] = await tx.select().from(users).where(eq(users.id, user.id))
 				if (!u) {
-					return c.json({ message: "User not found" }, 404)
-				}
-				if (u.coins < cost) {
-					return c.json({ message: "Order too expensive" }, 400)
+					throw new HTTPException(404, { message: "User not found" })
+				} else if (u.coins < cost) {
+					throw new HTTPException(400, { message: "Order too expensive" })
 				}
 
 				const [placedOrder] = await tx
@@ -166,7 +165,6 @@ export const orderRoutes = new Hono<Env>()
 					}
 				}
 
-
 				const [charged] = await tx
 					.update(users)
 					.set({ coins: sql`${users.coins} - ${cost}` })
@@ -191,22 +189,22 @@ export const orderRoutes = new Hono<Env>()
 					if (!reservedStock) {
 						throw new HTTPException(400, { message: "Order too large" })
 					}
-
 				}
-
-				const res = await notifyOrderCreated({
-					slackUserId: user.slackId,
-					orderId: placedOrder.id,
-					itemName: item.name,
-					quantity: placedOrder.quantity,
-					cost
-				})
-				if (!res.ok) {
-					logger.warn({ orderId: placedOrder.id, res, userId: user.id }, "notificaton order creation failed")
-				}
-
-				return c.json({ order: placedOrder }, 201)
+				return { placedOrder, item, cost }
 			})
+
+			const res = await notifyOrderCreated({
+				slackUserId: user.slackId,
+				orderId: placedOrder.id,
+				itemName: item.name,
+				quantity: placedOrder.quantity,
+				cost
+			})
+			if (!res.ok) {
+				logger.warn({ orderId: placedOrder.id, res, userId: user.id }, "notificaton order creation failed")
+			}
+
+			return c.json({ order: placedOrder }, 201)
 		})
 	.get(
 		"/:orderId",
