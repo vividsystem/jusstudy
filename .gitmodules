@@ -1,4 +1,4 @@
 [submodule "emi"]
 	path = emi
-	url = https://gitub.com/vividsystem/emi
+	url = https://github.com/vividsystem/emi
 	branch = main
