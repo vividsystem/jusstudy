@@ -53,17 +53,6 @@ export const shopRoute = new Hono<Env>()
 
 				if (!options || options.length === 0) return c.json({ shopItem: newItem }, 201)
 
-
-				const n: string[] = []
-
-				for (const option of options) {
-					if (n.includes(option.name)) {
-						throw new HTTPException(400, { message: `Duplicate option names: "${option.name}"` })
-					} else {
-						n.push(option.name)
-					}
-				}
-
 				const newOptions = await tx
 					.insert(shopItemOptions)
 					.values(options.map((o) => ({ name: o.name, itemId: newItem.id })))
@@ -91,7 +80,7 @@ export const shopRoute = new Hono<Env>()
 						}
 
 
-						await db.insert(regionalItemVariantAvailabilities).values(Object.entries(variant.prices).map(([regionId, price]) => ({
+						await tx.insert(regionalItemVariantAvailabilities).values(Object.entries(variant.prices).map(([regionId, price]) => ({
 							variantId: newVariant.id,
 							regionId,
 							price
