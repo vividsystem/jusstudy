@@ -9,6 +9,7 @@ import type { Env } from "..";
 import { getCurrentShipTime } from "@server/db/helpers/time";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { notifyReviewAccept, notifyReviewReject } from "@server/lib/notify";
+import { HTTPException } from "hono/http-exception";
 
 export const reviewsRoute = new Hono<Env>()
 	.get(
@@ -185,11 +186,10 @@ export const shipReviewsRoute = new Hono<Env>()
 					.set({ state: data.passed ? bumpStatus("pre-initial") : "failed" })
 					.where(and(eq(projectShips.id, id), eq(projectShips.state, "pre-initial")))
 					.returning({ id: projectShips.id })
-				if (!claimed) return null // there already exists claim for review
+				if (!claimed) throw new HTTPException(409, { message: "Already reviewed" })
 				await tx.insert(projectReviews).values({ ...data, shipId: id, reviewerId: user.id })
 				return claimed
 			})
-			if (!result) return c.json({ message: "Already reviewed" }, 409)
 
 			const [creator] = await db
 				.select({ id: users.id, slackId: users.slackId })
@@ -256,7 +256,7 @@ export const shipReviewsRoute = new Hono<Env>()
 
 			const data = c.req.valid("json")
 
-			const result = await db.transaction(async (tx) => {
+			await db.transaction(async (tx) => {
 				const [bumped] = await tx
 					.update(projectShips)
 					.set({ state: "failed" })
@@ -265,7 +265,7 @@ export const shipReviewsRoute = new Hono<Env>()
 						eq(projectShips.state, "pre-initial")
 					))
 					.returning({ id: projectShips.id })
-				if (!bumped) return null
+				if (!bumped) throw new HTTPException(409, { message: "Already reviewed" })
 
 				await tx
 					.insert(projectReviews)
@@ -276,10 +276,11 @@ export const shipReviewsRoute = new Hono<Env>()
 
 				return bumped
 			})
-			if (!result) return c.json({ message: "Already reviewed" }, 409)
 
-
-			const [creator] = await db.select({ id: users.id, slackId: users.slackId }).from(users).where(eq(users.id, res.projects.creatorId))
+			const [creator] = await db
+				.select({ id: users.id, slackId: users.slackId })
+				.from(users)
+				.where(eq(users.id, res.projects.creatorId))
 			if (!creator) {
 				logger.warn({ shipId: id, projectId: res.projects.id, creatorId: res.projects.creatorId, reviewerId: user.id }, "creator of now locked project does not exist")
 			} else {
