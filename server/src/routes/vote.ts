@@ -95,7 +95,7 @@ export const voteRoute = new Hono<Env>()
 			type ProjectDetails = typeof projects.$inferSelect & { position: number, timeSpent: number }
 			let projectDetails: ProjectDetails[] = []
 			for (const project of roundProjects) {
-				const time = await getCurrentShipTime(project.projectId, { logger })
+				const time = await getCurrentShipTime(project.projectId, db, { logger })
 				if (!time.ok) {
 					return c.json({ message: "Something went wrong" }, 500)
 				}
@@ -234,7 +234,7 @@ export const voteRoute = new Hono<Env>()
 								throw new Error(`no ship found in voting for ${r.projectId}`)
 							}
 
-							const timeRes = await getCurrentShipTime(r.projectId, { logger })
+							const timeRes = await getCurrentShipTime(r.projectId, tx, { logger })
 							if (!timeRes.ok) {
 								logger.error({ projectId: r.projectId, shipId: ship.id, timeResError: timeRes.error }, "Could not get current ship time")
 								throw timeRes.error
@@ -318,7 +318,7 @@ export const voteRoute = new Hono<Env>()
 			type ProjectDetails = typeof projects.$inferSelect & { position: number, timeSpent: number }
 			let projectDetails: ProjectDetails[] = []
 			for (const project of roundProjects) {
-				const time = await getCurrentShipTime(project.projectId)
+				const time = await getCurrentShipTime(project.projectId, db, { logger })
 				if (!time.ok) {
 					return c.json({ message: "Something went wrong" }, 500)
 				}

@@ -1,3 +1,4 @@
+import type { QueryObject } from "@server/db"
 import { joeFraudReviews, projects, timeHackatimeLinks, users } from "@server/db/schema"
 import * as schema from "@server/db/schema"
 import { eq, type ExtractTablesWithRelations } from "drizzle-orm"
@@ -39,7 +40,7 @@ export async function postFraudReviewRequest(body: FraudRequestBody) {
 }
 
 
-export async function requestFraudReview(shipId: string, projectId: string, tx: PgDatabase<NodePgQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>) {
+export async function requestFraudReview(shipId: string, projectId: string, tx: QueryObject) {
 	const [fraudReviewInfo] = await tx.select({
 		submitter: {
 			slackId: users.slackId

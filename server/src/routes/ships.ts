@@ -43,7 +43,7 @@ export const shipsRoute = new Hono<Env>()
 				return c.json({ message: "Forbidden" }, 403)
 			}
 
-			const time = await getShipTime(id, { logger })
+			const time = await getShipTime(id, db, { logger })
 			if (!time.ok) {
 				logger.error({ ship }, "Could not get time for ship")
 				return c.json({ message: "Something went wrong" }, 500)
@@ -205,7 +205,7 @@ export const projectShipRoute = new Hono<Env>()
 			try {
 				return c.json({
 					ships: await Promise.all(ships.map(async (s) => {
-						const time = await getShipTime(s.id, { logger })
+						const time = await getShipTime(s.id, db, { logger })
 						if (!time.ok) {
 							throw new Error(time.error.message)
 						}
