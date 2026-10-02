@@ -2,6 +2,7 @@ import { type QueryObject } from "@server/db"
 import { projectShips, timeEntries } from "../schema"
 import { and, desc, eq, gt, lt, ne, or, sum } from "drizzle-orm"
 import type { HelperCfg } from "@server/lib"
+import { ENV } from "@server/lib/config"
 
 type Error = {
 	message: string
@@ -31,7 +32,7 @@ export async function getCurrentShipTime(projectId: string, tx: QueryObject, cfg
 		return { ok: false, error: { message: "Ship not found", code: CODE_NOT_FOUND } }
 	}
 
-	const startDate = ships[1]?.createdAt || new Date(process.env.START_DATE!)
+	const startDate = ships[1]?.createdAt || ENV.START_DATE
 
 	const [entry] = await tx
 		.select({ timeSpent: sum(timeEntries.duration).mapWith(Number) })
@@ -74,7 +75,7 @@ export async function getShipTime(shipId: string, tx: QueryObject, cfg?: HelperC
 		.orderBy(desc(projectShips.createdAt))
 		.limit(1)
 
-	const startDate = prevShip?.createdAt || new Date(process.env.START_DATE!)
+	const startDate = prevShip?.createdAt || ENV.START_DATE
 
 	const [entry] = await tx
 		.select({ timeSpent: sum(timeEntries.duration).mapWith(Number) })

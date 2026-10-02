@@ -1,3 +1,4 @@
+import { ENV } from "./config"
 
 // https://fastapi.tiangolo.com/tutorial/handling-errors/#the-resulting-response
 interface BotErrorType {
@@ -11,11 +12,11 @@ interface NotsResponse {
 }
 
 async function makeRequest<V>(path: string, body: V) {
-	const url = new URL(path, process.env.BOT_HOST!)
+	const url = new URL(path, ENV.BOT_HOST)
 	const res = await fetch(url, {
 		method: "POST",
 		headers: {
-			"Authorization": `Bearer ${process.env.BOT_ACCESS_TOKEN}`,
+			"Authorization": `Bearer ${ENV.BOT_ACCESS_TOKEN}`,
 			"Content-Type": "application/json"
 		},
 		body: JSON.stringify(body)
@@ -31,7 +32,7 @@ async function makeRequest<V>(path: string, body: V) {
 }
 
 function createProjectLink(projectId: string) {
-	return new URL(`/projects/${projectId}`, process.env.CLIENT_URL).toString()
+	return new URL(`/projects/${projectId}`, ENV.CLIENT_URL).toString()
 }
 
 function createCurrencyMessage(coins: number) {

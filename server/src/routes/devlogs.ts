@@ -13,6 +13,7 @@ import z from "zod";
 import { mapAttachmentsToDevlogs } from "@server/lib/devlogs";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { getHackatimeAccessToken } from "@server/lib/auth";
+import { HTTPException } from "hono/http-exception";
 
 
 export const devlogsRoute = new Hono<Env>()
@@ -111,26 +112,15 @@ export const projectDevlogsRoute = new Hono<Env>()
 				return c.json({ message: "Forbidden" }, 403)
 			}
 
-			const [lastEntry] = await db
-				.select()
-				.from(timeEntries)
-				.where(eq(timeEntries.projectId, project.id))
-				.orderBy(desc(timeEntries.createdAt))
-				.limit(1)
-
-
-
+			const token = await getHackatimeAccessToken(c.req.raw.headers)
+			if (!token) {
+				return c.json({ message: "Hackatime account needs to be linked!" }, 400)
+			}
 
 			const links = await db
 				.select({ name: timeHackatimeLinks.hackatimeProjectName })
 				.from(timeHackatimeLinks)
 				.where(eq(timeHackatimeLinks.projectId, projectId))
-
-
-			const token = await getHackatimeAccessToken(c.req.raw.headers)
-			if (!token) {
-				return c.json({ message: "Hackatime account needs to be linked!" }, 400)
-			}
 
 			const stats = await singleProjectTime(token.accessToken, links.map((l) => l.name))
 			if (!stats.ok) {
@@ -138,45 +128,64 @@ export const projectDevlogsRoute = new Hono<Env>()
 				return c.json({ message: "Hackatime fetching went wrong" }, 500)
 			}
 
-			const offsetTime = lastEntry?.timeAnchor || 0
-			if (stats.data <= offsetTime) {
-				return c.json({ message: "No time that could be logged" }, 400)
-			}
 
-			const duration = (stats.data - offsetTime)
+			const devlog = await db.transaction(async (tx) => {
+				// lock project
+				await tx
+					.select({ id: projects.id })
+					.from(projects)
+					.where(eq(projects.id, project.id))
+					.for("update")
+				const [lastEntry] = await tx
+					.select()
+					.from(timeEntries)
+					.where(eq(timeEntries.projectId, project.id))
+					.orderBy(desc(timeEntries.createdAt))
+					.limit(1)
 
-			const [entry] = await db.insert(timeEntries).values({
-				projectId: project.id,
-				createdBy: user.id,
-				duration,
-				timeAnchor: stats.data,
-				type: "devlog"
-			}).returning()
-			if (!entry) {
-				logger.error({ project, data, links, stats, entry }, "Coudnt insert time entry for devlog")
-				return c.json({ message: "Something went wrong" }, 500)
-			}
 
-			const [devlog] = await db.insert(devlogs).values({
-				...data,
-				timeEntryId: entry.id,
-				projectId: projectId,
-			}).returning()
-			if (!devlog) {
-				logger.error({ project, data, links, entry, devlog }, "Couldnt insert devlog")
-				return c.json({ message: "Something went wrong" }, 500)
-			}
+				const offsetTime = lastEntry?.timeAnchor || 0
+				if (stats.data <= offsetTime) {
+					throw new HTTPException(400, { message: "No time that could be logged" })
+				}
 
-			await db
-				.update(projects)
-				.set({
-					totalTime: sum(timeEntries.duration)
-				})
-				.from(timeEntries)
-				.where(and(
-					eq(projects.id, project.id),
-					eq(timeEntries.projectId, project.id)
-				))
+				const duration = (stats.data - offsetTime)
+
+				const [entry] = await tx.insert(timeEntries).values({
+					projectId: project.id,
+					createdBy: user.id,
+					duration,
+					timeAnchor: stats.data,
+					type: "devlog"
+				}).returning()
+				if (!entry) {
+					logger.error({ project, data, links, stats, entry }, "Coudnt insert time entry for devlog")
+					throw new HTTPException(500, { message: "Something went wrong" })
+				}
+
+				const [devlog] = await tx.insert(devlogs).values({
+					...data,
+					timeEntryId: entry.id,
+					projectId: projectId,
+				}).returning()
+				if (!devlog) {
+					logger.error({ project, data, links, entry, devlog }, "Couldnt insert devlog")
+					throw new HTTPException(500, { message: "Something went wrong" })
+				}
+
+				await tx
+					.update(projects)
+					.set({
+						totalTime: sum(timeEntries.duration)
+					})
+					.from(timeEntries)
+					.where(and(
+						eq(projects.id, project.id),
+						eq(timeEntries.projectId, project.id)
+					))
+
+				return devlog
+			})
 
 
 			return c.json({ devlog: devlog }, 201)

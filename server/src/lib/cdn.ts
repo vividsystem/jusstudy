@@ -1,5 +1,6 @@
+import { ENV } from "./config"
+
 const HACKCLUB_CDN_URL = "https://cdn.hackclub.com"
-const CDN_API_KEY = process.env.HACKCLUB_CDN_API_KEY!
 
 interface CDNFile {
 	id: string
@@ -27,7 +28,7 @@ export async function uploadDevlogAttachmentToCDN(files: File[]) {
 		const res = await fetch(REQ_URL, {
 			method: "POST",
 			headers: {
-				"Authorization": `Bearer ${CDN_API_KEY}`
+				"Authorization": `Bearer ${ENV.HACKCLUB_CDN_API_KEY}`
 			},
 			body: form,
 		});

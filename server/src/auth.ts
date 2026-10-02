@@ -4,6 +4,7 @@ import { genericOAuth } from "better-auth/plugins";
 import db from "./db";
 import { accounts, sessions, typeValues, users, userStats, verifications } from "./db/schema";
 import { getSlackUserInformation } from "./lib/slack";
+import { ENV } from "@server/lib/config";
 
 
 interface AuthProfile {
@@ -51,14 +52,12 @@ interface TrustGreen {
 }
 
 
-const CORS_ORIGIN = process.env.CORS_ORIGIN!
 //default redirectUri: /api/auth/oauth2/callback/hackclub-auth
 export const auth = betterAuth({
 	baseURL: {
 		allowedHosts: [
-			process.env.SERVER_HOST!
+			ENV.SERVER_URL
 		],
-		protocol: process.env.NODE_ENV === "development" ? "http" : "https"
 	},
 	database: drizzleAdapter(db, {
 		provider: "pg",
@@ -80,15 +79,15 @@ export const auth = betterAuth({
 		}
 	},
 	trustedOrigins: [
-		CORS_ORIGIN,
+		ENV.CORS_ORIGIN,
 	],
 	plugins: [
 		genericOAuth({
 			config: [
 				{
 					providerId: "hackclub-auth",
-					clientId: process.env.HACKCLUB_AUTH_CLIENT_ID!,
-					clientSecret: process.env.HACKCLUB_AUTH_CLIENT_SECRET!,
+					clientId: ENV.HACKCLUB_AUTH_CLIENT_ID!,
+					clientSecret: ENV.HACKCLUB_AUTH_CLIENT_SECRET!,
 					discoveryUrl: "https://auth.hackclub.com/.well-known/openid-configuration",
 					scopes: ["openid", "profile", "email", "name", "slack_id", "verification_status"],
 					overrideUserInfo: true,
@@ -109,8 +108,8 @@ export const auth = betterAuth({
 				},
 				{
 					providerId: "hackatime",
-					clientId: process.env.HACKATIME_UID!,
-					clientSecret: process.env.HACKATIME_SECRET!,
+					clientId: ENV.HACKATIME_UID!,
+					clientSecret: ENV.HACKATIME_SECRET!,
 					authorizationUrl: "https://hackatime.hackclub.com/oauth/authorize",
 					userInfoUrl: "https://hackatime.hackclub.com/api/v1/authenticated/me",
 					tokenUrl: "https://hackatime.hackclub.com/oauth/token",

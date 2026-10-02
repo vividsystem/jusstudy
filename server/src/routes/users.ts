@@ -10,6 +10,7 @@ import type { Env } from "..";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { getHackatimeAccessToken } from "@server/lib/auth";
 import { HTTPException } from "hono/http-exception";
+import { ENV } from "@server/lib/config";
 
 const searchSchema = z.object({
 	q: z.string().min(1).max(100),
@@ -39,7 +40,7 @@ export const usersRoutes = new Hono<Env>()
 				return c.json({ message: "Hackatime account needs to be linked!" }, 400)
 			}
 
-			const res = await hackatime.projects(token.accessToken, { startDate: new Date(process.env.START_DATE!) })
+			const res = await hackatime.projects(token.accessToken, { startDate: ENV.START_DATE })
 			if (!res.ok) {
 				logger.error({ userId: user.id }, res.error)
 				return c.json({ message: "Something went wrong" }, 500)
