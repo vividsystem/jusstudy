@@ -43,7 +43,7 @@ export const reviewsRoute = new Hono<Env>()
 			type PendingWithTime = typeof pending[number] & { timeShipped: number }
 			let pendingWithTime: PendingWithTime[] = []
 			for (const ship of pending) {
-				const time = await getCurrentShipTime(ship.projects.id)
+				const time = await getCurrentShipTime(ship.projects.id, db, { logger })
 				if (!time.ok) {
 					logger.error({ project: ship.projects, ship: ship.project_ships, timeErr: time.error }, "Could not get time of current ship for pending reviews")
 					return c.json({ message: "Something went wrong" }, 500)

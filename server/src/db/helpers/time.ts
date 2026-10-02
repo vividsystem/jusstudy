@@ -1,4 +1,4 @@
-import db from "@server/db"
+import { type QueryObject } from "@server/db"
 import { projectShips, timeEntries } from "../schema"
 import { and, desc, eq, gt, lt, ne, or, sum } from "drizzle-orm"
 import type { HelperCfg } from "@server/lib"
@@ -14,8 +14,8 @@ type HelperReturn<T> = { ok: true, data: T } | { ok: false, error: Error }
 
 
 
-export async function getCurrentShipTime(projectId: string, cfg?: HelperCfg): Promise<HelperReturn<number>> {
-	const ships = await db
+export async function getCurrentShipTime(projectId: string, tx: QueryObject, cfg?: HelperCfg): Promise<HelperReturn<number>> {
+	const ships = await tx
 		.select()
 		.from(projectShips)
 		.where(and(
@@ -33,7 +33,7 @@ export async function getCurrentShipTime(projectId: string, cfg?: HelperCfg): Pr
 
 	const startDate = ships[1]?.createdAt || new Date(process.env.START_DATE!)
 
-	const [entry] = await db
+	const [entry] = await tx
 		.select({ timeSpent: sum(timeEntries.duration).mapWith(Number) })
 		.from(timeEntries)
 		.where(and(
@@ -53,8 +53,8 @@ export async function getCurrentShipTime(projectId: string, cfg?: HelperCfg): Pr
 }
 
 
-export async function getShipTime(shipId: string, cfg?: HelperCfg): Promise<HelperReturn<number>> {
-	const [ship] = await db
+export async function getShipTime(shipId: string, tx: QueryObject, cfg?: HelperCfg): Promise<HelperReturn<number>> {
+	const [ship] = await tx
 		.select()
 		.from(projectShips)
 		.where(eq(projectShips.id, shipId))
@@ -63,7 +63,7 @@ export async function getShipTime(shipId: string, cfg?: HelperCfg): Promise<Help
 	if (!ship) {
 		return { ok: false, error: { message: "Ship not found", code: CODE_NOT_FOUND } }
 	}
-	const [prevShip] = await db
+	const [prevShip] = await tx
 		.select()
 		.from(projectShips)
 		.where(and(
@@ -76,7 +76,7 @@ export async function getShipTime(shipId: string, cfg?: HelperCfg): Promise<Help
 
 	const startDate = prevShip?.createdAt || new Date(process.env.START_DATE!)
 
-	const [entry] = await db
+	const [entry] = await tx
 		.select({ timeSpent: sum(timeEntries.duration).mapWith(Number) })
 		.from(timeEntries)
 		.where(and(
