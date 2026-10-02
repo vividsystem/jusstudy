@@ -223,7 +223,12 @@ export const voteRoute = new Hono<Env>()
 							const [ship] = await tx
 								.select({ id: projectShips.id })
 								.from(projectShips)
-								.where(eq(projectShips.projectId, r.projectId))
+								.where(and(
+									eq(projectShips.projectId, r.projectId),
+									eq(projectShips.state, "voting")
+								))
+								.orderBy(desc(projectShips.createdAt))
+								.limit(1)
 							if (!ship) {
 								logger.error({ projectId: r.projectId }, "Could not find ship finishing vote round")
 								throw new Error(`no ship found in voting for ${r.projectId}`)
