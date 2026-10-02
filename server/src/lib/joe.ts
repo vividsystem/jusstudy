@@ -1,6 +1,7 @@
 import type { QueryObject } from "@server/db"
 import { joeFraudReviews, projects, timeHackatimeLinks, users } from "@server/db/schema"
 import { eq } from "drizzle-orm"
+import { ENV } from "./config"
 
 interface FraudRequestBody {
 	name: string
@@ -17,11 +18,11 @@ interface FraudRequestBody {
 	organizerPlatformId?: string
 }
 export async function postFraudReviewRequest(body: FraudRequestBody) {
-	const res = await fetch(`https://joe.fraud.hackclub.com/api/v1/ysws/events/${process.env.JOE_EVENT_ID!}/projects`, {
+	const res = await fetch(`https://joe.fraud.hackclub.com/api/v1/ysws/events/${ENV.JOE_EVENT_ID!}/projects`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
-			"Authorization": `Bearer ${process.env.JOE_API_KEY!}`
+			"Authorization": `Bearer ${ENV.JOE_API_KEY!}`
 		},
 		body: JSON.stringify(body)
 	})

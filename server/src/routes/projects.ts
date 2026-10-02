@@ -360,6 +360,12 @@ export const projectsRoute = new Hono<Env>()
 			}
 
 			return await db.transaction(async (tx) => {
+				// lock project
+				await tx
+					.select({ id: projects.id })
+					.from(projects)
+					.where(eq(projects.id, project.id))
+					.for("update")
 				const [prevEntry] = await tx
 					.select()
 					.from(timeEntries)

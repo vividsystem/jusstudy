@@ -1,11 +1,12 @@
 import pino from "pino";
+import { ENV } from "./lib/config";
 
 const transport = pino.transport({
 	targets: [
 		{
 			target: "pino-loki",
 			options: {
-				host: process.env.GRAFANA_LOKI_HOST!,
+				host: ENV.GRAFANA_LOKI_URL,
 				labels: {
 					app: "jus-study frontend",
 					namespace: process.env.NODE_ENV || "development",
@@ -20,7 +21,7 @@ const transport = pino.transport({
 	]
 })
 export const logger = pino({
-	level: process.env.LOG_LEVEL ?? "info",
+	level: ENV.LOG_LEVEL
 },
 	transport
 );

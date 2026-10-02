@@ -1,4 +1,5 @@
 import HackatimeOAuthClient from "."
+import { ENV } from "@server/lib/config"
 
 const hackatime = new HackatimeOAuthClient()
 
@@ -11,7 +12,7 @@ type ClientRes<T> = Promise<{
 	res?: Response
 }>
 export async function singleProjectTime(accessToken: string, links: string[]): ClientRes<number> {
-	const res = await hackatime.projects(accessToken, { startDate: new Date(process.env.START_DATE!), projects: links.join(",") })
+	const res = await hackatime.projects(accessToken, { startDate: ENV.START_DATE, projects: links.join(",") })
 	if (!res.ok) {
 		return { ok: false, error: res.error, res: res.res }
 	}

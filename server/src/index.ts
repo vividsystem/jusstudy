@@ -17,6 +17,7 @@ import { requestLogger } from "./middleware/logger";
 import { devlogsRoute } from "./routes/devlogs";
 import { openAPIRouteHandler } from "hono-openapi";
 import { HTTPException } from "hono/http-exception"
+import { ENV } from "@server/lib/config";
 
 
 export type Env = {
@@ -31,7 +32,7 @@ const app = new Hono<Env>().basePath("/api")
 	.use("*", requestId())
 	.use(
 		cors({
-			origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+			origin: ENV.CORS_ORIGIN,
 			allowHeaders: ["Content-Type", "Authorization"],
 			allowMethods: ["POST", "GET", "OPTIONS", "PATCH", "DELETE"],
 			exposeHeaders: ["Content-Length"],
