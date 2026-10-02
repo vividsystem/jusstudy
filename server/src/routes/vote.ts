@@ -197,6 +197,7 @@ export const voteRoute = new Hono<Env>()
 				await tx.update(userStats).set({ votesCast: sql`${userStats.votesCast} + 1` }).where(eq(userStats.userId, user.id))
 
 
+				type Finished = { projectId: string, shipId: string, ordinal: number, payout: number }
 				const done: Finished[] = []
 				for (const [i, r] of data.ratings.entries()) {
 					const updated = updatedTeams[i]![0]!
