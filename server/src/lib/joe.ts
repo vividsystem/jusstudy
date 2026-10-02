@@ -1,9 +1,6 @@
 import type { QueryObject } from "@server/db"
 import { joeFraudReviews, projects, timeHackatimeLinks, users } from "@server/db/schema"
-import * as schema from "@server/db/schema"
-import { eq, type ExtractTablesWithRelations } from "drizzle-orm"
-import type { NodePgQueryResultHKT } from "drizzle-orm/node-postgres"
-import type { PgDatabase } from "drizzle-orm/pg-core"
+import { eq } from "drizzle-orm"
 
 interface FraudRequestBody {
 	name: string

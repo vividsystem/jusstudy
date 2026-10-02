@@ -245,7 +245,6 @@ export const usersRoutes = new Hono<Env>()
 		}),
 		async (c) => {
 			const user = c.get("user")
-			const logger = c.get("logger")
 			if (!user) return c.json({ message: "Unauthorized" }, 401)
 			if (user.type != "fraud" && user.type != "admin") return c.json({ message: "Forbidden" }, 403)
 

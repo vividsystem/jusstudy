@@ -178,15 +178,6 @@ export const voteRoute = new Hono<Env>()
 
 			const updatedTeams = rate(teams, { score: scores })
 
-			class RoundAlreadyFinishedError extends Error {
-				constructor() {
-					super("Round already finished");
-					this.name = "RoundAlreadyFinishedError";
-					Object.setPrototypeOf(this, RoundAlreadyFinishedError.prototype);
-				}
-			}
-
-			type Finished = { projectId: string, shipId: string, ordinal: number, payout: number }
 			const finished = await db.transaction(async (tx) => {
 				const [claimed] = await tx
 					.update(votingRounds)
