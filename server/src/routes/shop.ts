@@ -10,6 +10,7 @@ import { orderRoutes } from "./orders";
 import { regionRoutes } from "./regions";
 import { uniqueEntriesEqual } from "@server/lib/arr";
 import { z } from "zod";
+import { HTTPException } from "hono/http-exception";
 
 
 export const shopRoute = new Hono<Env>()
@@ -38,8 +39,7 @@ export const shopRoute = new Hono<Env>()
 				const [newItem] = await tx.insert(shopItems).values({ ...data }).returning()
 				if (!newItem) {
 					logger.error({ userId: user.id, data: { options, ...data } })
-					tx.rollback()
-					return c.json({ message: "Something went wrong" }, 500)
+					throw new HTTPException(500, { message: "Something went wrong" })
 				}
 
 				await tx
@@ -58,7 +58,7 @@ export const shopRoute = new Hono<Env>()
 
 				for (const option of options) {
 					if (n.includes(option.name)) {
-						return c.json({ message: `Duplicate option names: "${option.name}"` }, 400)
+						throw new HTTPException(400, { message: `Duplicate option names: "${option.name}"` })
 					} else {
 						n.push(option.name)
 					}
@@ -70,8 +70,7 @@ export const shopRoute = new Hono<Env>()
 					.returning()
 				if (newOptions.length !== options.length) {
 					logger.error({ userId: user.id, options, newOptions, newItem }, "Could not insert all new options")
-					tx.rollback()
-					return c.json({ message: "Something went wrong" }, 500)
+					throw new HTTPException(500, { message: "Something went wrong" })
 				}
 
 				const newVariants: typeof itemVariants.$inferSelect[] = []
@@ -81,16 +80,14 @@ export const shopRoute = new Hono<Env>()
 					const optionId = newOptions.find(o => o.name === option.name)?.id
 					if (!optionId) {
 						logger.error({ userId: user.id, newOptions, option }, "Could not find option id for new option")
-						tx.rollback()
-						return c.json({ message: "Something went wrong" }, 500)
+						throw new HTTPException(500, { message: "Something went wrong" })
 					}
 
 					for (const variant of option.variants) {
 						const [newVariant] = await tx.insert(itemVariants).values({ ...variant, optionId }).returning()
 						if (!newVariant) {
 							logger.error({ userId: user.id, option: { ...option, id: optionId }, variant }, "Could not create new variant")
-							tx.rollback()
-							return c.json({ message: "Something went wrong" }, 500)
+							throw new HTTPException(500, { message: "Something went wrong" })
 						}
 
 
@@ -244,15 +241,14 @@ export const shopRoute = new Hono<Env>()
 					.returning()
 				if (!option) {
 					logger.error({ item, userId: user.id }, "couldnt create option")
-					return c.json({ message: "Something went wrong" }, 500)
+					throw new HTTPException(500, { message: "Something went wrong" })
 				}
 
 				for (const v of data.variants) {
 					const [variant] = await tx.insert(itemVariants).values({ ...v, optionId: option.id }).returning()
 					if (!variant) {
 						logger.error({ data, option }, "new variant couldnt be created")
-						tx.rollback()
-						return c.json({ message: "Something went wrong" }, 500)
+						throw new HTTPException(500, { message: "Something went wrong" })
 					}
 
 					const prices = await tx
@@ -264,8 +260,7 @@ export const shopRoute = new Hono<Env>()
 							}))).returning()
 					if (prices.length !== itemRegions.length) {
 						logger.error({ prices, itemRegions }, "Could not add all variant prices")
-						tx.rollback()
-						return c.json({ message: "Something went wrong" }, 500)
+						throw new HTTPException(500, { message: "Something went wrong" })
 					}
 				}
 
@@ -318,8 +313,7 @@ export const shopRoute = new Hono<Env>()
 				const [variant] = await tx.insert(itemVariants).values({ ...data, optionId: option.id }).returning()
 				if (!variant) {
 					logger.error({ data, option }, "new variant couldnt be created")
-					tx.rollback()
-					return c.json({ message: "Something went wrong" }, 500)
+					throw new HTTPException(500, { message: "Something went wrong" })
 				}
 
 				const prices = await tx
@@ -331,8 +325,7 @@ export const shopRoute = new Hono<Env>()
 						}))).returning()
 				if (prices.length !== itemRegions.length) {
 					logger.error({ prices, itemRegions }, "Could not add all variant prices")
-					tx.rollback()
-					return c.json({ message: "Something went wrong" }, 500)
+					throw new HTTPException(500, { message: "Something went wrong" })
 				}
 
 				return c.json({ variant }, 201)

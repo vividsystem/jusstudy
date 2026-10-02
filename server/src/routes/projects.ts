@@ -12,6 +12,7 @@ import type { Env } from "..";
 import { projectRatingsRoute } from "./vote";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { getHackatimeAccessToken } from "@server/lib/auth";
+import { HTTPException } from "hono/http-exception";
 
 
 export const projectsRoute = new Hono<Env>()
@@ -377,8 +378,7 @@ export const projectsRoute = new Hono<Env>()
 					}).returning()
 				if (!entry) {
 					logger.error({ entry, prevEntry, project, new_ht_project: data.id }, "Couldnt create new time entry")
-					tx.rollback()
-					return c.json({ message: "Something went wrong" }, 500)
+					throw new HTTPException(500, { message: "Something went wrong" })
 				}
 
 				const [newLink] = await tx.insert(timeHackatimeLinks).values({
@@ -389,7 +389,7 @@ export const projectsRoute = new Hono<Env>()
 				}).returning()
 				if (!newLink) {
 					logger.error({ entry, prevEntry, project, new_ht_project: data.id }, "Couldnt create ht link")
-					return c.json({ message: "Something went wrong" }, 500)
+					throw new HTTPException(500, { message: "Something went wrong" })
 				}
 
 				return c.json({ message: "Successfully linked" }, 201)

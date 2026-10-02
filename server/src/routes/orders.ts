@@ -7,6 +7,7 @@ import db from "@server/db";
 import { addresses, itemVariants, orderVariantSelection, shopItemOptions, shopItems, shopOrders, shopRegions, users, regionalItemAvailabilities, regionalItemVariantAvailabilities } from "@server/db/schema";
 import { and, count, desc, eq, getTableColumns, gte, inArray, sql } from "drizzle-orm";
 import { notifyOrderCreated } from "@server/lib/notify";
+import { HTTPException } from "hono/http-exception";
 
 export const orderRoutes = new Hono<Env>()
 	.post(
@@ -152,8 +153,7 @@ export const orderRoutes = new Hono<Env>()
 					}).returning()
 				if (!placedOrder) {
 					logger.error({ userId: user.id, data, cost, item, variants }, "Couldnt place order")
-					tx.rollback()
-					return c.json({ message: "Something went wrong" }, 500)
+					throw new HTTPException(500, { message: "Something went wrong" })
 				}
 
 				const opts = Object.entries(data.optionVariants || {})
@@ -162,8 +162,7 @@ export const orderRoutes = new Hono<Env>()
 					const selection = await tx.insert(orderVariantSelection).values(opts).returning()
 					if (selection.length == 0) {
 						logger.error({ userId: user.id, data, cost, item, variants, placedOrder }, "Couldnt make variant selection")
-						tx.rollback()
-						return c.json({ message: "Something went wrong" }, 500)
+						throw new HTTPException(500, { message: "Something went wrong" })
 					}
 				}
 
@@ -176,11 +175,10 @@ export const orderRoutes = new Hono<Env>()
 						gte(users.coins, cost)
 					))
 					.returning({ id: users.id })
-
 				if (!charged) {
-					tx.rollback()
-					return c.json({ message: "Order too expensive" }, 400)
+					throw new HTTPException(400, { message: "Order too expensive" })
 				}
+
 				if (item.quantity != null) {
 					const [reservedStock] = await tx
 						.update(regionalItemAvailabilities)
@@ -191,8 +189,7 @@ export const orderRoutes = new Hono<Env>()
 							gte(regionalItemAvailabilities.quantity, data.quantity)
 						)).returning({ itemId: regionalItemAvailabilities.itemId })
 					if (!reservedStock) {
-						tx.rollback()
-						return c.json({ message: "Order too large" }, 400)
+						throw new HTTPException(400, { message: "Order too large" })
 					}
 
 				}

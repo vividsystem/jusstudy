@@ -17,6 +17,7 @@ import { baseResponse, internalServerError, successResponse, singleMessageSchema
 import z from "zod";
 import { notifyVotingFinished } from "@server/lib/notify";
 import { users } from "@server/db/schema";
+import { HTTPException } from "hono/http-exception";
 
 const CANDIDATE_POOL_SIZE = 50;
 export const VOTES_FOR_PAYOUT_PER_SHIP = 10;
@@ -80,8 +81,7 @@ export const voteRoute = new Hono<Env>()
 				const [round] = await tx.insert(votingRounds).values({ voterId: user.id }).returning()
 				if (!round) {
 					logger.error({ userId: user.id }, "Couldnt create voting round")
-					tx.rollback()
-					throw new Error("Couldnt create voting round")
+					throw new HTTPException(500, { message: "Something went wrong" })
 				}
 
 				const roundProjects = await tx
@@ -187,76 +187,73 @@ export const voteRoute = new Hono<Env>()
 			}
 
 			type Finished = { projectId: string, shipId: string, ordinal: number, payout: number }
-			let finished: Finished[]
-			try {
-				finished = await db.transaction(async (tx) => {
-					const [claimed] = await tx
-						.update(votingRounds)
-						.set({ completedAt: new Date() })
-						.where(and(
-							eq(votingRounds.id, current.id),
-							eq(votingRounds.voterId, user.id),
-							isNull(votingRounds.completedAt)
-						))
-						.returning({ id: votingRounds.id })
-					if (!claimed) throw new RoundAlreadyFinishedError()
-
-					await tx.insert(ratings).values(data.ratings.map((c) => ({ ...c, roundId: current.id })))
-					await tx.update(userStats).set({ votesCast: sql`${userStats.votesCast} + 1` }).where(eq(userStats.userId, user.id))
+			const finished = await db.transaction(async (tx) => {
+				const [claimed] = await tx
+					.update(votingRounds)
+					.set({ completedAt: new Date() })
+					.where(and(
+						eq(votingRounds.id, current.id),
+						eq(votingRounds.voterId, user.id),
+						isNull(votingRounds.completedAt)
+					))
+					.returning({ id: votingRounds.id })
+				if (!claimed) {
+					throw new HTTPException(400, { message: "Round already finished" })
+				}
 
 
-					const done: Finished[] = []
-					for (const [i, r] of data.ratings.entries()) {
-						const updated = updatedTeams[i]![0]!
-						const updatedOrdinal = ordinal(updated)
+				await tx.insert(ratings).values(data.ratings.map((c) => ({ ...c, roundId: current.id })))
+				await tx.update(userStats).set({ votesCast: sql`${userStats.votesCast} + 1` }).where(eq(userStats.userId, user.id))
 
-						await tx.update(projectStats)
-							.set({
-								mu: updated.mu,
-								sigma: updated.sigma,
-								ordinal: updatedOrdinal,
-								matchups: sql`${projectStats.matchups} + 1`
-							})
-							.where(eq(projectStats.projectId, r.projectId))
 
-						if (updated.sigma < SIGMA_TRESHOLD) {
-							const [ship] = await tx
-								.select({ id: projectShips.id })
-								.from(projectShips)
-								.where(and(
-									eq(projectShips.projectId, r.projectId),
-									eq(projectShips.state, "voting")
-								))
-								.orderBy(desc(projectShips.createdAt))
-								.limit(1)
-							if (!ship) {
-								logger.error({ projectId: r.projectId }, "Could not find ship finishing vote round")
-								throw new Error(`no ship found in voting for ${r.projectId}`)
-							}
+				const done: Finished[] = []
+				for (const [i, r] of data.ratings.entries()) {
+					const updated = updatedTeams[i]![0]!
+					const updatedOrdinal = ordinal(updated)
 
-							const timeRes = await getCurrentShipTime(r.projectId, tx, { logger })
-							if (!timeRes.ok) {
-								logger.error({ projectId: r.projectId, shipId: ship.id, timeResError: timeRes.error }, "Could not get current ship time")
-								throw timeRes.error
-							}
+					await tx.update(projectStats)
+						.set({
+							mu: updated.mu,
+							sigma: updated.sigma,
+							ordinal: updatedOrdinal,
+							matchups: sql`${projectStats.matchups} + 1`
+						})
+						.where(eq(projectStats.projectId, r.projectId))
 
-							const payout = calculatePayout(updatedOrdinal, 0, timeRes.data)
-							await tx
-								.update(projectShips)
-								.set({
-									state: bumpStatus("voting"),
-									payout
-								})
-								.where(eq(projectShips.id, ship.id))
-							done.push({ shipId: ship.id, projectId: r.projectId, payout, ordinal: updatedOrdinal })
+					if (updated.sigma < SIGMA_TRESHOLD) {
+						const [ship] = await tx
+							.select({ id: projectShips.id })
+							.from(projectShips)
+							.where(and(
+								eq(projectShips.projectId, r.projectId),
+								eq(projectShips.state, "voting")
+							))
+							.orderBy(desc(projectShips.createdAt))
+							.limit(1)
+						if (!ship) {
+							logger.error({ projectId: r.projectId }, "Could not find ship finishing vote round")
+							throw new HTTPException(500, { message: "Something went wrong" })
 						}
+
+						const timeRes = await getCurrentShipTime(r.projectId, tx, { logger })
+						if (!timeRes.ok) {
+							logger.error({ projectId: r.projectId, shipId: ship.id, timeResError: timeRes.error }, "Could not get current ship time")
+							throw new HTTPException(500, { message: "Something went wrong" })
+						}
+
+						const payout = calculatePayout(updatedOrdinal, 0, timeRes.data)
+						await tx
+							.update(projectShips)
+							.set({
+								state: bumpStatus("voting"),
+								payout
+							})
+							.where(eq(projectShips.id, ship.id))
+						done.push({ shipId: ship.id, projectId: r.projectId, payout, ordinal: updatedOrdinal })
 					}
-					return done
-				})
-			} catch (e) {
-				if (e instanceof RoundAlreadyFinishedError) return c.json({ message: "Round already finished" }, 400)
-				return c.json({ message: "Something went wrong" }, 500)
-			}
+				}
+				return done
+			})
 			for (const f of finished) {
 				const res = await requestFraudReview(f.shipId, f.projectId, db)
 				if (!res.ok) {

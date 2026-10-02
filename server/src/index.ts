@@ -16,6 +16,7 @@ import { logger } from "./logger";
 import { requestLogger } from "./middleware/logger";
 import { devlogsRoute } from "./routes/devlogs";
 import { openAPIRouteHandler } from "hono-openapi";
+import { HTTPException } from "hono/http-exception"
 
 
 export type Env = {
@@ -90,6 +91,9 @@ app.get(
 )
 
 app.onError((err, c) => {
+	if (err instanceof HTTPException) {
+		return c.json({ message: err.message }, err.status)
+	}
 	logger.error({ err, url: c.req.url }, err.message)
 	return c.json({ message: "Something went wrong" }, 500)
 })

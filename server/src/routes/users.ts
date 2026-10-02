@@ -9,6 +9,7 @@ import z from "zod";
 import type { Env } from "..";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { getHackatimeAccessToken } from "@server/lib/auth";
+import { HTTPException } from "hono/http-exception";
 
 const searchSchema = z.object({
 	q: z.string().min(1).max(100),
@@ -250,41 +251,27 @@ export const usersRoutes = new Hono<Env>()
 
 			const { id } = c.req.param()
 
-			class NotFoundError extends Error {
-				constructor() {
-					super("Resource not found");
-					this.name = "NotFoundError";
-					Object.setPrototypeOf(this, NotFoundError.prototype);
+			const alreadyFulfilled = await db.transaction(async (tx) => {
+				const [banned] = await tx
+					.update(users)
+					.set({ banned: true, type: "participant", coins: 0 })
+					.where(eq(users.id, id))
+					.returning({ id: users.id })
+				if (!banned) {
+					throw new HTTPException(404, { message: "Resource not found" })
 				}
-			}
-			let alreadyFulfilled: typeof shopOrders.$inferSelect[];
-			try {
-				alreadyFulfilled = await db.transaction(async (tx) => {
-					const [banned] = await tx
-						.update(users)
-						.set({ banned: true, type: "participant", coins: 0 })
-						.where(eq(users.id, id))
-						.returning({ id: users.id })
-					if (!banned) throw new NotFoundError()
 
-					await tx.delete(shopOrders).where(and(
-						eq(shopOrders.userId, id),
-						isNull(shopOrders.fulfilledAt)
-					))
+				await tx.delete(shopOrders).where(and(
+					eq(shopOrders.userId, id),
+					isNull(shopOrders.fulfilledAt)
+				))
 
-					return await tx.select().from(shopOrders).where(and(
-						eq(shopOrders.userId, id),
-						isNotNull(shopOrders.fulfilledAt)
-					))
+				return await tx.select().from(shopOrders).where(and(
+					eq(shopOrders.userId, id),
+					isNotNull(shopOrders.fulfilledAt)
+				))
 
-				})
-			} catch (e) {
-				if (e instanceof NotFoundError) {
-					return c.json({ message: "Resource not found" }, 404)
-				}
-				logger.error({ adminId: user.id, userId: id, error: e }, "User ban failed")
-				return c.json({ message: "Something went wrong" }, 500)
-			}
+			})
 			return c.json({ message: "User successfully banned!", alreadyFulfilledOrders: alreadyFulfilled }, 200)
 		})
 	.get(
