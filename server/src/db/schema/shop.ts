@@ -49,8 +49,8 @@ export const itemVariantRelations = relations(itemVariants, ({ many }) => ({
 }))
 
 export const regionalItemVariantAvailabilities = pgTable("shop_item_variant_regional_availabilities", {
-	variantId: uuid().references(() => itemVariants.id),
-	regionId: uuid().references(() => shopRegions.id),
+	variantId: uuid().references(() => itemVariants.id).notNull(),
+	regionId: uuid().references(() => shopRegions.id).notNull(),
 	price: integer().notNull()
 }, (table) => [
 	primaryKey({ columns: [table.variantId, table.regionId] })
