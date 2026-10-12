@@ -5,7 +5,7 @@ services:
       dockerfile: ./server/Dockerfile
     env_file: "./server/.env"
     environment:
-      - GRAFANA_LOKI_URL=http://loki:3100
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4318
       - BOT_HOST=http://emi:8000
       - NODE_ENV=production
     networks:
@@ -13,7 +13,7 @@ services:
       - backend
       - observability
     depends_on:
-      - loki
+      - alloy
       - grafana
       - emi
   frontend:
@@ -34,19 +34,56 @@ services:
     env_file: "./emi/.env"
     networks:
       - backend
+
+  alloy:
+    image: grafana/alloy:latest
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=0.0.0.0:12345
+    volumes:
+      - ./observability/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-data:/var/lib/alloy/data
+    networks:
+      - observability
+    depends_on:
+      - loki
+      - prometheus
+      - tempo
   loki:
-    image: grafana/loki:3.0.0
-    command: -config.file=/etc/loki/local-config.yaml
+    image: grafana/loki:3.7.8
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - ./observability/loki.yaml:/etc/loki/config.yaml:ro
+      - loki-data:/loki
     networks:
       - observability
   prometheus:
-    image: prom/prometheus:v2.47.0
+    image: prom/prometheus:v3.13.4-distroless
     command:
       - --web.enable-remote-write-receiver
-      - --config.file=/etc/prometheus/prometheus.yml
+      - --config.file=/etc/prometheus.yaml
+      - --enable-feature=exemplar-storage
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+    volumes:
+      - ./observability/prometheus.yaml:/etc/prometheus.yaml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - observability
+  tempo:
+    image: grafana/tempo:3.1.0
+    command: [ "-config.file=/etc/tempo.yaml", "-target=all"]
+    volumes:
+      - ./observability/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo-data:/var/tempo
     networks:
       - observability
   grafana:
+    image: grafana/grafana:13.2.3
+    ports:
+      - "3001:3000"
     env_file: .env
     environment:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
@@ -57,36 +94,8 @@ services:
       - GF_LOG_LEVEL=info
       # use console and alloy to get console info
       - GF_LOG_MODE=console
-    entrypoint:
-      - sh
-      - -euc
-      - |
-        mkdir -p /etc/grafana/provisioning/datasources
-        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
-        apiVersion: 1
-        datasources:
-        - name: Loki
-          type: loki
-          access: proxy
-          orgId: 1
-          url: http://loki:3100
-          basicAuth: false
-          isDefault: false
-          version: 1
-          editable: false
-        - name: Prometheus
-          type: prometheus
-          orgId: 1
-          url: http://prometheus:9090
-          basicAuth: false
-          isDefault: true
-          version: 1
-          editable: false
-        EOF
-        /run.sh
-    image: grafana/grafana:11.0.0
-    ports:
-      - "3001:3000"
+    volumes:
+      - ./observability/datasources.grafana.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
     networks:
       - observability
 networks:
@@ -96,5 +105,8 @@ networks:
   backend:
 volumes:
   jusstudy_postgres_data:
+  tempo-data:
+  prometheus-data:
   loki-data:
   grafana-data:
+  alloy-data:
