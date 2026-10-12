@@ -1,4 +1,7 @@
+import { SpanKind, SpanStatusCode } from "@opentelemetry/api"
 import { ENV } from "./config"
+import { externalTracer, withSpan } from "."
+import { externalServiceFailures } from "./metrics"
 
 // https://fastapi.tiangolo.com/tutorial/handling-errors/#the-resulting-response
 interface BotErrorType {
@@ -6,29 +9,44 @@ interface BotErrorType {
 }
 
 interface NotsResponse {
-	ok: false,
+	ok: true,
 	channel: string
 	ts: string // some wheird floating point timestamp id combo?
 }
 
-async function makeRequest<V>(path: string, body: V) {
-	const url = new URL(path, ENV.BOT_HOST)
-	const res = await fetch(url, {
-		method: "POST",
-		headers: {
-			"Authorization": `Bearer ${ENV.BOT_ACCESS_TOKEN}`,
-			"Content-Type": "application/json"
-		},
-		body: JSON.stringify(body)
-	})
-	if (!res.ok) {
-		const data = await res.json() as BotErrorType
+interface SpanConfig {
+	spanName: string,
+	attributes?: Record<string, number | boolean | string | undefined>
+}
+
+async function makeRequest<V>(path: string, spanCfg: SpanConfig, body: V): Promise<NotsResponse | { ok: false } & BotErrorType> {
+	return await withSpan(externalTracer, SpanKind.CLIENT, spanCfg.spanName, async (span) => {
+		if (spanCfg.attributes) {
+			span.setAttributes(spanCfg.attributes)
+		}
+		const url = new URL(path, ENV.BOT_HOST)
+		const res = await fetch(url, {
+			method: "POST",
+			headers: {
+				"Authorization": `Bearer ${ENV.BOT_ACCESS_TOKEN}`,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(body)
+		})
+		span.setAttributes({ "peer.service": "slack", "http.response.status_code": res.status })
+		if (!res.ok) {
+			const data = await res.json() as BotErrorType
+			span.setStatus({ code: SpanStatusCode.ERROR })
+			span.setAttribute("response.errorDetail", data.detail)
+			externalServiceFailures.add(1, { service: "emi", operation: path })
+			return { ...data, ok: false } as { ok: false } & BotErrorType
+		}
+
+		const data = await res.json() as NotsResponse
+
+		span.setStatus({ code: SpanStatusCode.OK })
 		return data
-	}
-
-	const data = await res.json() as NotsResponse
-
-	return data
+	})
 }
 
 function createProjectLink(projectId: string) {
@@ -45,33 +63,36 @@ interface NotsShipCreateRequestBody {
 	projectName: string,
 }
 export async function notifyShipCreate(b: NotsShipCreateRequestBody) {
-	const d = await makeRequest("/ship", {
+	const spanCfg: SpanConfig = {
+		spanName: "notify_ship_creation",
+		attributes: {
+			"project.id": b.projectId,
+			"project.creator.slackId": b.slackUserId
+		}
+	}
+	return await makeRequest("/ship", spanCfg, {
 		user_id: b.slackUserId,
 		project_name: b.projectName,
 		project_link: createProjectLink(b.projectId)
 	})
-
-	if ("ok" in d) {
-		return d
-	} else {
-		return { ...d, ok: false }
-	}
 }
 
 export async function notifyReviewAccept(b: NotsReviewRequestBody) {
-	const d = await makeRequest("/review-accept", {
+
+	const spanCfg: SpanConfig = {
+		spanName: "notify_review_accept",
+		attributes: {
+			"project.id": b.projectId,
+			"project.creator.slackId": b.slackUserId
+		}
+	}
+	return await makeRequest("/review-accept", spanCfg, {
 		user_id: b.slackUserId,
 		project_name: b.projectName,
 		project_link: createProjectLink(b.projectId),
 		reviewer_id: b.slackReviewerId,
 		feedback: b.comment,
 	})
-
-	if ("ok" in d) {
-		return d
-	} else {
-		return { ...d, ok: false }
-	}
 }
 
 interface NotsReviewRequestBody {
@@ -83,19 +104,20 @@ interface NotsReviewRequestBody {
 }
 
 export async function notifyReviewReject(b: NotsReviewRequestBody) {
-	const d = await makeRequest("/review-reject", {
+	const spanCfg: SpanConfig = {
+		spanName: "notify_review_reject",
+		attributes: {
+			"project.id": b.projectId,
+			"project.creator.slackId": b.slackUserId
+		}
+	}
+	return await makeRequest("/review-reject", spanCfg, {
 		user_id: b.slackUserId,
 		project_name: b.projectName,
 		project_link: createProjectLink(b.projectId),
 		reviewer_id: b.slackReviewerId,
 		feedback: b.comment,
 	})
-
-	if ("ok" in d) {
-		return d
-	} else {
-		return { ...d, ok: false }
-	}
 } // aka ship failed
 
 
@@ -114,23 +136,34 @@ interface NotsOrderRequestBody {
 	cost: number,
 }
 export async function notifyOrderCreated(b: NotsOrderRequestBody) {
-	const d = await makeRequest("/fulfill_pending", {
+	const spanCfg: SpanConfig = {
+		spanName: "notify_order_created",
+		attributes: {
+			"order.id": b.orderId,
+			"item.name": b.itemName,
+			"order.cost": b.cost,
+			"user.slackId": b.slackUserId
+		}
+	}
+	return await makeRequest("/fulfill_pending", spanCfg, {
 		user_id: b.slackUserId,
 		order_id: b.orderId,
 		item_name: b.itemName,
 		qty: String(b.quantity),
 		cost: createCurrencyMessage(b.cost)
 	})
-
-	if ("ok" in d) {
-		return d
-	} else {
-		return { ...d, ok: false }
-	}
-
 }
 export async function notifyOrderApproved(b: NotsOrderRequestBody) {
-	const d = await makeRequest("/fulfill_approved", {
+	const spanCfg: SpanConfig = {
+		spanName: "notify_order_approved",
+		attributes: {
+			"order.id": b.orderId,
+			"item.name": b.itemName,
+			"order.cost": b.cost,
+			"user.slackId": b.slackUserId
+		}
+	}
+	return await makeRequest("/fulfill_approved", spanCfg, {
 		user_id: b.slackUserId,
 		order_id: b.orderId,
 		item_name: b.itemName,
@@ -138,18 +171,23 @@ export async function notifyOrderApproved(b: NotsOrderRequestBody) {
 		cost: createCurrencyMessage(b.cost)
 	})
 
-	if ("ok" in d) {
-		return d
-	} else {
-		return { ...d, ok: false }
-	}
 }
 
 interface NotsFulfillmentFailedRequestBody extends NotsOrderRequestBody {
 	comment: string
 }
 export async function notifyFulfillmentRejected(b: NotsFulfillmentFailedRequestBody) {
-	const d = await makeRequest("/fulfill_reject", {
+
+	const spanCfg: SpanConfig = {
+		spanName: "notify_fulfillment_rejected",
+		attributes: {
+			"order.id": b.orderId,
+			"item.name": b.itemName,
+			"order.cost": b.cost,
+			"user.slackId": b.slackUserId
+		}
+	}
+	return await makeRequest("/fulfill_reject", spanCfg, {
 		user_id: b.slackUserId,
 		order_id: b.orderId,
 		item_name: b.itemName,
@@ -157,18 +195,22 @@ export async function notifyFulfillmentRejected(b: NotsFulfillmentFailedRequestB
 		cost: createCurrencyMessage(b.cost),
 		comment: b.comment
 	})
-	if ("ok" in d) {
-		return d
-	} else {
-		return { ...d, ok: false }
-	}
 }
 interface NotsOrderFulfilledRequestBody extends NotsOrderRequestBody {
 	fulfillerName: string
 	trackingDetails: string
 }
 export async function notifyOrderFulfilled(b: NotsOrderFulfilledRequestBody) {
-	const d = await makeRequest("/fulfill_fullfilled", {
+	const spanCfg: SpanConfig = {
+		spanName: "notify_fulfillment_fulfilled",
+		attributes: {
+			"order.id": b.orderId,
+			"item.name": b.itemName,
+			"order.cost": b.cost,
+			"user.slackId": b.slackUserId
+		}
+	}
+	return await makeRequest("/fulfill_fullfilled", spanCfg, {
 		user_id: b.slackUserId,
 		order_id: b.orderId,
 		item_name: b.itemName,
@@ -177,12 +219,6 @@ export async function notifyOrderFulfilled(b: NotsOrderFulfilledRequestBody) {
 		fulfilled_by: b.fulfillerName,
 		tracking_details: b.trackingDetails
 	})
-
-	if ("ok" in d) {
-		return d
-	} else {
-		return { ...d, ok: false }
-	}
 }
 export async function notifyVoteReceived() {
 	throw new Error("this is not implemented yet")
@@ -205,17 +241,20 @@ interface NotsVotingFinishedRequestBody {
 	payout: number
 }
 export async function notifyVotingFinished(b: NotsVotingFinishedRequestBody) {
-	const d = await makeRequest("/voting-complete", {
+	const spanCfg: SpanConfig = {
+		spanName: "notify_voting_finished",
+		attributes: {
+			"project.id": b.projectId,
+			"project.rating": b.rating,
+			"ship.payout": b.payout,
+			"user.slackId": b.slackUserId
+		}
+	}
+	return await makeRequest("/voting-complete", spanCfg, {
 		user_id: b.slackUserId,
 		project_name: b.projectName,
 		project_link: createProjectLink(b.projectId),
 		rating: b.rating,
 		payout: createCurrencyMessage(b.payout)
 	})
-
-	if ("ok" in d) {
-		return d
-	} else {
-		return { ...d, ok: false }
-	}
 }

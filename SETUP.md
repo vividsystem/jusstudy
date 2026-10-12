@@ -33,9 +33,10 @@ adjust the base origin to the url that you are going to expose
 to make a strong secret you can use something like: `openssl rand -base64 32`.
 Log levels: `fatal`, `error`, `warn`, `info`, `debug`, `trace`
 ```env
+START_DATE=2026-04-08
 CLIENT_URL=SAME AS VITE_CLIENT_URL
+SERVER_URL=SAME_AS_VITE_SERVER_URL
 LOG_LEVEL=default:info
-SERVER_HOST=localhost:3000 # this should not contain a protocol
 CORS_ORIGIN=http://localhost:5173
 DATABASE_URL=your_database_url
 BETTER_AUTH_SECRET=your_secret
@@ -45,11 +46,10 @@ HACKATIME_UID=
 HACKATIME_SECRET=
 HACKCLUB_AUTH_CLIENT_ID=your_client_id
 HACKCLUB_AUTH_CLIENT_SECRET=your_client_secret
-START_DATE=2026-04-08
+HACKCLUB_CDN_API_KEY=YOUR_API_KEY
 JOE_API_KEY=JOE_API_KEY
 JOE_EVENT_ID=JOE_EVENT_ID
-GRAFANA_LOKI_HOST=GRAFANA_HOST
-HACKCLUB_CDN_API_KEY=YOUR_API_KEY
+OTEL_EXPORTER_OTLP_ENDPOINT=GRAFANA_ALLOY_ETC_HOST
 ```
 
 > Set up .env for `emi`

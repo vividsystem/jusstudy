@@ -10,7 +10,7 @@ import { uniqueEntriesEqual } from "@server/lib/arr";
 import { rating, rate, ordinal } from "openskill"
 import { bumpStatus } from "@server/lib/ships";
 import { rankingsRoute } from "./rankings";
-import { requestFraudReview } from "@server/lib/joe";
+import { FraudReviewResponseError, requestFraudReview } from "@server/lib/joe";
 import type { Env } from "..";
 import { getCurrentShipTime } from "@server/db/helpers/time";
 import { baseResponse, internalServerError, successResponse, singleMessageSchema, unauthorizedError, notFoundError, messageResponse, missingPermissionsError } from "@server/lib/responses";
@@ -247,10 +247,17 @@ export const voteRoute = new Hono<Env>()
 				return done
 			})
 			for (const f of finished) {
-				const res = await requestFraudReview(f.shipId, f.projectId, db)
-				if (!res.ok) {
-					logger.error({ projectId: f.projectId, shipId: f.shipId }, "fraud review request failed; ship might go stale")
+				try {
+					await requestFraudReview(f.shipId, f.projectId, db)
+				} catch (e) {
+					if (e instanceof FraudReviewResponseError) {
+						logger.error({ projectId: f.projectId, shipId: f.shipId, joeRes: e.res }, "fraud review request failed; ship state is stale")
+					} else {
+						logger.error({ projectId: f.projectId, shipId: f.shipId, e }, "fraud review request failed; ship state is stale")
+					}
+
 					return c.json({ message: "Something went wrong" }, 500)
+
 				}
 
 				const [creator] = await db
@@ -269,7 +276,7 @@ export const voteRoute = new Hono<Env>()
 						payout: f.payout
 					})
 					if (!nRes.ok) {
-						logger.warn({ roundId: id, shipId: f.shipId, projectId: f.projectId, creatorId: creator.id, res }, "notification voting finished failed")
+						logger.warn({ roundId: id, shipId: f.shipId, projectId: f.projectId, creatorId: creator.id, nRes }, "notification voting finished failed")
 					}
 				}
 			}
