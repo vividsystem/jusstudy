@@ -1,0 +1,40 @@
+server:
+  http_listen_address: "0.0.0.0"
+  http_listen_port: 3200
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/traces
+    wal:
+      path: /var/tempo/wal
+backend_worker:
+  compaction:
+    block_retention: 336h
+memory:
+  automemlimit_enabled: true
+metrics_generator:
+  storage:
+    path: /var/tempo/metrics
+    remote_write: [{ 
+      url: http://prometheus:9090/api/v1/write, 
+      send_exemplars: true 
+    }]
+  processor:
+    service_graphs:
+      dimensions: [peer.service]
+    span_metrics:
+      dimensions: [peer.service, http.response.status_code]
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+overrides:
+  defaults:
+    metrics_generator:
+      processors:
+        - service-graphs
+        - service-graphs-connection-info
+        - span-metrics
