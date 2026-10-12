@@ -1,3 +1,4 @@
+import "./instrumentation"; // keep this in the first line. DO NOT MOVE
 import { Hono } from "hono";
 import { Scalar } from "@scalar/hono-api-reference"
 import { cors } from "hono/cors";
@@ -12,12 +13,14 @@ import { voteRoute } from "./routes/vote";
 import { adminRoute } from "./routes/admin";
 import { requestId, type RequestIdVariables } from "hono/request-id";
 import type { Logger } from "pino";
-import { logger } from "./logger";
 import { requestLogger } from "./middleware/logger";
 import { devlogsRoute } from "./routes/devlogs";
 import { openAPIRouteHandler } from "hono-openapi";
 import { HTTPException } from "hono/http-exception"
 import { ENV } from "@server/lib/config";
+import { httpInstrumentationMiddleware } from "@hono/otel"
+import { trace } from "@opentelemetry/api"
+import { logger as rootLogger } from "./logger"
 
 
 export type Env = {
@@ -30,6 +33,9 @@ export type Env = {
 
 const app = new Hono<Env>().basePath("/api")
 	.use("*", requestId())
+	.use(httpInstrumentationMiddleware({
+		captureRequestHeaders: ["user-agent"],
+	}))
 	.use(
 		cors({
 			origin: ENV.CORS_ORIGIN,
@@ -40,7 +46,6 @@ const app = new Hono<Env>().basePath("/api")
 			credentials: true,
 		}),
 	)
-	.use(requestLogger())
 	.use(
 		async (c, next) => {
 			const session = await auth.api.getSession({ headers: c.req.raw.headers });
@@ -54,8 +59,11 @@ const app = new Hono<Env>().basePath("/api")
 
 			c.set("user", session.user);
 			c.set("session", session.session);
+			trace.getActiveSpan()?.setAttribute("user.id", session.user.id)
 			await next();
 		})
+
+	.use(requestLogger())
 	.on(["POST", "GET"], "/auth/*", (c) => {
 		return auth.handler(c.req.raw)
 	})
@@ -95,7 +103,9 @@ app.onError((err, c) => {
 	if (err instanceof HTTPException) {
 		return c.json({ message: err.message }, err.status)
 	}
+	const logger = c.get("logger") ?? rootLogger
 	logger.error({ err, url: c.req.url }, err.message)
+
 	return c.json({ message: "Something went wrong" }, 500)
 })
 

@@ -1,7 +1,10 @@
 import 'dotenv/config';
 import { z } from 'zod';
 
+const logLevelSchema = z.literal(["fatal", "error", "warn", "info", "debug", "trace"])
+
 const envSchema = z.object({
+	BETTER_AUTH_SECRET: z.string().min(32),
 	DATABASE_URL: z.url(),
 	CORS_ORIGIN: z.url(),
 	CLIENT_URL: z.url(),
@@ -16,8 +19,10 @@ const envSchema = z.object({
 	HACKCLUB_CDN_API_KEY: z.string().nonempty(),
 	HACKATIME_UID: z.string().nonempty(),
 	HACKATIME_SECRET: z.string().nonempty(),
-	GRAFANA_LOKI_URL: z.url(),
-	LOG_LEVEL: z.literal(["fatal", "error", "warn", "info", "debug", "trace"]).default("info")
+	LOG_LEVEL: logLevelSchema.default(process.env.NODE_ENV === "development" ? "debug" : "info"),
+	OTEL_SERVICE_NAME: z.string().nonempty().optional().default("jusstudy-server"),
+	OTEL_EXPORTER_OTLP_ENDPOINT: z.url(),
+	OTEL_RESOURCE_ATTRIBUTES: z.string().nonempty().optional().default(process.env.NODE_ENV === "development" ? "deployment.environment.name=development" : "deployment.environment.name=production").transform((attrs) => Object.fromEntries(attrs.split(",").map(att => att.split("="))) as Record<string, string>)
 });
 
 type Env = z.infer<typeof envSchema>;

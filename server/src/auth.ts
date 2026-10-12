@@ -5,7 +5,10 @@ import db from "./db";
 import { accounts, sessions, typeValues, users, userStats, verifications } from "./db/schema";
 import { getSlackUserInformation } from "./lib/slack";
 import { ENV } from "@server/lib/config";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 
+
+export const PROVIDER_FIELDS = ["yswsEligible", "verificationStatus", "slackId", "nickname", "banned"] as const
 
 interface AuthProfile {
 	id: string,
@@ -129,26 +132,36 @@ export const auth = betterAuth({
 			],
 		}),
 	],
+	hooks: {
+		before: createAuthMiddleware(async (ctx) => {
+			if (ctx.path !== "/update-user") return
+			const body = (ctx.body ?? {}) as Record<string, unknown>
+			if (PROVIDER_FIELDS.some((k) => k in body)) {
+				throw new APIError("BAD_REQUEST", { message: "You are not allowed to modify these" })
+			}
+		}),
+	},
 	user: {
 		additionalFields: {
 			yswsEligible: {
 				type: "boolean",
 				required: true,
-				input: false,
+				input: true, // disabled in hooks
 			},
 			verificationStatus: {
 				type: "string",
 				required: true,
-				input: false,
+				input: true, // disabked in hooks
 			},
 			slackId: {
 				type: "string",
 				required: true,
-				input: false,
+				input: true, // disabled in hooks
 				index: true
 			},
 			type: {
 				type: [...typeValues],
+				defaultValue: "participant",
 				required: true,
 				input: false,
 			},
@@ -159,13 +172,14 @@ export const auth = betterAuth({
 			},
 			banned: {
 				type: "boolean",
+				defaultValue: false,
 				required: true,
 				input: false
 			},
 			nickname: {
 				type: "string",
 				required: true,
-				input: false
+				input: true // disabled in hooks
 			},
 			regionId: {
 				type: "string",

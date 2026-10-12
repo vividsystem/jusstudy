@@ -61,9 +61,9 @@ export const projectShipRoute = new Hono<Env>()
 		describeRoute({
 			responses: {
 				200: successResponse(NewShipResponseSchema),
-				400: messageResponse("Bad request", ["Bad request", "This project has other unfinished ships"]),
+				400: messageResponse("Bad request", ["Bad request", "This project has other unfinished ships", "Hackatime account needs to be linked!", "You need to have time logged to ship"]),
 				401: unauthorizedError,
-				403: messageResponse("Missing permissions", ["Project locked.", "You need to be YSWS eligible", "Hackatime account needs to be linked!", "You need to have time logged to ship"]),
+				403: messageResponse("Missing permissions", ["Project locked.", "You need to be YSWS eligible"]),
 				404: notFoundError,
 				500: internalServerError
 			}

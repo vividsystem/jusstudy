@@ -1,14 +1,19 @@
+import { externalTracer, withSpan } from "@server/lib";
 import { transformBase, type HoursParams, type ProjectsParams } from "./types/params";
 import type { HoursResponse, UserInfoResponse, StreakResponse, ProjectsResponse, LatestHeartbeatResponse, BaseResponse, Heartbeat } from "./types/responses";
+import { SpanKind, SpanStatusCode, type Attributes } from "@opentelemetry/api";
+import { externalServiceFailures } from "@server/lib/metrics";
 
-
+interface SpanConfig<A extends object> {
+	name: string,
+	attributes?: (body: A) => Attributes
+}
 
 class HackatimeOAuthClient {
 	baseUrl: string
 	constructor(baseUrl?: string) {
 		this.baseUrl = baseUrl ?? "https://hackatime.hackclub.com/api/v1/"
 	}
-
 
 	private constructUrl(path: string, params?: Record<string, string | boolean | undefined>): URL {
 		const url = new URL(path, this.baseUrl);
@@ -28,6 +33,33 @@ class HackatimeOAuthClient {
 		return url;
 	}
 
+	private async makeRequest<R extends object>(path: string, accessToken: string, spanCfg: SpanConfig<R>, params?: Record<string, string | boolean | undefined>): BaseResponse<R> {
+		const url = this.constructUrl(path, params)
+		return await withSpan(externalTracer, SpanKind.CLIENT, spanCfg.name, async (span) => {
+			const res = await fetch(url, {
+				headers: {
+					"Authorization": `Bearer ${accessToken}`
+				}
+			})
+			if (!res.ok) {
+				externalServiceFailures.add(1, { service: "hackatime", operation: path })
+				span.setStatus({ code: SpanStatusCode.ERROR })
+				return this.handleErroneousResponse(res)
+			}
+
+			const body = await res.json() as R
+
+			if (spanCfg.attributes) {
+				span.setAttributes(spanCfg.attributes(body))
+			}
+
+			return {
+				ok: true,
+				data: body
+			} as { ok: true, data: R }
+		})
+	}
+
 
 	private handleErroneousResponse(res: Response): Extract<Awaited<BaseResponse<unknown>>, { error: unknown }> {
 		if (res.status == 401) {
@@ -40,108 +72,38 @@ class HackatimeOAuthClient {
 	}
 
 	async currentUserInfo(accessToken: string): BaseResponse<UserInfoResponse> {
-		const url = this.constructUrl("authenticated/me")
-
-
-		const res = await fetch(url, {
-			headers: {
-				"Authorization": `Bearer ${accessToken}`
-			}
+		return await this.makeRequest<UserInfoResponse>("authenticated/me", accessToken, {
+			name: "hackatime.user.info",
 		})
-		if (!res.ok) {
-			return this.handleErroneousResponse(res)
-		}
-
-		const body = await res.json()
-
-		return {
-			ok: true,
-			data: body as UserInfoResponse
-		}
 	}
 
 	async hours(accessToken: string, params: Partial<HoursParams>): BaseResponse<HoursResponse> {
-		const url = this.constructUrl("authenticated/hours", transformBase(params))
-
-		const res = await fetch(url, {
-			headers: {
-				"Authorization": `Bearer ${accessToken}`
-			}
-		})
-
-		if (!res.ok) {
-			return this.handleErroneousResponse(res)
-		}
-
-		const body = await res.json()
-
-		return {
-			ok: true,
-			data: body as HoursResponse
-		}
-
+		return await this.makeRequest<HoursResponse>("authenticated/hours", accessToken, {
+			name: "hackatime.user.hours",
+		}, transformBase(params))
 	}
 
 
 	async streak(accessToken: string): BaseResponse<StreakResponse> {
-		const url = this.constructUrl("authenticated/streak")
-
-
-		const res = await fetch(url, {
-			headers: {
-				"Authorization": `Bearer ${accessToken}`
-			}
+		return await this.makeRequest<StreakResponse>("authenticated/streak", accessToken, {
+			name: "hackatime.user.streak"
 		})
-
-		if (!res.ok) {
-			return this.handleErroneousResponse(res)
-		}
-
-		const body = await res.json()
-
-		return {
-			ok: true,
-			data: body as StreakResponse
-		}
-
 	}
 
 	async projects(accessToken: string, params: Partial<ProjectsParams>): BaseResponse<ProjectsResponse["projects"]> {
-		const url = this.constructUrl("authenticated/projects", transformBase(params))
-
-		const res = await fetch(url, {
-			headers: {
-				"Authorization": `Bearer ${accessToken}`
-			}
-		})
-
-		if (!res.ok) {
-			return this.handleErroneousResponse(res)
-		}
-
-		const body = await res.json() as ProjectsResponse
-
-		return {
-			ok: true,
-			data: body.projects
-		}
+		return await this.makeRequest<ProjectsResponse["projects"]>("authenticated/projects", accessToken, {
+			name: "hackatime.user.projects",
+			attributes: (b) => ({ "hackatime.user.projects.number": b.length })
+		}, transformBase(params))
 	}
 
 	async latestHeartbeat(accessToken: string): BaseResponse<Heartbeat | null> {
-		const url = this.constructUrl("authenticated/heartbeat/latest")
-
-		const res = await fetch(url, {
-			headers: {
-				"Authorization": `Bearer ${accessToken}`
-			}
+		const body = await this.makeRequest<LatestHeartbeatResponse>("authenticated/heartbeat/latest", accessToken, {
+			name: "hackatime.user.latestHeartbeat",
 		})
-
-		if (!res.ok) {
-			return this.handleErroneousResponse(res)
-		}
-
-		const body = await res.json() as LatestHeartbeatResponse
-		if ("heartbeat" in body) {
+		if (!body.ok) {
+			return body
+		} else if ("heartbeat" in body) {
 			return {
 				ok: true,
 				data: null
@@ -150,9 +112,8 @@ class HackatimeOAuthClient {
 
 		return {
 			ok: true,
-			data: body
+			data: body.data as Heartbeat
 		}
-
 	}
 }
 export default HackatimeOAuthClient

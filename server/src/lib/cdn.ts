@@ -1,4 +1,6 @@
+import { externalTracer, withSpan } from "."
 import { ENV } from "./config"
+import { SpanKind, SpanStatusCode } from "@opentelemetry/api"
 
 const HACKCLUB_CDN_URL = "https://cdn.hackclub.com"
 
@@ -18,37 +20,46 @@ export function validImageAttachments(files: File[]) {
 
 
 export async function uploadDevlogAttachmentToCDN(files: File[]) {
-	let responses: CDNFile[] = [];
-	for (let file of files) {
+	return withSpan(externalTracer, SpanKind.CLIENT, "cdn.upload_devlog_attachment", async (span) => {
+		let responses: CDNFile[] = [];
+		for (const file of files) {
 
-		const form = new FormData();
-		form.append("file", file);
 
-		const REQ_URL = `${HACKCLUB_CDN_URL}/api/v4/upload`
-		const res = await fetch(REQ_URL, {
-			method: "POST",
-			headers: {
-				"Authorization": `Bearer ${ENV.HACKCLUB_CDN_API_KEY}`
-			},
-			body: form,
-		});
+			const form = new FormData();
+			form.append("file", file);
 
-		if (!res.ok) {
-			const err = res.headers.get("Content-Type")?.includes("application/json") ? await res.json() : await res.text();
+			const REQ_URL = `${HACKCLUB_CDN_URL}/api/v4/upload`
+			const res = await fetch(REQ_URL, {
+				method: "POST",
+				headers: {
+					"Authorization": `Bearer ${ENV.HACKCLUB_CDN_API_KEY}`
+				},
+				body: form,
+			});
 
-			throw new Error(JSON.stringify({
-				message: "Devlog attachment upload failed",
-				res: {
-					status: res.status,
-					body: err,
-					headers: res.headers
-				}
-			}));
+			span.setAttributes({ "peer.service": "cdn", "http.response.status_code": res.status })
+			if (!res.ok) {
+				const err = res.headers.get("Content-Type")?.includes("application/json") ? await res.json() : await res.text();
+				span.setAttributes({
+					"request.file.type": file.type,
+					"request.file.name": file.name,
+					"response.err": JSON.stringify(err)
+				})
+				span.setStatus({ code: SpanStatusCode.ERROR })
+
+				throw new Error(JSON.stringify({
+					message: "Devlog attachment upload failed",
+					res: {
+						status: res.status,
+						body: err,
+						headers: res.headers
+					}
+				}));
+			}
+			const data = await res.json();
+			responses.push(data as CDNFile)
 		}
-		const data = await res.json();
-		responses.push(data as CDNFile)
-
-	}
-
-	return responses
+		span.setStatus({ code: SpanStatusCode.OK })
+		return responses
+	})
 }
