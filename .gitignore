@@ -45,4 +45,7 @@ bun.lockb
 # Cloudflare Wrangler
 .wrangler
 
+
+secrets/
+
 TODOS.md

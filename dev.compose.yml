@@ -17,6 +17,20 @@ services:
       - loki
       - grafana
       - emi
+      - postgres
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: jusstudy
+    ports:
+      - "5432:5432"
+    volumes:
+      - jusstudy_postgres_data:/var/lib/postgresql
+    networks:
+      - backend
+      # TODO: add healthceck?
   frontend:
     build:
       context: ./

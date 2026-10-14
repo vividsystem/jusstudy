@@ -6,7 +6,7 @@ import { users } from "./auth"
 
 export const shopRegions = pgTable("shop_regions", {
 	id: uuid().defaultRandom().primaryKey(),
-	name: text().notNull()
+	name: text().notNull().unique()
 })
 
 export const shopItems = pgTable("shop_items", {
