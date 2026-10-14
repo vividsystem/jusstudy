@@ -143,16 +143,16 @@ function Footer() {
 	return (
 		<footer className="relative h-fit w-full">
 			<img src="/ColorBanner_5.svg" alt="Banner" className="w-full h-auto block z-10 top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} />
-			<div className='flex justify-center py-55 z-20 w-full h-full inset-0 absolute'>
+			<div className='flex flex-col items-center justify-end z-20 w-full h-full inset-0 absolute py-20'>
 				<h2 className="text-white lg:text-5xl py-2">Our staff</h2>
-			</div>
-			<div className="absolute z-10 flex flex-row justify-center px-12 w-full h-full inset-0 gap-7 py-75">
-				<img src="/signatures/Rishaan.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
-				<img src="/signatures/nok.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
-				<img src="/signatures/michael.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
-				<img src="/signatures/r.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
-				<img src="/signatures/vivid.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
-				<img src="/signatures/aoishik.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+				<div className="grid grid-flow-col-dense gap-4 px-4">
+					<img src="/signatures/michael.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+					<img src="/signatures/Rishaan.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+					<img src="/signatures/nok.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+					<img src="/signatures/r.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+					<img src="/signatures/aoishik.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+					<img src="/signatures/vivid.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+				</div>
 			</div>
 		</footer>
 	)
