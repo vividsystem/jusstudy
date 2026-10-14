@@ -11,7 +11,7 @@ import { Navigate, useParams, useNavigate } from "react-router"
 type ShopItem = Extract<InferResponseType<typeof client.api.shop.items[":itemId"]["$get"]>, { item: unknown }>["item"]
 
 export default function BuyItem() {
-	const { data } = authClient.useSession()
+	const { data, refetch } = authClient.useSession()
 	const { itemId } = useParams()
 
 	if (data == null) {
@@ -24,10 +24,10 @@ export default function BuyItem() {
 
 
 
-	return (<RegionWrapper regionId={data.user.regionId} itemId={itemId} userCoins={data.user.coins} />)
+	return (<RegionWrapper regionId={data.user.regionId} itemId={itemId} userCoins={data.user.coins} refetch={refetch} />)
 }
 
-function RegionWrapper({ regionId, itemId, userCoins }: { regionId: string, itemId: string, userCoins: number }) {
+function RegionWrapper({ regionId, itemId, userCoins, refetch }: { regionId: string, itemId: string, userCoins: number, refetch: () => void }) {
 	const { pushError } = useErrors()
 	const navigate = useNavigate()
 	const { data: item } = useQuery({
@@ -62,7 +62,7 @@ function RegionWrapper({ regionId, itemId, userCoins }: { regionId: string, item
 	return (
 		<main className="flex flex-col items-center p-4 w-full min-h-screen">
 			{item ? (
-				<ShopItemContainer item={item} regionId={regionId} userCoins={userCoins} availability={item.availabilities.find(a => a.regionId === regionId)!} />
+				<ShopItemContainer item={item} regionId={regionId} userCoins={userCoins} availability={item.availabilities.find(a => a.regionId === regionId)!} refetch={refetch} />
 			)
 				: (
 					<p>loading</p>
@@ -78,8 +78,10 @@ interface ShopItemContainerProps {
 	availability: ShopItem["availabilities"][number]
 	userCoins: number
 	regionId: string
+	refetch: () => void
 }
-export function ShopItemContainer({ item, userCoins, regionId, availability }: ShopItemContainerProps) {
+
+export function ShopItemContainer({ item, userCoins, regionId, availability, refetch }: ShopItemContainerProps) {
 
 	const navigate = useNavigate()
 	const [quantity, setQuantity] = useState(1)
@@ -156,6 +158,7 @@ export function ShopItemContainer({ item, userCoins, regionId, availability }: S
 				pushError(data.message)
 				throw new Error(data.message)
 			}
+			refetch()
 		},
 	})
 
