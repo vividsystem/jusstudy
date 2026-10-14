@@ -5,7 +5,7 @@ import { Hono } from "hono";
 import type { Env } from ".."
 import { describeRoute, resolver } from "hono-openapi";
 import { adminStatsSchema } from "@shared/validation/admin"
-import { internalServerError, unauthorizedError, missingPermissionsError } from "@server/lib/responses";
+import { internalServerError, unauthorizedError, missingPermissionsError, notFoundError } from "@server/lib/responses";
 
 export const adminRoute = new Hono<Env>()
 	.get(
@@ -22,6 +22,7 @@ export const adminRoute = new Hono<Env>()
 				},
 				401: unauthorizedError,
 				403: missingPermissionsError,
+				404: notFoundError,
 				500: internalServerError
 			}
 		}),
@@ -45,8 +46,7 @@ export const adminRoute = new Hono<Env>()
 			}
 			const reviewStats = await db.select({ n: count(), state: projectShips.state }).from(projectShips).groupBy(projectShips.state)
 			if (reviewStats.length === 0) {
-				logger.error("Cannot get ship stats")
-				return c.json({ message: "Something went wrong " }, 500)
+				return c.json({ message: "Resource not found" }, 400)
 			}
 
 
