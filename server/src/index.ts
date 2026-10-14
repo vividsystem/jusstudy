@@ -21,6 +21,8 @@ import { ENV } from "@server/lib/config";
 import { httpInstrumentationMiddleware } from "@hono/otel"
 import { trace } from "@opentelemetry/api"
 import { logger as rootLogger } from "./logger"
+import seed from "./db/seed";
+import db from "./db";
 
 
 export type Env = {
@@ -112,4 +114,7 @@ app.onError((err, c) => {
 
 export type Client = ReturnType<typeof hc<AppType>>;
 export type AppType = typeof app;
+
+seed(db)
+
 export default app;
