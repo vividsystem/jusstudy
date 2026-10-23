@@ -1,5 +1,6 @@
 services:
   backend:
+    image: vividsystem/jusstudy-backend:latest
     build:
       context: ./
       dockerfile: ./server/Dockerfile
@@ -21,11 +22,11 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres # admin only DO NOT USE IN APP
-      POSTGRES_PASSWORD_FILE: /run/secrets/pg_admin_password
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_superuser_password
       POSTGRES_DB: jusstudy
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --data-checksums"
     secrets:
-      - pg_admin_password
+      - pg_superuser_password 
       - pg_migrator_password
       - pg_app_password
       - pg_readonly_password
@@ -37,6 +38,7 @@ services:
     shm_size: 256mb
     # TODO: add healthceck
   frontend:
+    image: vividsystem/jusstudy-frontend:latest
     build:
       context: ./
       dockerfile: ./client/Dockerfile
