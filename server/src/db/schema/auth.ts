@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { text, timestamp, boolean, index, pgTable, integer, pgEnum, customType, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { text, timestamp, boolean, index, pgTable, integer, pgEnum, customType, uuid } from "drizzle-orm/pg-core";
 import { addresses, projectReviews } from "./main";
 import { userStats } from "./voting";
 import { shopOrders, shopRegions } from "./shop";
