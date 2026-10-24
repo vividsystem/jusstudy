@@ -1,3 +1,4 @@
+import { Avatar } from "@client/components/UserIcon"
 import { client } from "@client/lib/api-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
 import { useQuery } from "@tanstack/react-query"
@@ -50,9 +51,9 @@ function UserRankings() {
 				ranking.map((rating) => (
 					<div className="flex flex-row justify-between p-2 bg-dark-brown border-light-brown border-4 text-beige rounded-2xl text-3xl gap-4">
 						<span className="w-fit">{rating.position}</span>
-						<div className="w-full">
+						<div className="w-full flex items-center gap-2">
 							{rating.creator.avatar && (
-								<img src={rating.creator.avatar} className="size-4" />
+								<Avatar imageURL={rating.creator.avatar} size={8} />
 							)}
 
 							<h2 className="">{rating.creator.name}</h2>
