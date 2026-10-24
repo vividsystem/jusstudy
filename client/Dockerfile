@@ -22,7 +22,7 @@ ENV VITE_CLIENT_URL=$VITE_CLIENT_URL \
 		VITE_SERVER_URL=$VITE_SERVER_URL
 
 
-RUN cd client && bun run build --base $VITE_CLIENT_URL
+RUN cd client && bun run build
 
 
 # ── Runtime stage ──────────────────────────────────────────────────────────────
