@@ -16,6 +16,12 @@ COPY shared   ./shared
 COPY client ./client
 COPY server ./server
 
+ARG CLIENT_URL
+ARG SERVER_URL
+ENV VITE_CLIENT_URL=$VITE_CLIENT_URL \
+		VITE_SERVER_URL=$VITE_SERVER_URL
+
+
 RUN cd client && bun run build
 
 
