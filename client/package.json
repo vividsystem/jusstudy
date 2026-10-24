@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && bun run docs:build",
+    "build": "tsc -b && bun run docs:build && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "docs:dev": "blume dev",
