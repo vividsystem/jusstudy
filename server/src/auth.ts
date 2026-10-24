@@ -61,6 +61,7 @@ export const auth = betterAuth({
 		allowedHosts: [
 			ENV.SERVER_URL
 		],
+		protocol: process.env.NODE_ENV === "development" ? "http" : "https"
 	},
 	database: drizzleAdapter(db, {
 		provider: "pg",
