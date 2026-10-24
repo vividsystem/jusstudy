@@ -16,13 +16,13 @@ COPY shared   ./shared
 COPY client ./client
 COPY server ./server
 
-ARG CLIENT_URL
-ARG SERVER_URL
+ARG VITE_CLIENT_URL
+ARG VITE_SERVER_URL
 ENV VITE_CLIENT_URL=$VITE_CLIENT_URL \
 		VITE_SERVER_URL=$VITE_SERVER_URL
 
 
-RUN cd client && bun run build --base=$VITE_CLIENT_URL
+RUN cd client && bun run build --base $VITE_CLIENT_URL
 
 
 # ── Runtime stage ──────────────────────────────────────────────────────────────
