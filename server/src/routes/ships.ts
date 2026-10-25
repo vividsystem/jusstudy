@@ -11,6 +11,7 @@ import { describeRoute } from "hono-openapi";
 import { NewShipResponseSchema, ProjectShipsResponseSchema, ShipByIdResponseSchema } from "@shared/validation";
 import { getHackatimeAccessToken } from "@server/lib/auth";
 import { notifyShipCreate } from "@server/lib/notify";
+import { loggedIn, loggedInAndEligible } from "@server/middleware/auth";
 
 export const shipsRoute = new Hono<Env>()
 	.get(
@@ -24,11 +25,10 @@ export const shipsRoute = new Hono<Env>()
 				500: internalServerError
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 			const logger = c.get("logger")
-
 			const id = c.req.param("id")
 
 			const [ship] = await db.select({
@@ -63,17 +63,15 @@ export const projectShipRoute = new Hono<Env>()
 				200: successResponse(NewShipResponseSchema),
 				400: messageResponse("Bad request", ["Bad request", "This project has other unfinished ships", "Hackatime account needs to be linked!", "You need to have time logged to ship"]),
 				401: unauthorizedError,
-				403: messageResponse("Missing permissions", ["Project locked.", "You need to be YSWS eligible"]),
+				403: messageResponse("Missing permissions", ["Project locked.", "Forbidden"]),
 				404: notFoundError,
 				500: internalServerError
 			}
 		}),
+		loggedInAndEligible,
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.banned) return c.json({ message: "Forbidden" }, 403)
-			if (!user.yswsEligible) return c.json({ message: "You need to be YSWS eligible" }, 403)
 
 			const id = c.req.param("id")
 			if (!id) {
@@ -185,11 +183,9 @@ export const projectShipRoute = new Hono<Env>()
 				500: internalServerError
 			}
 		}),
+		loggedIn,
 		async (c) => {
-			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 			const id = c.req.param("id")
 			if (!id) {
 				return c.json({ message: "Bad request" }, 400)
@@ -224,12 +220,11 @@ export const projectShipRoute = new Hono<Env>()
 				401: unauthorizedError
 			}
 		}),
+		loggedIn,
 		async (c) => {
-			const user = c.get("user")
-			// const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 			return c.json({ message: "Currently disabled while we gather data to make payout amounts fair!" }, 400)
+			// const user = c.get("user")
+			// const logger = c.get("logger")
 			// const id = c.req.param("id")
 			// if (!id) {
 			// 	return c.json({ message: "Bad request" }, 400)

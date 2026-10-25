@@ -6,6 +6,7 @@ import type { Env } from "..";
 import { successResponse, unauthorizedError } from "@server/lib/responses";
 import { RankingProjectsResponseSchema, RankingUsersResponseSchema } from "@shared/validation"
 import { describeRoute } from "hono-openapi";
+import { loggedIn } from "@server/middleware/auth";
 
 export const rankingsRoute = new Hono<Env>()
 	.get(
@@ -16,9 +17,9 @@ export const rankingsRoute = new Hono<Env>()
 				200: successResponse(RankingProjectsResponseSchema)
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const projectCols = getTableColumns(projects)
 			const res = await db.select({
@@ -55,10 +56,8 @@ export const rankingsRoute = new Hono<Env>()
 				200: successResponse(RankingUsersResponseSchema)
 			}
 		}),
+		loggedIn,
 		async (c) => {
-			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 			const res = await db.select({
 				avgOrdinals: avg(projectStats.ordinal).mapWith(Number),
 				nProjects: count(),

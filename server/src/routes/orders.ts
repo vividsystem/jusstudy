@@ -8,6 +8,7 @@ import { addresses, itemVariants, orderVariantSelection, shopItemOptions, shopIt
 import { and, count, desc, eq, getTableColumns, gte, inArray, sql } from "drizzle-orm";
 import { notifyOrderCreated } from "@server/lib/notify";
 import { HTTPException } from "hono/http-exception";
+import { loggedIn, loggedInAndEligible } from "@server/middleware/auth";
 
 export const orderRoutes = new Hono<Env>()
 	.post(
@@ -32,11 +33,10 @@ export const orderRoutes = new Hono<Env>()
 			}
 		}),
 		zValidator("json", PlaceOrderRequest),
+		loggedInAndEligible,
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.banned || !user.yswsEligible) return c.json({ message: "Forbidden" }, 403)
 
 			const data = c.req.valid("json")
 
@@ -82,7 +82,7 @@ export const orderRoutes = new Hono<Env>()
 					.from(shopItemOptions)
 					.where(eq(shopItemOptions.itemId, data.itemId))
 				if (!expectedOptions) {
-					logger.error({ message: "aggreggate count sql query didnt return anything", data })
+					logger.error({ message: "aggregate count sql query didnt return anything", data })
 					throw new HTTPException(500, { message: "Something went wrong" })
 				}
 				if (expectedOptions.n > 0 && !data.optionVariants) {
@@ -216,9 +216,9 @@ export const orderRoutes = new Hono<Env>()
 				404: notFoundError
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 			const orderId = c.req.param("orderId")
 
 
@@ -240,9 +240,9 @@ export const orderRoutes = new Hono<Env>()
 				401: unauthorizedError
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const { addressId, orderNotes, itemId, ...rest } = getTableColumns(shopOrders)
 			const orders = await db.select({

@@ -2,7 +2,7 @@ import { describeRoute, validator as zValidator } from "hono-openapi";
 import db from "@server/db";
 import { projects, projectShips } from "@server/db/schema/main";
 import { projectStats, ratings, userStats, votingRoundProjects, votingRounds } from "@server/db/schema/voting";
-import { balanceCategories, calculatePayout, SIGMA_TRESHOLD, STAR_BUDGET, weightedSample } from "@server/voting";
+import { balanceCategories, calculatePayout, SIGMA_THRESHOLD, STAR_BUDGET, weightedSample } from "@server/voting";
 import { and, desc, eq, isNull, notInArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { ActiveRoundResponseSchema, AlreadyExistingSessionResponseSchema, NewVoteRoundResponseSchema, ProjectRatingsResponseSchema, PublishVoteRequestSchema } from "@shared/validation"
@@ -18,6 +18,7 @@ import z from "zod";
 import { notifyVotingFinished } from "@server/lib/notify";
 import { users } from "@server/db/schema";
 import { HTTPException } from "hono/http-exception";
+import { loggedIn } from "@server/middleware/auth";
 
 const CANDIDATE_POOL_SIZE = 50;
 export const VOTES_FOR_PAYOUT_PER_SHIP = 10;
@@ -35,13 +36,12 @@ export const voteRoute = new Hono<Env>()
 				])),
 				500: internalServerError,
 				201: successResponse(NewVoteRoundResponseSchema)
-
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const [existing] = await db.select().from(votingRounds).where(and(
 				eq(votingRounds.voterId, user.id),
@@ -128,11 +128,10 @@ export const voteRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", PublishVoteRequestSchema),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 			const { id } = c.req.param()
 			const data = c.req.valid("json")
 
@@ -212,7 +211,7 @@ export const voteRoute = new Hono<Env>()
 						})
 						.where(eq(projectStats.projectId, r.projectId))
 
-					if (updated.sigma < SIGMA_TRESHOLD) {
+					if (updated.sigma < SIGMA_THRESHOLD) {
 						const [ship] = await tx
 							.select({ id: projectShips.id })
 							.from(projectShips)
@@ -293,10 +292,10 @@ export const voteRoute = new Hono<Env>()
 				200: successResponse(ActiveRoundResponseSchema)
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const [round] = await db.select().from(votingRounds).where(and(
 				eq(votingRounds.voterId, user.id),
@@ -351,9 +350,9 @@ export const projectRatingsRoute = new Hono<Env>()
 				200: successResponse(ProjectRatingsResponseSchema)
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 
 			const id = c.req.param("id")

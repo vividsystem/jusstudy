@@ -10,6 +10,7 @@ import { getCurrentShipTime } from "@server/db/helpers/time";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { notifyReviewAccept, notifyReviewReject } from "@server/lib/notify";
 import { HTTPException } from "hono/http-exception";
+import { loggedIn, loggedInAsType } from "@server/middleware/auth";
 
 export const reviewsRoute = new Hono<Env>()
 	.get(
@@ -22,11 +23,8 @@ export const reviewsRoute = new Hono<Env>()
 				200: successResponse(PendingShipsResponseSchema)
 			}
 		}),
+		loggedInAsType(["admin", "reviewer", "fraud"]),
 		async (c) => {
-			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.type === "participant") return c.json({ message: "Forbidden" }, 403)
-
 			const logger = c.get("logger")
 
 			const categories = c.req.queries("category") as ProjectCategories[] || []
@@ -69,10 +67,9 @@ export const projectReviewsRoute = new Hono<Env>()
 				200: successResponse(ProjectReviewsResponseSchema)
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 			const id = c.req.param("id")
 			if (!id) {
 				return c.json({ message: "Bad request" }, 400)
@@ -114,10 +111,9 @@ export const shipReviewsRoute = new Hono<Env>()
 				404: notFoundError
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 			const id = c.req.param("id")
 			if (!id) {
 				return c.json({ message: "Bad request" }, 400)
@@ -153,10 +149,9 @@ export const shipReviewsRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", NewReviewSchema),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 			const logger = c.get("logger")
 
 			const id = c.req.param("id")
@@ -230,11 +225,10 @@ export const shipReviewsRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", LockReviewSchema),
+		loggedInAsType(["admin", "fraud", "reviewer"]),
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 			const id = c.req.param("id")
 			if (!id) {
 				return c.json({ message: "Bad request" }, 400)
@@ -248,12 +242,6 @@ export const shipReviewsRoute = new Hono<Env>()
 			if (!res) {
 				return c.json({ message: "Resource not found" }, 404)
 			}
-			const staff = user.type != "participant" && res.projects.creatorId != user.id
-
-			if (!staff) {
-				return c.json({ message: "Forbidden" }, 403)
-			}
-
 			const data = c.req.valid("json")
 
 			await db.transaction(async (tx) => {
@@ -297,7 +285,6 @@ export const shipReviewsRoute = new Hono<Env>()
 
 				}
 			}
-
 
 			return c.json({ message: "Project locked" }, 201)
 		})

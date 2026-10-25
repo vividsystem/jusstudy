@@ -14,6 +14,7 @@ import { mapAttachmentsToDevlogs } from "@server/lib/devlogs";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { getHackatimeAccessToken } from "@server/lib/auth";
 import { HTTPException } from "hono/http-exception";
+import { loggedIn } from "@server/middleware/auth";
 
 
 export const devlogsRoute = new Hono<Env>()
@@ -38,9 +39,9 @@ export const devlogsRoute = new Hono<Env>()
 				images: z.union([z.instanceof(File), z.array(z.instanceof(File))]),
 			})
 		),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user");
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 			const id = c.req.param("id")
 
 			const [devlog] = await db
@@ -92,17 +93,16 @@ export const projectDevlogsRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", NewDevlogRequestSchema),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const projectId = c.req.param("id")
 			if (!projectId) {
 				return c.json({ message: "Bad request" }, 400)
 			}
 			const data = c.req.valid("json")
-
 
 			const [project] = await db.select().from(projects).where(eq(projects.id, projectId))
 			if (!project) {
@@ -199,10 +199,8 @@ export const projectDevlogsRoute = new Hono<Env>()
 				400: messageResponse("Bad request")
 			}
 		}),
+		loggedIn,
 		async (c) => {
-			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 			const projectId = c.req.param("id")
 			if (!projectId) {
 				return c.json({ message: "Bad request" }, 400)
@@ -222,5 +220,4 @@ export const projectDevlogsRoute = new Hono<Env>()
 			return c.json({
 				devlogs: mapped
 			}, 200)
-
 		})

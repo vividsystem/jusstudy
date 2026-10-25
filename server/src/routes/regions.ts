@@ -7,6 +7,7 @@ import { internalServerError, missingPermissionsError, notFoundError, successRes
 import { NewRegionResponseSchema, NewRegionRequestSchema, RegionsByIdResponseSchema, RegionsResponseSchema, RegionalItemsResponseSchema, RegionalItemByIdResponseSchema } from "@shared/validation";
 import { regionalItemAvailabilities, shopItems, shopRegions } from "@server/db/schema";
 import { and, eq, getTableColumns } from "drizzle-orm";
+import { loggedInAsType } from "@server/middleware/auth";
 
 export const regionRoutes = new Hono<Env>()
 	.post("/",
@@ -19,11 +20,10 @@ export const regionRoutes = new Hono<Env>()
 			}
 		}),
 		zValidator("json", NewRegionRequestSchema),
+		loggedInAsType(["admin"]),
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			else if (user.type !== "admin") return c.json({ message: "Forbidden" }, 403)
 			const data = c.req.valid("json")
 
 			const [region] = await db

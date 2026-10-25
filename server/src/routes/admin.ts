@@ -6,6 +6,7 @@ import type { Env } from ".."
 import { describeRoute, resolver } from "hono-openapi";
 import { adminStatsSchema } from "@shared/validation/admin"
 import { internalServerError, unauthorizedError, missingPermissionsError, notFoundError } from "@server/lib/responses";
+import { loggedInAsType } from "@server/middleware/auth";
 
 export const adminRoute = new Hono<Env>()
 	.get(
@@ -26,12 +27,9 @@ export const adminRoute = new Hono<Env>()
 				500: internalServerError
 			}
 		}),
+		loggedInAsType(["admin"]),
 		async (c) => {
-			const user = c.get("user")
 			const logger = c.get("logger")
-
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
 
 			const [shipStatsRes] = await db.select({
 				payoutsGiven: sum(projectShips.payout).mapWith(Number),
