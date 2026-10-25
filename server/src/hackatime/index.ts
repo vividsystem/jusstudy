@@ -43,6 +43,9 @@ class HackatimeOAuthClient {
 			})
 			if (!res.ok) {
 				externalServiceFailures.add(1, { service: "hackatime", operation: path })
+				if (params) {
+					span.setAttributes(params)
+				}
 				span.setStatus({ code: SpanStatusCode.ERROR })
 				return this.handleErroneousResponse(res)
 			}
@@ -90,10 +93,10 @@ class HackatimeOAuthClient {
 		})
 	}
 
-	async projects(accessToken: string, params: Partial<ProjectsParams>): BaseResponse<ProjectsResponse["projects"]> {
-		return await this.makeRequest<ProjectsResponse["projects"]>("authenticated/projects", accessToken, {
+	async projects(accessToken: string, params: Partial<ProjectsParams>): BaseResponse<ProjectsResponse> {
+		return await this.makeRequest<ProjectsResponse>("authenticated/projects", accessToken, {
 			name: "hackatime.user.projects",
-			attributes: (b) => ({ "hackatime.user.projects.number": b.length })
+			attributes: (b) => ({ "hackatime.user.projects.number": b.projects.length })
 		}, transformBase(params))
 	}
 

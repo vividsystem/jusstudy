@@ -56,7 +56,7 @@ export const usersRoutes = new Hono<Env>()
 				))
 			const alreadyInUse = linksInUse.map(l => l.name)
 
-			const allHTProjects = res.data
+			const allHTProjects = res.data.projects
 			return c.json({
 				used: alreadyInUse,
 				unused: allHTProjects.filter(p => !alreadyInUse.includes(p.name)).map(p => p.name),
