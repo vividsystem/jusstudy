@@ -2,7 +2,7 @@ import { boolean, integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } 
 import { users } from "./auth";
 import { relations } from "drizzle-orm";
 import { shopOrders } from "./shop";
-import { timeEntries, timeHackatimeLinks, timeShipSnapshots } from "./time";
+import { timeEntries, timeHackatimeLinks } from "./time";
 
 export const projectCategoryValues = ["CAD", "Game Development", "Web Development", "PCB Design", "App Development", "Desktop App Development"] as const
 export const categoryEnum = pgEnum("category", projectCategoryValues)
