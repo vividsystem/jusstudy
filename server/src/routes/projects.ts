@@ -303,7 +303,7 @@ export const projectsRoute = new Hono<Env>()
 			responses: {
 				401: unauthorizedError,
 				404: notFoundError,
-				403: missingPermissionsError,
+				403: messageResponse("Missing permissions", ["Forbidden", "Project locked."]),
 				400: messageResponse("Bad request", ["This hackatime project has already been linked to another project!", "Hackatime account needs to be linked!"]),
 				500: internalServerError,
 				201: messageResponse("Success", ["Successfully linked"])
@@ -322,6 +322,17 @@ export const projectsRoute = new Hono<Env>()
 			}
 			if (project.creatorId != user.id) {
 				return c.json({ message: "Forbidden" }, 403)
+			}
+
+			const [lock] = await db
+				.select()
+				.from(projectLocks)
+				.where(and(
+					eq(projectLocks.projectId, id),
+					isNull(projectLocks.unlockedAt)
+				))
+			if (lock) {
+				return c.json({ message: "Project locked." }, 403)
 			}
 
 			const data = c.req.valid('json')
