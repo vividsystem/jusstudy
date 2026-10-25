@@ -19,8 +19,6 @@ export const rankingsRoute = new Hono<Env>()
 		}),
 		loggedIn,
 		async (c) => {
-			const user = c.get("user")
-
 			const projectCols = getTableColumns(projects)
 			const res = await db.select({
 				...projectCols,

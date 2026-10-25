@@ -183,7 +183,6 @@ export const projectsRoute = new Hono<Env>()
 		}),
 		loggedInAsType(["admin"]),
 		async (c) => {
-			const user = c.get("user")
 			const id = c.req.param("id")
 
 			const [lock] = await db
