@@ -57,7 +57,7 @@ export function calculatePayout(ordinal: number, reviewBphBoost: number, timeLog
 const MAX_PAYOUT = 1.3; // in books
 const MIN_PAYOUT = 0.7;
 const MAX_SCORE = 50;
-const MIN_SCORE = SIGMA_TRESHOLD * -3;
+const MIN_SCORE = SIGMA_THRESHOLD * -3;
 
 const clamp = (val: number, max: number, min: number) => Math.min(Math.max(val, min), max)
 
