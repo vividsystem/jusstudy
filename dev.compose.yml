@@ -27,7 +27,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - jusstudy_postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql
     networks:
       - backend
       # TODO: add healthceck?
@@ -116,4 +116,4 @@ networks:
   public:
   backend:
 volumes:
-  jusstudy_postgres_data:
+  postgres_data:

@@ -9,13 +9,20 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4318
       - BOT_HOST=http://emi:8000
       - NODE_ENV=production
+      - DB_USER=jusstudy_app
+      - DB_HOST=postgres
+      - DB_NAME=jusstudy
+      - DB_PASSWORD_FILE=/run/secrets/pg_app_password
     networks:
       - public
       - backend
       - observability
+    secrets:
+      - pg_app_password
     depends_on:
       - alloy
       - grafana
+      - postgres
       - emi
   postgres:
     image: postgres:18-alpine
@@ -31,7 +38,7 @@ services:
       - pg_app_password
       - pg_readonly_password
     volumes:
-      - jusstudy_postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql
       - ./postgres/init:/docker-entrypoint-initdb.d:ro
     networks:
       - backend
@@ -126,7 +133,7 @@ networks:
   public:
   backend:
 volumes:
-  jusstudy_postgres_data:
+  postgres_data:
   tempo-data:
   prometheus-data:
   loki-data:

@@ -88,20 +88,23 @@ bun run test
 ```
 
 ## Databases
-You can use drizzle-kit with `push` or `migrate` (may not work due to custom migrations) or use the sql-files
+Use `cd server && bun run src/db/migrate.ts` exclusively or `cd server && bunx drizzle-kit migrate` (not recommended due to less verbosity when errors happen). 
+> [!ERROR]
+> If you use `bunx drizzle-kit push` drizzle won't automatically keep track of migrations and future ones might break.
 
 ## Deployment
 ### Docker
 The `server/.env` and `client/.env` variables still have to be set.
-
-Set `BOT_HOST` to `http://emi:8000`
-**For Prod:** 
+`OTEL_EXPORTER_OTLP_ENDPOINT`, `BOT_HOST`, `NODE_ENV` get set automatically and don't have to be set in `.env`
+#### Production
+Add a `.env` file with `GRAFANA_ADMIN_PASSWORD`.
 Make sure you setup a firewall like `ufw` and only allow `8080` and block the grafana ui (use a vpn to access)
-```bash
-echo "your grafana pw here" | docker secret create grafana_admin_password
-sudo docker compose -f prod.compose.yml up --build -d
-```
-Also add a `.env` file with `GRAFANA_ADMIN_PASSWORD`.
-`sudo docker compose -f prod.compose.yml up --build -d` serves all public endpoints on `:8080` through nginx.
-Grafana can be accessed via `localhost:3001`
 
+If you want to run a postgres instance as well you can use the `postgres` service for an easily deployable option.
+BEWARE: you have to apply the sql schema to the database before deploying!
+You will have to populate the secrets(in `secrets/`): `pg_superuser_password`, `pg_migrator_password`, `pg_readonly_password`, `pg_app_password`.
+```bash
+docker compose -f prod.compose.yml up frontend -d
+```
+Grafana can be accessed via `localhost:3001`.
+Both backend and frontend will be served through nginx at `:8080`
