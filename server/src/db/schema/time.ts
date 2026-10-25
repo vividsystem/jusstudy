@@ -1,6 +1,7 @@
 import { boolean, integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { projects, projectShips } from "./main";
 import { users } from "./auth";
+import { relations } from "drizzle-orm";
 
 export const entryTypes = ["devlog", "manual", "htlink"] as const
 export const timeEntryTypes = pgEnum("entry_types", entryTypes)

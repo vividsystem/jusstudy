@@ -10,7 +10,7 @@
 		"rootDir": "../",
 
     // Types
-    "types": ["bun-types"],
+    "types": ["bun"],
 
     // Output settings
     "declaration": true,
@@ -23,6 +23,6 @@
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": false
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "drizzle.config.ts"],
   "exclude": ["node_modules", "dist"]
 }
