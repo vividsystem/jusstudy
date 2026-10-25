@@ -57,12 +57,7 @@ interface TrustGreen {
 
 //default redirectUri: /api/auth/oauth2/callback/hackclub-auth
 export const auth = betterAuth({
-	baseURL: {
-		allowedHosts: [
-			ENV.SERVER_URL
-		],
-		protocol: process.env.NODE_ENV === "development" ? "http" : "https"
-	},
+	baseURL: ENV.SERVER_URL,
 	database: drizzleAdapter(db, {
 		provider: "pg",
 		schema: {
