@@ -11,6 +11,7 @@ import { regionRoutes } from "./regions";
 import { uniqueEntriesEqual } from "@server/lib/arr";
 import { z } from "zod";
 import { HTTPException } from "hono/http-exception";
+import { loggedInAsType } from "@server/middleware/auth";
 
 
 export const shopRoute = new Hono<Env>()
@@ -26,12 +27,10 @@ export const shopRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", NewShopItemRequestSchema),
+		loggedInAsType(["admin"]),
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
-
 			const { options, ...data } = c.req.valid("json")
 
 
@@ -196,12 +195,10 @@ export const shopRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", NewOptionRequestSchema),
+		loggedInAsType(["admin"]),
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
-
 			const { itemId } = c.req.param()
 			const data = c.req.valid("json")
 
@@ -269,11 +266,9 @@ export const shopRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", NewVariantRequestSchema),
+		loggedInAsType(["admin"]),
 		async (c) => {
-			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
 
 			const { optionId } = c.req.param()
 			const data = c.req.valid("json")
@@ -331,11 +326,8 @@ export const shopRoute = new Hono<Env>()
 				404: notFoundError
 			}
 		}),
+		loggedInAsType(["admin"]),
 		async (c) => {
-			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
-
 			const itemId = c.req.param("itemId")
 
 
@@ -363,11 +355,8 @@ export const shopRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", UpdateShopItemRequest),
+		loggedInAsType(["admin"]),
 		async (c) => {
-			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
-
 			const itemId = c.req.param("itemId")
 			const data = c.req.valid("json")
 
@@ -392,11 +381,8 @@ export const shopRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", AddRegionAvailabilityToItemRequestSchema),
+		loggedInAsType(["admin"]),
 		async (c) => {
-			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
-
 			const itemId = c.req.param("itemId")
 			const data = c.req.valid("json")
 
@@ -437,11 +423,8 @@ export const shopRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", AddRegionAvailabilityToVariantRequestSchema),
+		loggedInAsType(["admin"]),
 		async (c) => {
-			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
-
 			const variantId = c.req.param("variantId")
 			const data = c.req.valid("json")
 

@@ -1,6 +1,6 @@
 // half of theoretical max
 export const STAR_BUDGET = 40
-export const SIGMA_TRESHOLD = 2.5; // about 15 rounds depending on consistency
+export const SIGMA_THRESHOLD = 2.5; // about 15 rounds depending on consistency
 const TECHNICALITY_WEIGHT = 1
 const DOCUMENTATION_WEIGHT = 1
 const CREATIVITY_WEIGHT = 1

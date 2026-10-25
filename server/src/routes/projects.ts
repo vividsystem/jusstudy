@@ -13,6 +13,7 @@ import { projectRatingsRoute } from "./vote";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { getHackatimeAccessToken } from "@server/lib/auth";
 import { HTTPException } from "hono/http-exception";
+import { loggedIn, loggedInAsType } from "@server/middleware/auth";
 
 
 export const projectsRoute = new Hono<Env>()
@@ -25,10 +26,9 @@ export const projectsRoute = new Hono<Env>()
 				200: successResponse(ProjectsResponseSchema)
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const res = await db.select().from(projects).where(eq(projects.creatorId, user.id))
 
@@ -42,10 +42,9 @@ export const projectsRoute = new Hono<Env>()
 				401: unauthorizedError
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const locks = await db
 				.select(getTableColumns(projectLocks))
@@ -120,9 +119,9 @@ export const projectsRoute = new Hono<Env>()
 				404: notFoundError,
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const id = c.req.param("id")
 
@@ -146,9 +145,9 @@ export const projectsRoute = new Hono<Env>()
 				404: messageResponse("Not found", ["Resource not found", "Not locked"]),
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const id = c.req.param("id")
 
@@ -182,11 +181,9 @@ export const projectsRoute = new Hono<Env>()
 				400: messageResponse("Bad request", ["Project not locked"])
 			}
 		}),
+		loggedInAsType(["admin"]),
 		async (c) => {
 			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
-
 			const id = c.req.param("id")
 
 			const [lock] = await db
@@ -219,11 +216,10 @@ export const projectsRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", NewProjectRequestSchema),
+		loggedIn,
 		async (c) => {
-			//no auth required for now
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const data = c.req.valid("json")
 
@@ -254,11 +250,10 @@ export const projectsRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", UpdateProjectRequestSchema),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 			const id = c.req.param("id")
 
 			const [project] = await db
@@ -315,11 +310,10 @@ export const projectsRoute = new Hono<Env>()
 			}
 		}),
 		zValidator("json", HackatimeLinkRequestSchema),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 			const id = c.req.param("id")
 
 			const [project] = await db.select().from(projects).where(eq(projects.id, id))
@@ -401,32 +395,6 @@ export const projectsRoute = new Hono<Env>()
 				return c.json({ message: "Successfully linked" }, 201)
 			})
 		})
-
-	// disabled to prevent fraud
-	// .delete("/:id", async (c) => {
-	// 	const user = c.get("user")
-	// 	if (!user) return c.json({ message: "Unauthorized" }, 401)
-	//
-	// 	const id = c.req.param("id")
-	//
-	// 	const res = await db.select().from(projects).where(eq(projects.id, id))
-	// 	if (res.length == 0) {
-	// 		return c.json({ message: "Resource not found" }, 404)
-	// 	}
-	// 	const project = res[0]!
-	// 	if (project.creatorId != user.id) {
-	// 		return c.json({ message: "Forbidden" }, 403)
-	// 	}
-	//
-	// 	const deleted = await db.delete(projects).where(and(
-	// 		eq(projects.id, id)
-	// 	))
-	//
-	// 	return c.json({
-	// 		message: "Project deleted",
-	// 		old: deleted
-	// 	})
-	// })
 	.route("/:id/devlogs", projectDevlogsRoute)
 	.route("/:id/ships", projectShipRoute)
 	.route("/:id/reviews", projectReviewsRoute)

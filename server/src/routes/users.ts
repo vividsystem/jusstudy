@@ -11,6 +11,7 @@ import { internalServerError, messageResponse, missingPermissionsError, notFound
 import { getHackatimeAccessToken } from "@server/lib/auth";
 import { HTTPException } from "hono/http-exception";
 import { ENV } from "@server/lib/config";
+import { loggedIn, loggedInAsType } from "@server/middleware/auth";
 
 const searchSchema = z.object({
 	q: z.string().min(1).max(100),
@@ -29,11 +30,10 @@ export const usersRoutes = new Hono<Env>()
 				500: internalServerError
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const token = await getHackatimeAccessToken(c.req.raw.headers)
 			if (!token) {
@@ -72,10 +72,10 @@ export const usersRoutes = new Hono<Env>()
 				500: internalServerError
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const [stats] = await db.select().from(userStats).where(eq(userStats.userId, user.id))
 
@@ -97,12 +97,9 @@ export const usersRoutes = new Hono<Env>()
 				500: internalServerError
 			}
 		}),
+		loggedIn,
 		async (c) => {
-			const loggedInUser = c.get("user")
 			const logger = c.get("logger")
-			if (!loggedInUser) return c.json({ message: "Unauthorized" }, 401)
-
-
 			const { id } = c.req.param()
 
 
@@ -153,10 +150,10 @@ export const usersRoutes = new Hono<Env>()
 			}
 		}),
 		zValidator("json", NewAddressRequestSchema),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
 			const logger = c.get("logger")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
 
 			const data = c.req.valid("json")
 
@@ -179,11 +176,9 @@ export const usersRoutes = new Hono<Env>()
 				200: successResponse(AddressesResponseSchema)
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const user = c.get("user")
-
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 			const res = await db.select().from(addresses).where(eq(addresses.userId, user.id))
 
 			return c.json({ addresses: res }, 200)
@@ -199,11 +194,8 @@ export const usersRoutes = new Hono<Env>()
 			}
 		}),
 		zValidator("query", searchSchema),
+		loggedInAsType(["admin"]),
 		async (c) => {
-			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.type != "admin") return c.json({ message: "Forbidden" }, 403)
-
 			const { q, limit, offset } = c.req.valid("query");
 
 			const tsQuery = q
@@ -244,11 +236,8 @@ export const usersRoutes = new Hono<Env>()
 				200: successResponse(BanUserResponseSchema)
 			}
 		}),
+		loggedInAsType(["admin", "fraud"]),
 		async (c) => {
-			const user = c.get("user")
-			if (!user) return c.json({ message: "Unauthorized" }, 401)
-			if (user.type != "fraud" && user.type != "admin") return c.json({ message: "Forbidden" }, 403)
-
 			const { id } = c.req.param()
 
 			const alreadyFulfilled = await db.transaction(async (tx) => {
@@ -283,10 +272,9 @@ export const usersRoutes = new Hono<Env>()
 				404: notFoundError
 			}
 		}),
+		loggedIn,
 		async (c) => {
 			const loggedInUser = c.get("user")
-			if (!loggedInUser) return c.json({ message: "Unauthorized" }, 401)
-
 			const { id } = c.req.param()
 
 			const { searchVector, email, name, emailVerified, yswsEligible, verificationStatus, ...rest } = getTableColumns(users)
@@ -301,10 +289,8 @@ export const usersRoutes = new Hono<Env>()
 
 			return c.json({ user }, 200)
 		})
-	.get("/:id/locks", async (c) => {
+	.get("/:id/locks", loggedIn, async (c) => {
 		const user = c.get("user")
-		if (!user) return c.json({ message: "Unauthorized" }, 401)
-
 		const { id } = c.req.param()
 		if (user.id !== id && user.type != "admin") return c.json({ message: "Forbidden" }, 403)
 
@@ -325,10 +311,8 @@ export const usersRoutes = new Hono<Env>()
 				200: successResponse(UserProjectsResponseSchema)
 			}
 		}),
+		loggedIn,
 		async (c) => {
-			const loggedInUser = c.get("user")
-			if (!loggedInUser) return c.json({ message: "Unauthorized" }, 401)
-
 			const { id } = c.req.param()
 
 
@@ -352,10 +336,8 @@ export const usersRoutes = new Hono<Env>()
 				404: notFoundError
 			}
 		}),
+		loggedIn,
 		async (c) => {
-			const loggedInUser = c.get("user")
-			if (!loggedInUser) return c.json({ message: "Unauthorized" }, 401)
-
 			const { id } = c.req.param()
 
 
