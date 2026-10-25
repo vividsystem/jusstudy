@@ -140,5 +140,4 @@ export const projectShipRelations = relations(projectShips, ({ one, many }) => (
 		references: [projects.id]
 	}),
 	reviews: many(projectReviews),
-	timeSnapshots: many(timeShipSnapshots)
 }))
