@@ -25,7 +25,7 @@ export interface HoursParams extends BaseParams {
 
 export interface ProjectsParams extends BaseParams {
 	include_archived: boolean
-	projects: string // comma-seperated
+	projects: string // comma-separated
 	since: string // project discovery - ISO 8601
 	until: string // project discovery - ISO 8601
 }

@@ -17,11 +17,11 @@ export async function singleProjectTime(accessToken: string, links: string[]): C
 		return { ok: false, error: res.error, res: res.res }
 	}
 
-	if (res.data.length != links.length) {
+	if (res.data.projects.length != links.length) {
 		return { ok: false, error: "Could not find hackatime projects" }
 	}
 
-	return { ok: true, data: res.data.reduce((acc, p) => acc + p.total_seconds, 0) }
+	return { ok: true, data: res.data.projects.reduce((acc, p) => acc + p.total_seconds, 0) }
 
 }
 export default hackatime;
