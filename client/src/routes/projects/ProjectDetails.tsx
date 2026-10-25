@@ -227,7 +227,7 @@ function Page({ projectId }: { projectId: string }) {
 				<div className="flex flex-row gap-4">
 					<Button onClick={() => {
 						shipProject()
-					}} className="border-dark-red border-4 rounded-4xl"><Ship /></Button>
+					}} className="border-dark-red border-4 rounded-4xl flex items-center gap-2"><Ship /><span>Ship</span></Button>
 					{ships?.find((s) => s.state == "pre-payout") && (
 						<Button onClick={() => {
 						}} className="border-dark-red border-4 rounded-4xl"><DollarSign /></Button>
