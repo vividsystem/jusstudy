@@ -34,7 +34,8 @@ export const NewProjectRequestSchema = projectSchema.omit({
 	id: true,
 	creatorId: true,
 	createdAt: true,
-	totalTime: true
+	totalTime: true,
+	readmeLink: true
 })
 
 export const NewProjectResponseSchema = z.object({
