@@ -30,6 +30,7 @@ import AdminUserHistoryPage from "./routes/admin/AdminUserHistory";
 import Settings from "./routes/Settings";
 import AdminShopItems from "./routes/admin/AdminShopItems";
 import AdminShopRegions from "./routes/admin/AdminShopRegions";
+import ExplorePage from "./routes/Explore";
 // import RSVP from "./routes/RSVP";
 
 function App() {
@@ -59,7 +60,7 @@ function App() {
 							<Route path="/addresses/new" element={<NewAddress />} />
 							<Route path="/addresses" element={<ManageAddresses />} />
 
-							<Route path="/explore" element={<ComingSoon />} />
+							<Route path="/explore" element={<ExplorePage />} />
 							<Route path="/guides" element={<ComingSoon />} />
 							<Route path="/settings" element={<Settings />} />
 

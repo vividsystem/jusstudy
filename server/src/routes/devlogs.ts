@@ -1,8 +1,8 @@
 import { describeRoute, validator as zValidator } from "hono-openapi";
 import db from "@server/db";
-import { devlogAttachments, devlogs, projects, timeEntries, timeHackatimeLinks } from "@server/db/schema";
+import { devlogAttachments, devlogs, projects, timeEntries, timeHackatimeLinks, users } from "@server/db/schema";
 import { singleProjectTime } from "@server/hackatime/client";
-import { DevlogResponseSchema, NewDevlogRequestSchema, NewDevlogResponseSchema } from "@shared/validation";
+import { DevlogResponseSchema, NewDevlogRequestSchema, NewDevlogResponseSchema, RecentDevlogsResponseSchema } from "@shared/validation";
 import { and, desc, eq, getTableColumns, sum } from "drizzle-orm";
 import { Hono } from "hono";
 import type { Env } from "..";
@@ -17,7 +17,73 @@ import { HTTPException } from "hono/http-exception";
 import { loggedIn } from "@server/middleware/auth";
 
 
+const recentDevlogQuerySchema = z.object({
+	limit: z.coerce.number().int().min(1).max(50).default(50),
+	offset: z.coerce.number().int().min(0).default(0),
+});
+
 export const devlogsRoute = new Hono<Env>()
+	.get(
+		"/recents",
+		describeRoute({
+			responses: {
+				401: unauthorizedError,
+				500: internalServerError,
+				200: successResponse(RecentDevlogsResponseSchema)
+			}
+		}),
+		zValidator("query", recentDevlogQuerySchema),
+		loggedIn,
+		async (c) => {
+			const logger = c.get("logger")
+			const q = c.req.valid("query")
+
+			const { timeEntryId, ...rest } = getTableColumns(devlogs)
+			const d = await db
+				.select({ ...rest, timeLogged: timeEntries.duration })
+				.from(devlogs)
+				.innerJoin(timeEntries, eq(devlogs.timeEntryId, timeEntries.id))
+				.offset(q.offset)
+				.limit(q.limit)
+				.orderBy(desc(devlogs.createdAt))
+
+			const dlogs: (typeof d[number] & { attachments: string[], creator: { id: string, nickname: string, image: string | null }, project: { id: string, name: string } })[] = []
+			for (const log of d) {
+				const attachments = await db
+					.select({ cdnURL: devlogAttachments.cdnURL })
+					.from(devlogAttachments)
+					.where(eq(devlogAttachments.devlogId, log.id))
+
+				const [creator] = await db
+					.select({
+						creator: {
+							id: users.id,
+							nickname: users.nickname,
+							image: users.image
+						},
+						project: {
+							id: projects.id,
+							name: projects.name
+						}
+					})
+					.from(users)
+					.innerJoin(projects, eq(projects.creatorId, users.id))
+					.where(eq(projects.id, log.projectId))
+					.limit(1)
+				if (!creator) {
+					logger.error({ projectId: log.projectId, devlogId: log.id }, "Could not find devlog project owner")
+					return c.json({ message: "Something went wrong" }, 500)
+				}
+				dlogs.push({
+					...log,
+					attachments: attachments.map((a) => a.cdnURL),
+					...creator,
+				})
+			}
+
+			return c.json({ devlogs: dlogs }, 200)
+		}
+	)
 	.post("/:id/attachment", bodyLimit({
 		maxSize: MAX_FILE_SIZE,
 		onError: (c) => {
