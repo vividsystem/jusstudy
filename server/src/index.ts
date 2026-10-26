@@ -42,7 +42,7 @@ const app = new Hono<Env>().basePath("/api")
 		cors({
 			origin: ENV.CORS_ORIGIN,
 			allowHeaders: ["Content-Type", "Authorization"],
-			allowMethods: ["POST", "GET", "OPTIONS", "PATCH", "DELETE"],
+			allowMethods: ["POST", "GET", "OPTIONS", "PATCH", "PUT", "DELETE"],
 			exposeHeaders: ["Content-Length"],
 			maxAge: 600,
 			credentials: true,

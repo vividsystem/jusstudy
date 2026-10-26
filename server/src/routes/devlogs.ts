@@ -6,7 +6,7 @@ import { DevlogResponseSchema, NewDevlogRequestSchema, NewDevlogResponseSchema, 
 import { and, desc, eq, getTableColumns, sum } from "drizzle-orm";
 import { Hono } from "hono";
 import type { Env } from "..";
-import { uploadDevlogAttachmentToCDN, validImageAttachments } from "@server/lib/cdn";
+import { uploadDevlogAttachmentToCDN, validImageFormats } from "@server/lib/cdn";
 import { bodyLimit } from "hono/body-limit";
 import { MAX_FILE_SIZE } from "@shared/vars";
 import z from "zod";
@@ -96,7 +96,8 @@ export const devlogsRoute = new Hono<Env>()
 				400: messageResponse("Invalid filetypes"),
 				401: unauthorizedError,
 				403: missingPermissionsError,
-				404: notFoundError
+				404: notFoundError,
+				413: messageResponse("File too large")
 			}
 		}),
 		zValidator(
@@ -128,14 +129,14 @@ export const devlogsRoute = new Hono<Env>()
 
 			const files = Array.isArray(images) ? images : [images]
 
-			if (!validImageAttachments(files)) {
+			if (!validImageFormats(files)) {
 				return c.json({ message: "Invalid file types" }, 400)
 			}
 
 			const res = await uploadDevlogAttachmentToCDN(files)
 
-			await db.insert(devlogAttachments).values(res.map((sf) => ({
-				cdnURL: sf.url,
+			await db.insert(devlogAttachments).values(res.map((cdnFile) => ({
+				cdnURL: cdnFile.url,
 				devlogId: devlog.d.id
 			})))
 
@@ -173,8 +174,7 @@ export const projectDevlogsRoute = new Hono<Env>()
 			const [project] = await db.select().from(projects).where(eq(projects.id, projectId))
 			if (!project) {
 				return c.json({ message: "Not found" }, 404)
-			}
-			if (project.creatorId != user.id) {
+			} else if (project.creatorId != user.id) {
 				return c.json({ message: "Forbidden" }, 403)
 			}
 

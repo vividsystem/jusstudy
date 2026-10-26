@@ -14,6 +14,10 @@ import { internalServerError, messageResponse, missingPermissionsError, notFound
 import { getHackatimeAccessToken } from "@server/lib/auth";
 import { HTTPException } from "hono/http-exception";
 import { loggedIn, loggedInAsType } from "@server/middleware/auth";
+import { bodyLimit } from "hono/body-limit";
+import { MAX_FILE_SIZE } from "@shared/vars";
+import { z } from "zod";
+import { uploadProjectBannerToCDN, validImageFormats } from "@server/lib/cdn";
 
 
 export const projectsRoute = new Hono<Env>()
@@ -405,6 +409,58 @@ export const projectsRoute = new Hono<Env>()
 				return c.json({ message: "Successfully linked" }, 201)
 			})
 		})
+	.put(
+		"/:id/banner",
+		describeRoute({
+			responses: {
+				200: messageResponse("Banner uploaded"),
+				400: messageResponse("Invalid filetypes"),
+				401: unauthorizedError,
+				403: missingPermissionsError,
+				404: notFoundError,
+				413: messageResponse("File too large")
+			}
+		}),
+		bodyLimit({
+			maxSize: MAX_FILE_SIZE,
+			onError: (c) => {
+				return c.json({ message: "File too large" }, 413)
+			}
+		}),
+		zValidator(
+			"form",
+			z.object({
+				banner: z.instanceof(File),
+			})
+		),
+		loggedIn,
+		async (c) => {
+			const user = c.get("user")
+			const projectId = c.req.param("id")
+
+			const [project] = await db
+				.select({ id: projects.id, creatorId: projects.creatorId })
+				.from(projects)
+				.where(eq(projects.id, projectId))
+			if (!project) {
+				return c.json({ message: "Resource not found" }, 404)
+			} else if (project.creatorId != user.id) {
+				return c.json({ message: "Forbidden" }, 403)
+			}
+
+			const { banner } = c.req.valid("form")
+
+			if (!validImageFormats([banner])) {
+				return c.json({ message: "Invalid file types" }, 400)
+			}
+			const res = await uploadProjectBannerToCDN(banner)
+
+			await db.update(projects).set({ banner: res.url }).where(eq(projects.id, projectId))
+
+			return c.json({ message: "Banner uploaded" })
+
+		}
+	)
 	.route("/:id/devlogs", projectDevlogsRoute)
 	.route("/:id/ships", projectShipRoute)
 	.route("/:id/reviews", projectReviewsRoute)

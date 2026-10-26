@@ -61,7 +61,7 @@ export const projectShipRoute = new Hono<Env>()
 		describeRoute({
 			responses: {
 				200: successResponse(NewShipResponseSchema),
-				400: messageResponse("Bad request", ["Bad request", "This project has other unfinished ships", "Hackatime account needs to be linked!", "You need to have time logged to ship"]),
+				400: messageResponse("Bad request", ["Bad request", "This project has other unfinished ships", "Hackatime account needs to be linked!", "You need to have time logged to ship", "Project banner for ship required"]),
 				401: unauthorizedError,
 				403: messageResponse("Missing permissions", ["Project locked.", "Forbidden"]),
 				404: notFoundError,
@@ -83,6 +83,8 @@ export const projectShipRoute = new Hono<Env>()
 				return c.json({ message: "Resource not found" }, 404)
 			} else if (project.creatorId != user.id) {
 				return c.json({ message: "Forbidden" }, 403)
+			} else if (!project.banner) {
+				return c.json({ message: "Project banner for ship required" }, 400)
 			}
 
 			const [lock] = await db

@@ -10,6 +10,7 @@ export const projectSchema = z.object({
 	demoLink: z.string().nullable(),
 	repository: z.string(),
 	readmeLink: z.string().nullable(),
+	banner: z.url().nullable(),
 	category: z.enum(projectCategoryValues),
 	totalTime: z.number().nonnegative(),
 	creatorId: z.string().nonempty()
@@ -35,7 +36,8 @@ export const NewProjectRequestSchema = projectSchema.omit({
 	creatorId: true,
 	createdAt: true,
 	totalTime: true,
-	readmeLink: true
+	readmeLink: true,
+	banner: true,
 })
 
 export const NewProjectResponseSchema = z.object({

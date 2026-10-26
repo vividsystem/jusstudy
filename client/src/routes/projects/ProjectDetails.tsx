@@ -221,8 +221,7 @@ function Page({ projectId }: { projectId: string }) {
 		<main className="w-full text-4xl flex flex-col items-center gap-4 p-4 relative">
 			{project?.project && (
 				<ProjectCard {...project} editable={isOwner()} nDevlogs={devlogs?.length || 0} />
-			)
-			}
+			)}
 			{isOwner() && (
 				<div className="flex flex-row gap-4">
 					<Button onClick={() => {

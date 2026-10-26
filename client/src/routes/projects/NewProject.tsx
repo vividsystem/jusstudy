@@ -9,6 +9,7 @@ import { projectCategoryValues, type ProjectCategories } from "@server/db/schema
 import { NewProjectRequestSchema } from "@shared/validation/projects";
 import z from "zod";
 import { useErrors } from "@client/lib/context/ErrorContext";
+import { BannerUpload } from "@client/components/FileUpload";
 
 export default function NewProjectPage() {
 	const navigate = useNavigate()
@@ -19,6 +20,7 @@ export default function NewProjectPage() {
 		repository?: string,
 		category: ProjectCategories
 	}>({ category: "CAD" })
+	const [file, setFile] = useState<File>()
 	const [hackatimeProjects, setHackatimeProjects] = useState<string[]>([])
 	const { pushError } = useErrors()
 	const { mutate: createProject } = useMutation({
@@ -51,6 +53,21 @@ export default function NewProjectPage() {
 					}
 				})
 			}
+
+			if (file) {
+				const res = await client.api.projects[":id"].banner.$put({
+					form: { banner: file },
+					param: { id: data.project.id }
+				})
+				if (!res.ok) {
+					const data = await res.json()
+
+					pushError(data.message)
+
+					// prevent duplicate creation of project and redirect but still show user the error
+					//throw new Error(data.message) 
+				}
+			}
 			navigate("/projects")
 		},
 	})
@@ -60,6 +77,7 @@ export default function NewProjectPage() {
 
 			<h1 className="text-8xl bg-dark-red p-4 rounded-4xl">Create a new Project</h1>
 			<div className="flex flex-col bg-dark-red rounded-4xl p-4 gap-8 w-1/2">
+				<BannerUpload onUpdate={(f) => setFile(f)} />
 				<Input
 					type="text"
 					placeholder="Super duper great project name"
