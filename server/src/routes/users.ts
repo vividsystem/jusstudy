@@ -340,7 +340,6 @@ export const usersRoutes = new Hono<Env>()
 		async (c) => {
 			const { id } = c.req.param()
 
-
 			const [user] = await db.select().from(users).where(eq(users.id, id))
 			if (!user) {
 				return c.json({ message: "Resource not found" }, 404)
@@ -363,19 +362,17 @@ export const usersRoutes = new Hono<Env>()
 				.where(eq(projects.creatorId, id))
 				.orderBy(desc(devlogs.createdAt))
 
-
 			// TODO: make this more efficient
 			const devlogIds: string[] = []
-			const dlogs: ((typeof d)[number] & { attachments: { createdAt: Date, cdnURL: string }[] })[] = d.map((devlog) => {
+			const dlogs: ((typeof d)[number] & { attachments: string[] })[] = d.map((devlog) => {
 				devlogIds.push(devlog.id)
 				return { ...devlog, attachments: [] }
 			})
 
-			const atts = await db.select().from(devlogAttachments).where(inArray(devlogAttachments.devlogId, devlogIds))
+			const atts = await db.select({ devlogId: devlogAttachments.devlogId, cdnURL: devlogAttachments.cdnURL }).from(devlogAttachments).where(inArray(devlogAttachments.devlogId, devlogIds))
 
 			atts.forEach((att) => {
-				const { devlogId, ...rest } = att
-				dlogs.find((d) => d.id == devlogId)?.attachments.push(rest)
+				dlogs.find((d) => d.id == att.devlogId)?.attachments.push(att.cdnURL)
 			})
 
 			return c.json({ devlogs: dlogs }, 201)
