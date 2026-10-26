@@ -50,7 +50,7 @@ export function DevlogCard({ devlog, project, user }: DevlogCardProps) {
 			{devlog.attachments.length != 0 && (
 				<div key={current} className="relative group rounded-lg overflow-hidden border border-gray-200 w-full">
 					<img
-						src={devlog.attachments[current]!.cdnURL}
+						src={devlog.attachments[current]}
 						className={"w-full aspect-auto object-fill"}
 					/>
 

@@ -2,10 +2,8 @@ import Button from "@client/components/Button"
 import { DevlogCard } from "@client/components/devlogs/Card"
 import { client } from "@client/lib/api-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useState } from "react"
-
-
 
 export default function ExplorePage() {
 	const { pushError } = useErrors()
