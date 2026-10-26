@@ -2,6 +2,7 @@ import { client } from "@client/lib/api-client"
 import { secondsToFormatTime, timeAgo } from "@client/lib/time"
 import type { InferResponseType } from "hono"
 import { BookOpen, Clock, Lock, Unlock } from "lucide-react"
+import ProjectBanner from "./ProjectBanner"
 
 interface ProjectCardProps {
 	project: Extract<InferResponseType<typeof client.api.projects["$get"]>, { projects: unknown }>["projects"][number]
@@ -10,6 +11,7 @@ interface ProjectCardProps {
 export default function ProjectPreviewCard({ project, nDevlogs }: ProjectCardProps) {
 	return (
 		<a href={`/projects/${project.id}`} className="p-4 border-4 bg-dark-red text-egg-yellow text-4xl rounded-4xl">
+			<ProjectBanner url={project.banner} />
 			<h2 className="text-5xl text-beige">{project.name}</h2>
 			{project.description && (
 				<span className="line-clamp-3">{project.description}</span>

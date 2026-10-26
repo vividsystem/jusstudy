@@ -3,6 +3,7 @@ import { secondsToFormatTime } from "@client/lib/time"
 import { BookOpen, Pencil, Clock } from "lucide-react"
 import Button from "./Button"
 import type { InferResponseType } from "hono"
+import ProjectBanner from "./ProjectBanner"
 
 type ProjectResponse = InferResponseType<typeof client.api.projects[":id"]["$get"]>
 type Project = Extract<ProjectResponse, { project: unknown }>
@@ -15,7 +16,8 @@ type ProjectCardProps = Project &
 
 export default function ProjectCard({ project, nDevlogs, editable }: ProjectCardProps) {
 	return (
-		<div className="border-5 rounded-2xl bg-dark-red text-egg-yellow p-4 w-fit flex flex-col gap-4">
+		<div className="border-5 rounded-2xl bg-dark-red text-egg-yellow p-4 w-fit max-w-2/3 flex flex-col gap-4">
+			<ProjectBanner url={project.banner ?? undefined} />
 			<div className="flex flex-row gap-16 justify-between items-center">
 				<h1 className="text-6xl w-fit">{project.name}</h1>
 				<div className="flex flex-row gap-4">

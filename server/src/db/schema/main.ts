@@ -17,6 +17,7 @@ export const projects = pgTable("projects", {
 	demoLink: text(),
 	repository: text().notNull(),
 	readmeLink: text(),
+	banner: text(),
 	category: categoryEnum().notNull(),
 	totalTime: integer().default(0).notNull(), // cache for aggregate sum in time entries
 	creatorId: text().references(() => users.id, { onDelete: "cascade" }).notNull()

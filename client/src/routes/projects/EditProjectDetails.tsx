@@ -1,4 +1,5 @@
 import Button from "@client/components/Button";
+import { BannerUpload } from "@client/components/FileUpload";
 import HackatimeProjectSelector from "@client/components/HackatimeProjectSelector";
 import { Input } from "@client/components/Input";
 import { client } from "@client/lib/api-client";
@@ -26,6 +27,7 @@ function Page({ projectId }: { projectId: string }) {
 		repository?: string,
 		category?: ProjectCategories
 	}>({})
+	const [file, setFile] = useState<File>()
 
 	const navigate = useNavigate()
 	const { pushError } = useErrors()
@@ -51,7 +53,20 @@ function Page({ projectId }: { projectId: string }) {
 	})
 	const { mutate: updateProject } = useMutation({
 		mutationFn: async () => {
-			console.log(form)
+			if (file) {
+				const res = await client.api.projects[":id"].banner.$put({
+					form: { banner: file },
+					param: { id: projectId }
+				})
+				if (!res.ok) {
+					const data = await res.json()
+
+					pushError(data.message)
+
+					// prevent duplicate creation of project and redirect but still show user the error
+					//throw new Error(data.message) 
+				}
+			}
 			if (Object.values(form).some(value => value !== undefined)) {
 				const parsed = UpdateProjectRequestSchema.safeParse(form)
 				if (!parsed.success) {
@@ -97,6 +112,7 @@ function Page({ projectId }: { projectId: string }) {
 			{!isPending ? (
 				<>
 					<div className="flex flex-col bg-dark-red rounded-4xl p-4 gap-8 w-1/2">
+						<BannerUpload onUpdate={(f) => setFile(f)} fallbackUrl={data?.project.banner} />
 						<Input
 							type="text"
 							placeholder="Super duper great project name"

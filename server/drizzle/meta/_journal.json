@@ -8,6 +8,13 @@
       "when": 1792933539967,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793002935416,
+      "tag": "0001_project-banner",
+      "breakpoints": true
     }
   ]
 }

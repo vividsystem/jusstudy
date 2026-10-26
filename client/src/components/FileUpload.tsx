@@ -1,6 +1,7 @@
-import { ArrowLeft, ArrowRight, Trash, Upload } from "lucide-react";
+import { ArrowLeft, ArrowRight, Info, Trash, Upload } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { MAX_FILE_SIZE } from "@shared/vars"
+import ProjectBanner from "./ProjectBanner";
 
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
@@ -165,4 +166,80 @@ export function ImageUpload(props: ImageUploadProps) {
 			</div>
 		</div>
 	);
+}
+
+interface BannerUploadProps {
+	fallbackUrl?: string | null
+	onUpdate: (f: File) => void
+}
+export function BannerUpload(props: BannerUploadProps) {
+	const [file, setPreviewFile] = useState<PreviewFile>();
+	const [isDragging, setIsDragging] = useState(false);
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	const setFile = useCallback((incoming: File) => {
+		const previewFile: PreviewFile = {
+			file: incoming,
+			previewUrl: URL.createObjectURL(incoming),
+			error: validateFile(incoming),
+		}
+
+
+		setPreviewFile(previewFile);
+	}, []);
+
+	const handleDrop = useCallback(
+		(e: React.DragEvent) => {
+			e.preventDefault();
+			setIsDragging(false);
+			const dropped = Array.from(e.dataTransfer.files).filter(f => !validateFile(f));
+			if (dropped.length === 0) return;
+			setFile(dropped[0]!);
+		},
+		[setFile]
+	);
+
+	const handleInputChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+
+			if (e.target.files) {
+				const file = e.target.files.item(0)
+				if (!file) return
+				setFile(file);
+				props.onUpdate(file);
+				e.target.value = "";
+			}
+		},
+		[setFile, props]
+	);
+	return (
+		<div className="aspect-2/1 w-full rounded-xl relative overflow-hidden">
+			<ProjectBanner className="absolute inset-0" url={file?.previewUrl ?? props.fallbackUrl} />
+			<div
+				onClick={() => inputRef.current?.click()}
+				onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+				onDragLeave={() => setIsDragging(false)}
+				onDrop={handleDrop}
+				className={[
+					"absolute inset-0 z-10 group",
+					isDragging
+						? "border-blue-400 bg-blue-50"
+						: "hover:border-4 hover:border-egg-yellow",
+				].join(" ")}
+			>
+				<input
+					ref={inputRef}
+					type="file"
+					accept={ALLOWED_TYPES.join(",")}
+					className="hidden"
+					onChange={handleInputChange}
+				/>
+			</div>
+			<div className="absolute left-0 right-0 bottom-0 z-10">
+				<span className="text-white flex items-center text-sm p-2 gap-1 bg-gray-700/80"><Info className="size-4" /> Click on the banner or drag and drop into it to add/change your banner (optional)</span>
+
+			</div>
+		</div >
+	)
+
 }
