@@ -7,11 +7,10 @@ interface Row {
 }
 export function mapAttachmentsToDevlogs(rows: Row[]) {
 	type Devlog = Row["project_devlogs"];
-	type Attachment = Omit<NonNullable<Row["devlog_attachments"]>, "devlogId">;
 
 	type DevlogWithAttachments = Omit<Devlog, "timeEntryId"> & {
 		timeLogged: number
-		attachments: Attachment[];
+		attachments: string[];
 	};
 	const mapped = Object.values(
 		rows.reduce<Record<string, DevlogWithAttachments>>((acc, row) => {
@@ -22,7 +21,7 @@ export function mapAttachmentsToDevlogs(rows: Row[]) {
 					acc[devlog.id] = {
 						...devlog,
 						timeLogged: row.time_entries.duration,
-						attachments: [attachment],
+						attachments: [attachment.cdnURL],
 					};
 				} else {
 					acc[devlog.id] = {
@@ -34,7 +33,7 @@ export function mapAttachmentsToDevlogs(rows: Row[]) {
 			} else {
 				if (row.devlog_attachments) {
 					const { devlogId, ...attachment } = row.devlog_attachments; // name depends on your schema
-					acc[devlog.id]!.attachments.push(attachment);
+					acc[devlog.id]!.attachments.push(attachment.cdnURL);
 				}
 			}
 			return acc;

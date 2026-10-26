@@ -30,6 +30,18 @@ export const NewDevlogResponseSchema = z.object({
 export const DevlogResponseSchema = z.object({
 	devlog: devlogSchema.omit({ timeEntryId: true }).extend({
 		timeLogged: z.number().nonnegative(),
-		attachments: z.array(attachmentSchema)
+		attachments: z.array(z.url())
+	})
+})
+
+export const RecentDevlogsResponseSchema = z.object({
+	devlogs: devlogSchema.omit({ timeEntryId: true }).extend({
+		timeLogged: z.number().nonnegative(),
+		attachments: z.array(z.url()),
+		creator: z.object({
+			id: z.uuid(),
+			nickname: z.string().nonempty(),
+			image: z.url().nullable()
+		})
 	})
 })
