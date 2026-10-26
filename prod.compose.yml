@@ -44,6 +44,28 @@ services:
       - backend
     shm_size: 256mb
     # TODO: add healthceck
+  migrate:
+    image: vividsystem/jusstudy-backend:latest
+    build: 
+      context: ./
+      dockerfile: ./server/Dockerfile
+    profiles: ["tools"]
+    working_dir: /app/server
+    command: bun run src/db/migrate.ts
+    environment:
+    - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4318
+    - BOT_HOST=http://emi:8000
+    - NODE_ENV=production
+    - DB_USER=jusstudy_migrator
+    - DB_HOST=postgres
+    - DB_NAME=jusstudy
+    - DB_PASSWORD_FILE=/run/secrets/pg_migrator_password
+    networks:
+      - backend
+    depends_on:
+      - postgres
+    secrets:
+      - pg_migrator_password
   frontend:
     image: vividsystem/jusstudy-frontend:latest
     build:

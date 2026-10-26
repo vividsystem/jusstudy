@@ -108,3 +108,13 @@ docker compose -f prod.compose.yml up frontend -d
 ```
 Grafana can be accessed via `localhost:3001`.
 Both backend and frontend will be served through nginx at `:8080`
+To update the code in prod:
+```bash
+docker compose -f prod.compose.yml pull
+git pull
+```
+then restart your containers
+To migrate in prod (all containers have to be up to date):
+```bash
+docker compose -f prod.compose.yml run --rm migrate
+```
