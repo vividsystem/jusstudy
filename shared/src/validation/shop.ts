@@ -66,7 +66,7 @@ export const NewOptionResponseSchema = z.object({
 })
 
 
-export const NewShopItemRequestSchema = shopItemSchema.omit({ id: true, createdAt: true }).extend({
+export const NewShopItemRequestSchema = shopItemSchema.omit({ id: true, createdAt: true, image: true }).extend({
 	regions: z.record(z.uuid(), regionalItemAvailabilitySchema.omit({ createdAt: true, itemId: true, regionId: true })),
 	options: z.array(NewOptionRequestSchema).refine(
 		(opts) => new Set(opts.map((o) => o.name)).size === opts.length
@@ -76,7 +76,7 @@ export const NewShopItemRequestSchema = shopItemSchema.omit({ id: true, createdA
 export type NewShopItemRequest = z.infer<typeof NewShopItemRequestSchema>
 
 export const NewShopItemResponse = z.object({
-	shopItem: shopItemSchema,
+	shopItem: shopItemSchema.omit({ image: true }),
 
 	options: z.array(itemOptionSchema).nullable(),
 	variants: z.array(optionVariantSchema).nullable()

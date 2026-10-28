@@ -18,6 +18,45 @@ export function validImageFormats(files: File[]) {
 	return !files.some((f) => !ALLOWED_TYPES.includes(f.type))
 }
 
+const uploadSingleFile = async (file: File, spanName: string) => {
+	return withSpan(externalTracer, SpanKind.CLIENT, spanName, async (span) => {
+		const form = new FormData();
+		form.append("file", file);
+
+		const REQ_URL = `${HACKCLUB_CDN_URL}/api/v4/upload`
+		const res = await fetch(REQ_URL, {
+			method: "POST",
+			headers: {
+				"Authorization": `Bearer ${ENV.HACKCLUB_CDN_API_KEY}`
+			},
+			body: form,
+		});
+
+		span.setAttributes({ "peer.service": "cdn", "http.response.status_code": res.status })
+		if (!res.ok) {
+			const err = res.headers.get("Content-Type")?.includes("application/json") ? await res.json() : await res.text();
+			span.setAttributes({
+				"request.file.type": file.type,
+				"request.file.name": file.name,
+				"response.err": JSON.stringify(err)
+			})
+			span.setStatus({ code: SpanStatusCode.ERROR })
+
+			throw new Error(JSON.stringify({
+				message: "Devlog attachment upload failed",
+				res: {
+					status: res.status,
+					body: err,
+					headers: res.headers
+				}
+			}));
+		}
+		const data = await res.json();
+		span.setStatus({ code: SpanStatusCode.OK })
+		return data as CDNFile
+	})
+}
+
 
 export async function uploadDevlogAttachmentToCDN(files: File[]) {
 	return withSpan(externalTracer, SpanKind.CLIENT, "cdn.upload_devlog_attachment", async (span) => {
@@ -64,41 +103,10 @@ export async function uploadDevlogAttachmentToCDN(files: File[]) {
 	})
 }
 
-export const uploadProjectBannerToCDN = (file: File) => {
-	return withSpan(externalTracer, SpanKind.CLIENT, "cdn.upload_project_banner", async (span) => {
-		const form = new FormData();
-		form.append("file", file);
+export const uploadProjectBannerToCDN = async (file: File) => {
+	return uploadSingleFile(file, "cdn.upload_project_banner")
+}
 
-		const REQ_URL = `${HACKCLUB_CDN_URL}/api/v4/upload`
-		const res = await fetch(REQ_URL, {
-			method: "POST",
-			headers: {
-				"Authorization": `Bearer ${ENV.HACKCLUB_CDN_API_KEY}`
-			},
-			body: form,
-		});
-
-		span.setAttributes({ "peer.service": "cdn", "http.response.status_code": res.status })
-		if (!res.ok) {
-			const err = res.headers.get("Content-Type")?.includes("application/json") ? await res.json() : await res.text();
-			span.setAttributes({
-				"request.file.type": file.type,
-				"request.file.name": file.name,
-				"response.err": JSON.stringify(err)
-			})
-			span.setStatus({ code: SpanStatusCode.ERROR })
-
-			throw new Error(JSON.stringify({
-				message: "Devlog attachment upload failed",
-				res: {
-					status: res.status,
-					body: err,
-					headers: res.headers
-				}
-			}));
-		}
-		const data = await res.json();
-		span.setStatus({ code: SpanStatusCode.OK })
-		return data as CDNFile
-	})
+export const uploadItemIcon = async (file: File) => {
+	return uploadSingleFile(file, "cdn.upload_item_icon")
 }

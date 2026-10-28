@@ -12,6 +12,9 @@ import { uniqueEntriesEqual } from "@server/lib/arr";
 import { z } from "zod";
 import { HTTPException } from "hono/http-exception";
 import { loggedInAsType } from "@server/middleware/auth";
+import { MAX_FILE_SIZE } from "@shared/vars";
+import { uploadItemIcon, validImageFormats } from "@server/lib/cdn";
+import { bodyLimit } from "hono/body-limit";
 
 
 export const shopRoute = new Hono<Env>()
@@ -183,6 +186,53 @@ export const shopRoute = new Hono<Env>()
 
 			return c.json({ item: { ...item, options: opts, availabilities } }, 200)
 		})
+	.put(
+		"/items/:id/image",
+		describeRoute({
+			responses: {
+				200: messageResponse("Image uploaded"),
+				400: messageResponse("Invalid filetypes"),
+				401: unauthorizedError,
+				403: missingPermissionsError,
+				404: notFoundError,
+				413: messageResponse("File too large")
+			}
+		}),
+		bodyLimit({
+			maxSize: MAX_FILE_SIZE,
+			onError: (c) => {
+				return c.json({ message: "File too large" }, 413)
+			}
+		}),
+		zValidator(
+			"form",
+			z.object({
+				image: z.instanceof(File),
+			})
+		),
+		loggedInAsType(["admin"]),
+		async (c) => {
+			const itemId = c.req.param("id")
+
+			const [item] = await db
+				.select({ id: shopItems.id })
+				.from(shopItems)
+				.where(eq(shopItems.id, itemId))
+			if (!item) {
+				return c.json({ message: "Resource not found" }, 404)
+			}
+			const { image } = c.req.valid("form")
+
+			if (!validImageFormats([image])) {
+				return c.json({ message: "Invalid file types" }, 400)
+			}
+			const res = await uploadItemIcon(image)
+
+			await db.update(shopItems).set({ image: res.url }).where(eq(shopItems.id, itemId))
+
+			return c.json({ message: "Image uploaded" })
+		}
+	)
 	.post(
 		"/items/:itemId/options",
 		describeRoute({
