@@ -35,15 +35,6 @@ export default function ShopItemForm({ item, setItem }: ShopItemFormProps) {
 				defaultValue={item.description}
 				onInput={(v) => { setItem((p) => ({ ...p, description: v })) }}
 			/>
-			<Input
-				label="Image URL"
-				placeholder="https://example.com/image.png"
-				type="text"
-				name="image"
-				defaultValue={item.image ?? undefined}
-				onInput={(v) => { setItem((p) => ({ ...p, image: v })) }}
-			/>
-
 		</>
 	)
 }
