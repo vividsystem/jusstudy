@@ -7,16 +7,16 @@ import { useState } from "react";
 import { ChevronDown, ChevronLeft } from "lucide-react";
 
 const rewardItems = [
-	{ src: "/reward/book.png", label: "Book Grant" },
-	{ src: "/reward/chair.png", label: "Office Chair" },
-	{ src: "/reward/domain.png", label: "Domain Grant" },
-	{ src: "/reward/macbook.png", label: "Laptop Grant" },
-	{ src: "/reward/notebook.png", label: "Notebook" },
-	{ src: "/reward/rubberduck.png", label: "Rubber Duck" },
-	{ src: "/reward/stationary.png", label: "Stationery Grant" },
-	{ src: "/reward/apple-pencil.png", label: "Stylus Grant" },
-	{ src: "/reward/ipad.png", label: "Tablet Grant" },
-	{ src: "/reward/codecrafters.svg", label: "Code Crafters Membership" },
+	{ src: "/reward/book.webp", label: "Book Grant" },
+	{ src: "/reward/chair.webp", label: "Office Chair" },
+	{ src: "/reward/domain.webp", label: "Domain Grant" },
+	{ src: "/reward/macbook.webp", label: "Laptop Grant" },
+	{ src: "/reward/notebook.webp", label: "Notebook" },
+	{ src: "/reward/rubberduck.webp", label: "Rubber Duck" },
+	{ src: "/reward/stationary.webp", label: "Stationery Grant" },
+	{ src: "/reward/apple-pencil.webp", label: "Stylus Grant" },
+	{ src: "/reward/ipad.webp", label: "Tablet Grant" },
+	{ src: "/reward/codecrafters.webp", label: "Code Crafters Membership" },
 ] as const;
 
 const LandingContent = () => (
@@ -146,12 +146,12 @@ function Footer() {
 			<div className='flex flex-col items-center justify-end z-20 w-full h-full inset-0 absolute py-20'>
 				<h2 className="text-white lg:text-5xl py-2">Our staff</h2>
 				<div className="grid grid-flow-col-dense gap-4 px-4">
-					<img src="/signatures/michael.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
-					<img src="/signatures/Rishaan.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
-					<img src="/signatures/nok.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
-					<img src="/signatures/r.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
-					<img src="/signatures/aoishik.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
-					<img src="/signatures/vivid.png" alt='signature' className="max-h-30 w-auto object-contain self-start" />
+					<img src="/signatures/michael.webp" alt='signature' className="max-h-30 w-auto object-contain self-start" loading="lazy" />
+					<img src="/signatures/Rishaan.webp" alt='signature' className="max-h-30 w-auto object-contain self-start" loading="lazy" />
+					<img src="/signatures/nok.webp" alt='signature' className="max-h-30 w-auto object-contain self-start" loading="lazy" />
+					<img src="/signatures/r.webp" alt='signature' className="max-h-30 w-auto object-contain self-start" loading="lazy" />
+					<img src="/signatures/aoishik.webp" alt='signature' className="max-h-30 w-auto object-contain self-start" loading="lazy" />
+					<img src="/signatures/vivid.webp" alt='signature' className="max-h-30 w-auto object-contain self-start" loading="lazy" />
 				</div>
 			</div>
 		</footer>
