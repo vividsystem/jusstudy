@@ -5,7 +5,7 @@ interface RewardBoxProps {
 }
 
 export default function RewardBox(props: RewardBoxProps) {
-	const isStylus = props.src === "/reward/apple-pencil.png";
+	const isStylus = props.src === "/reward/apple-pencil.webp";
 	const boxPadding = isStylus ? "p-1 sm:p-2 lg:p-2" : "p-2 sm:p-3 lg:p-4";
 	const labelPadding = isStylus ? "px-1 pb-1" : "px-2 pb-2";
 	const imagePadding = isStylus ? "p-1" : "p-1 sm:p-2";
