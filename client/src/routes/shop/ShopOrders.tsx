@@ -1,6 +1,5 @@
 import Button from "@client/components/Button"
 import { client } from "@client/lib/api-client"
-import { useErrors } from "@client/lib/context/ErrorContext"
 import { formatDate } from "@client/lib/time"
 import { useQuery } from "@tanstack/react-query"
 import type { InferResponseType } from "hono"
@@ -44,14 +43,12 @@ function OrderBox({ order }: {
 }
 
 export default function ShopOrders() {
-	const { pushError } = useErrors()
 	const { isPending, data: orders } = useQuery({
 		queryKey: ["userOrders"],
 		queryFn: async () => {
 			const res = await client.api.shop.orders.$get()
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
 				throw new Error(data.message)
 			}
 			const data = await res.json()

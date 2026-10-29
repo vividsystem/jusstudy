@@ -9,7 +9,6 @@ import type { AddRegionAvailability, AddVariantRegionAvailability, ShopItemWithO
 import type { Route } from "./+types/EditShopItemPage"
 
 export default function EditShopItemPage({ params }: Route.ComponentProps) {
-	const { pushError } = useErrors()
 	const navigate = useNavigate()
 
 
@@ -21,7 +20,6 @@ export default function EditShopItemPage({ params }: Route.ComponentProps) {
 			})
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
 				if (res.status == 404) {
 					navigate("/admin/shop/items")
 				}
@@ -77,7 +75,6 @@ function EditItemForm(props: { item: ShopItemWithOptionsPrices, availabilities: 
 			const res = await client.api.shop.items[":itemId"].$patch({ json: edited, param: { itemId: props.item.id } })
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
 				throw new Error(data.message)
 			}
 
@@ -85,7 +82,6 @@ function EditItemForm(props: { item: ShopItemWithOptionsPrices, availabilities: 
 				const avRes = await client.api.shop.items[":itemId"].availabilities.$post({ json: av, param: { itemId: props.item.id } })
 				if (!res.ok) {
 					const data = await avRes.json()
-					pushError(data.message)
 					throw new Error(data.message)
 				}
 			}
@@ -103,7 +99,6 @@ function EditItemForm(props: { item: ShopItemWithOptionsPrices, availabilities: 
 				const variantRes = await client.api.shop.options[":optionId"].variants.$post({ json: variant, param: { optionId: variant.optionId } })
 				if (!variantRes.ok) {
 					const data = await variantRes.json()
-					pushError(data.message)
 					throw new Error(data.message)
 				}
 			}
@@ -112,7 +107,6 @@ function EditItemForm(props: { item: ShopItemWithOptionsPrices, availabilities: 
 				const variantAvRes = await client.api.shop.variants[":variantId"].availabilities.$post({ json: variantAv, param: { variantId: variantAv.variantId } })
 				if (!variantAvRes.ok) {
 					const data = await variantAvRes.json()
-					pushError(data.message)
 					throw new Error(data.message)
 				}
 			}

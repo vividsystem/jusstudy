@@ -2,7 +2,6 @@ import Button from "@client/components/Button";
 import { DevlogCard } from "@client/components/devlogs/Card";
 import ProjectCard from "@client/components/ProjectCard";
 import { client } from "@client/lib/api-client";
-import { useErrors } from "@client/lib/context/ErrorContext";
 import { queryClient } from "@client/lib/query-client";
 import { formatDate, secondsToFormatTime } from "@client/lib/time";
 import { useUser } from "@client/lib/useUser";
@@ -29,7 +28,6 @@ interface ProjectTimelineProps {
 }
 
 export function ProjectTimeline(props: ProjectTimelineProps) {
-	const { pushError } = useErrors()
 	const { data: ratings } = useQuery({
 		queryKey: ["projectRatings", props.project?.id],
 		queryFn: async () => {
@@ -42,8 +40,6 @@ export function ProjectTimeline(props: ProjectTimelineProps) {
 			})
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
-
 				throw new Error(data.message)
 			}
 
@@ -129,7 +125,6 @@ export function RatingCard({ rating }: { rating: Ratings[number] }) {
 export const projectQuery = (id: string) => queryOptions({
 	queryKey: ["project", id],
 	queryFn: async () => {
-		const { pushError } = useErrors()
 		const res = await client.api.projects[":id"].$get({
 			param: {
 				id
@@ -137,7 +132,6 @@ export const projectQuery = (id: string) => queryOptions({
 		})
 		if (!res.ok) {
 			const data = await res.json()
-			pushError(data.message)
 			throw new Error(data.message)
 		}
 
@@ -149,7 +143,6 @@ export const projectQuery = (id: string) => queryOptions({
 export const projectDevlogsQuery = (projectId: string) => queryOptions({
 	queryKey: ["projectDevlogs", projectId],
 	queryFn: async () => {
-		const { pushError } = useErrors()
 		const res = await client.api.projects[":id"].devlogs.$get({
 			param: {
 				id: projectId
@@ -157,8 +150,6 @@ export const projectDevlogsQuery = (projectId: string) => queryOptions({
 		})
 		if (!res.ok) {
 			const data = await res.json()
-			pushError(data.message)
-
 			throw new Error(data.message)
 		}
 
@@ -170,7 +161,6 @@ export const projectDevlogsQuery = (projectId: string) => queryOptions({
 export const projectShipsQuery = (projectId: string) => queryOptions({
 	queryKey: ["projectShips", projectId],
 	queryFn: async () => {
-		const { pushError } = useErrors()
 		const res = await client.api.projects[":id"].ships.$get({
 			param: {
 				id: projectId
@@ -178,8 +168,6 @@ export const projectShipsQuery = (projectId: string) => queryOptions({
 		})
 		if (!res.ok) {
 			const data = await res.json()
-			pushError(data.message)
-
 			throw new Error(data.message)
 		}
 
@@ -196,7 +184,6 @@ export function clientLoader({ params }: Route.ClientLoaderArgs) {
 
 
 export default function ProjectDetails({ params }: Route.ComponentProps) {
-	const { pushError } = useErrors()
 
 	const user = useUser()
 	const { data: project } = useQuery(projectQuery(params.projectId))
@@ -210,8 +197,6 @@ export default function ProjectDetails({ params }: Route.ComponentProps) {
 			})
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
-
 				throw new Error(data.message)
 			}
 

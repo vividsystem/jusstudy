@@ -1,18 +1,15 @@
 import Button from "@client/components/Button"
 import { DevlogCard } from "@client/components/devlogs/Card"
 import { client } from "@client/lib/api-client"
-import { useErrors } from "@client/lib/context/ErrorContext"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
 export default function ExplorePage() {
-	const { pushError } = useErrors()
 	const [offset, setOffset] = useState(0)
 	const queryRecentDevlogs = async (offset: number) => {
 		const res = await client.api.devlogs.recents.$get({ query: { offset: String(offset) } })
 		if (!res.ok) {
 			const data = await res.json()
-			pushError(data.message)
 			throw new Error(data.message)
 		}
 

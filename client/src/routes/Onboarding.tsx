@@ -3,7 +3,7 @@ import RegionSelector from "@client/components/RegionSelector"
 import { authClient } from "@client/lib/auth-client"
 import { clientURL } from "@client/lib/urls"
 import { useQuery } from "@tanstack/react-query"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { client } from "@client/lib/api-client"
 import { queryClient } from "@client/lib/query-client"
 import { useRevalidator } from "react-router"
@@ -29,18 +29,12 @@ function Onboarding() {
 	})
 
 	const connected = useMemo(() => accounts?.some((a) => a.providerId === "hackatime"), [accounts])
-
-	useMemo(async () => {
-		if (region) {
-			await authClient.updateUser({
-				regionId: region
-			})
-
-			await queryClient.invalidateQueries({ queryKey: ["session"] })
-			revalidate()
-		}
-
-	}, [region])
+	const onRegionChange = async (value: string) => {
+		setRegion(value)
+		await authClient.updateUser({ regionId: value })
+		await queryClient.invalidateQueries({ queryKey: ["session"] })
+		revalidate()
+	}
 
 
 	return <main className="w-full p-4 min-h-screen flex flex-col gap-2">
@@ -49,7 +43,7 @@ function Onboarding() {
 		<div className="border-4 w-fit rounded-md bg-egg-yellow border-dark-red p-2 text-dark-red">
 			<h2 className="text-2xl">Region</h2>
 			{regions ? (
-				<RegionSelector regions={regions} region={region || regions[0]!.id} setRegion={setRegion} />
+				<RegionSelector regions={regions} region={region || regions[0]!.id} setRegion={onRegionChange} />
 			) : (
 				<p>loading regions. please wait.</p>
 			)}

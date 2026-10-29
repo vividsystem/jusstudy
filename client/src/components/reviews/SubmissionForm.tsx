@@ -2,7 +2,6 @@ import { useState, useRef } from "react"
 import { Lock } from "lucide-react"
 import Button from "../Button"
 import { useNavigate } from "react-router"
-import { useErrors } from "@client/lib/context/ErrorContext"
 import { useMutation } from "@tanstack/react-query"
 import { client } from "@client/lib/api-client"
 import Dialog, { type DialogHandle } from "@client/components/Dialog";
@@ -18,7 +17,6 @@ export default function ReviewSubmissionForm(props: SubmissionFormProps) {
 	const [note, setNotes] = useState<string | undefined>();
 
 	const navigate = useNavigate()
-	const { pushError } = useErrors()
 	const dialog = useRef<DialogHandle>(null)
 
 	const { mutate: submitReview } = useMutation({
@@ -37,7 +35,6 @@ export default function ReviewSubmissionForm(props: SubmissionFormProps) {
 
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
 				throw new Error(data.message)
 			}
 
@@ -56,7 +53,6 @@ export default function ReviewSubmissionForm(props: SubmissionFormProps) {
 			})
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
 				throw new Error(data.message)
 			}
 

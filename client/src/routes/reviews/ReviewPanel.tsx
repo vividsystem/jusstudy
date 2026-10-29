@@ -5,7 +5,6 @@ import type { ProjectCategories, ProjectShipStatus } from "@server/db/schema";
 import { Search, X } from "lucide-react";
 import type { InferResponseType } from "hono";
 import { PreviewReviewCard, CardSkeleton } from "@client/components/reviews/ReviewCard";
-import { useErrors } from "@client/lib/context/ErrorContext";
 
 type PendingReviewResponse = InferResponseType<
 	typeof client.api.reviews.pending["$get"]
@@ -65,7 +64,6 @@ function FilterPill({
 }
 
 export default function ReviewPortal() {
-	const { pushError } = useErrors();
 
 	const { data: queryData, isPending } = useQuery({
 		queryKey: ["pendingReviews"],
@@ -73,7 +71,6 @@ export default function ReviewPortal() {
 			const res = await client.api.reviews.pending.$get()
 			if (!res.ok) {
 				const data = await res.json();
-				pushError(data.message)
 				throw new Error(data.message)
 			}
 			const data = await res.json();

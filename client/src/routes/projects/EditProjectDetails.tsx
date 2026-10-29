@@ -50,10 +50,7 @@ export default function EditProjectDetails({ params }: Route.ComponentProps) {
 				const parsed = UpdateProjectRequestSchema.safeParse(form)
 				if (!parsed.success) {
 
-					const e = z.prettifyError(parsed.error).toString()
-					pushError(e.toString())
-
-					throw e
+					throw new Error(z.prettifyError(parsed.error))
 				}
 				const res = await client.api.projects[":id"].$patch({
 					json: parsed.data,
@@ -64,7 +61,6 @@ export default function EditProjectDetails({ params }: Route.ComponentProps) {
 				if (!res.ok) {
 					const data = await res.json()
 
-					pushError(data.message)
 					throw new Error(data.message)
 				}
 

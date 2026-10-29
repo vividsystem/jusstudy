@@ -1,19 +1,5 @@
-import {
-	createContext,
-	useContext,
-} from "react";
-
-
-export interface AppError {
-	id: string;
-	title: string;
-	message: string;
-	/** Optional HTTP status code or string error code, e.g. 404 or "ECONNREFUSED" */
-	code?: number | string | null;
-	/** Raw error object — shown in the collapsible "View error details" section */
-	detail?: unknown;
-	timestamp: Date;
-}
+import { useSyncExternalStore } from "react";
+import { errorStore, pushError, dismissError, dismissAll, type AppError } from "../errors";
 
 export interface ErrorContextValue {
 	errors: AppError[];
@@ -38,10 +24,7 @@ export interface ErrorContextValue {
 	dismissAll: () => void;
 }
 
-export const ErrorContext = createContext<ErrorContextValue | null>(null);
-
 export function useErrors(): ErrorContextValue {
-	const ctx = useContext(ErrorContext);
-	if (!ctx) throw new Error("useErrors() must be used inside <ErrorProvider>.");
-	return ctx;
+	const errors = useSyncExternalStore(errorStore.subscribe, errorStore.getSnapshot)
+	return { errors, pushError, dismissError, dismissAll }
 }

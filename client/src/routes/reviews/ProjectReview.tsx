@@ -3,14 +3,12 @@ import Button from "@client/components/Button";
 import { ArrowLeft } from "lucide-react";
 import { client } from "@client/lib/api-client";
 import { useQuery } from "@tanstack/react-query";
-import { useErrors } from "@client/lib/context/ErrorContext";
 import ReviewCard from "@client/components/reviews/ReviewCard";
 import ReviewSubmissionForm from "@client/components/reviews/SubmissionForm";
 import ReviewHistory from "@client/components/reviews/History";
 import type { Route } from "./+types/ProjectReview";
 
 export default function ProjectReview({ params: { id } }: Route.ComponentProps) {
-	const { pushError } = useErrors()
 
 	const { data, isPending } = useQuery({
 		queryKey: ["review", id],
@@ -18,7 +16,6 @@ export default function ProjectReview({ params: { id } }: Route.ComponentProps) 
 			const shipRes = await client.api.ships[":id"].$get({ param: { id } });
 			if (!shipRes.ok) {
 				const err = await shipRes.json();
-				pushError(err.message);
 				throw new Error(err.message)
 			}
 			const { ship } = await shipRes.json();
@@ -26,7 +23,6 @@ export default function ProjectReview({ params: { id } }: Route.ComponentProps) 
 			const projectRes = await client.api.projects[":id"].$get({ param: { id: ship.projectId } });
 			if (!projectRes.ok) {
 				const err = await projectRes.json();
-				pushError(err.message);
 				throw new Error(err.message)
 			}
 			const { project } = await projectRes.json();
@@ -35,7 +31,6 @@ export default function ProjectReview({ params: { id } }: Route.ComponentProps) 
 			const userRes = await client.api.users[":id"].$get({ param: { id: project.creatorId } });
 			if (!userRes.ok) {
 				const err = await userRes.json();
-				pushError(err.message);
 				throw new Error(err.message)
 			}
 			const { user } = await userRes.json();
@@ -43,7 +38,6 @@ export default function ProjectReview({ params: { id } }: Route.ComponentProps) 
 			const reviewsRes = await client.api.projects[":id"].reviews.$get({ param: { id: project.id } });
 			if (!reviewsRes.ok) {
 				const err = await reviewsRes.json();
-				pushError(err.message);
 				throw new Error(err.message)
 			}
 			const { reviews } = await reviewsRes.json();

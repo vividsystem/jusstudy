@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "./debounce";
 import { client } from "./api-client";
-import { useErrors } from "./context/ErrorContext";
 
-async function searchUsers(q: string, pushError: (v: string) => void) {
+async function searchUsers(q: string) {
 	if (q == "") {
 		return { results: [], query: q }
 	}
@@ -15,7 +14,6 @@ async function searchUsers(q: string, pushError: (v: string) => void) {
 	})
 	if (!res.ok) {
 		const data = await res.json()
-		pushError(data.message)
 		throw new Error(data.message)
 	}
 
@@ -23,12 +21,11 @@ async function searchUsers(q: string, pushError: (v: string) => void) {
 }
 
 export function useUserSearch(query: string) {
-	const { pushError } = useErrors()
 	const debouncedQuery = useDebounce(query, 300);
 
 	return useQuery({
 		queryKey: ["users", "search", debouncedQuery],
-		queryFn: () => searchUsers(debouncedQuery, pushError),
+		queryFn: () => searchUsers(debouncedQuery),
 		enabled: debouncedQuery.length >= 1,
 		staleTime: 30_000,
 		placeholderData: (prev) => prev,
