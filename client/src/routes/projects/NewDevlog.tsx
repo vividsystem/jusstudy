@@ -6,18 +6,12 @@ import { secondsToFormatTime } from "@client/lib/time"
 import { NewDevlogRequestSchema } from "@shared/validation/devlogs"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useState } from "react"
-import { Navigate, useNavigate, useParams } from "react-router"
+import { useNavigate } from "react-router"
 import z from "zod"
+import type { Route } from "./+types/NewDevlog"
+import { projectQuery } from "./ProjectDetails"
 
-export default function NewDevlog() {
-	const { projectId } = useParams()
-	if (!projectId) {
-		return <Navigate to={"/projects"} />
-	}
-	return <Page projectId={projectId} />
-}
-
-function Page({ projectId }: { projectId: string }) {
+export default function NewDevlog({ params: { projectId } }: Route.ComponentProps) {
 	const navigate = useNavigate()
 	const { pushError } = useErrors()
 
@@ -25,20 +19,7 @@ function Page({ projectId }: { projectId: string }) {
 	const [form, setForm] = useState<{
 		content?: string
 	}>({})
-	const { data: project } = useQuery({
-		queryKey: ["project", projectId],
-		queryFn: async () => {
-			const res = await client.api.projects[":id"].$get({ param: { id: projectId } })
-			if (!res.ok) {
-				const data = await res.json()
-				pushError(data.message)
-				throw new Error(data.message)
-			}
-
-			const data = await res.json()
-			return data.project
-		}
-	})
+	const { data: project } = useQuery(projectQuery(projectId))
 	const { mutate: createDevlog } = useMutation({
 		mutationFn: async () => {
 			if (images.length < 1) {

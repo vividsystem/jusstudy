@@ -8,20 +8,17 @@ import { useUser } from "@client/lib/useUser"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import type { InferResponseType } from "hono"
 import { useState } from "react"
-import { Navigate, useParams, useNavigate, useRevalidator } from "react-router"
+import { Navigate, useNavigate, useRevalidator } from "react-router"
+import type { Route } from "./+types/BuyItem"
 
 type ShopItem = Extract<InferResponseType<typeof client.api.shop.items[":itemId"]["$get"]>, { item: unknown }>["item"]
 
-export default function BuyItem() {
+export default function BuyItem({ params: { itemId } }: Route.ComponentProps) {
 	const { refetch } = authClient.useSession()
-	const { itemId } = useParams()
 	const user = useUser();
 	if (!user.regionId) {
 		return <Navigate to="/onboarding" />
-	} else if (!itemId) {
-		return <Navigate to="/shop" />
 	}
-
 	return (<RegionWrapper regionId={user.regionId} itemId={itemId} userCoins={user.coins} refetch={refetch} />)
 }
 

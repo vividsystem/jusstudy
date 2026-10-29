@@ -5,7 +5,7 @@ import { client } from "@client/lib/api-client";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { type ProjectCategories } from "@server/db/schema";
+import type { ProjectCategories } from "@server/db/schema";
 import { NewProjectRequestSchema } from "@shared/validation/projects";
 import { projectCategoryValues } from "@shared/vars";
 import z from "zod";

@@ -9,7 +9,6 @@ import { useUser } from "@client/lib/useUser";
 import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import type { InferResponseType } from "hono";
 import { BookOpen, Clock, DollarSign, Ship } from "lucide-react";
-import { Navigate, useParams } from "react-router"
 import type { Route } from "./+types/ProjectDetails";
 
 type DevlogResponse = InferResponseType<typeof client.api.projects[":id"]["devlogs"]["$get"]>
@@ -143,7 +142,7 @@ export const projectQuery = (id: string) => queryOptions({
 		}
 
 		const data = await res.json();
-		return data
+		return data.project
 	}
 })
 
@@ -221,13 +220,13 @@ export default function ProjectDetails({ params }: Route.ComponentProps) {
 
 
 	const isOwner = () => {
-		return user.id == project?.project.creatorId
+		return user.id == project?.creatorId
 	}
 
 	return (
 		<main className="w-full text-4xl flex flex-col items-center gap-4 p-4 relative">
-			{project?.project && (
-				<ProjectCard {...project} editable={isOwner()} nDevlogs={devlogs?.length || 0} />
+			{project && (
+				<ProjectCard project={project} editable={isOwner()} nDevlogs={devlogs?.length || 0} />
 			)}
 			{isOwner() && (
 				<div className="flex flex-row gap-4">
@@ -242,11 +241,11 @@ export default function ProjectDetails({ params }: Route.ComponentProps) {
 			)}
 			{devlogs && ships && (
 				<div className="w-full overflow-x-hidden flex flex-col gap-4 items-center">
-					<ProjectTimeline project={project?.project} devlogs={devlogs} ships={ships} isOwner={isOwner()} />
+					<ProjectTimeline project={project} devlogs={devlogs} ships={ships} isOwner={isOwner()} />
 				</div>
 			)}
 
-			<p className="text-sm">{projectId}</p>
+			<p className="text-sm">{params.projectId}</p>
 		</main >
 	)
 }

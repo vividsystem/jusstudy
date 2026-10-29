@@ -4,11 +4,14 @@ import { ProjectPreviewCardSkeleton, UserHistoryProjectCard } from "@client/comp
 import { Avatar } from "@client/components/UserIcon";
 import { client } from "@client/lib/api-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import type { InferResponseType } from "hono";
 import { Gavel, PieChart } from "lucide-react";
 import { useRef, useState } from "react";
-import { Navigate, useParams } from "react-router";
+import { Navigate } from "react-router";
+import type { Route } from "./+types/AdminUserHistory";
+import { userProjectsQuery, userQuery, userStatsQuery } from "../UserProfile";
+import { queryClient } from "@client/lib/query-client";
 
 export function CharacterSkeleton() {
 	return (
@@ -66,89 +69,37 @@ function UserProfileSkeleton() {
 	)
 }
 
+export const userLocksQuery = (userId: string) => queryOptions({
+	queryKey: ["userLocks", userId],
+	queryFn: async () => {
+		const { pushError } = useErrors()
+		const res = await client.api.users[":id"].locks.$get({ param: { id: userId } })
+		if (!res.ok) {
+			const err = await res.json();
+			pushError(err.message);
 
-export default function UserProfile() {
-	const { id } = useParams()
-	if (!id) {
-		return <Navigate to={"/home"} />
+			throw new Error(err.message)
+		}
+
+		const data = await res.json()
+
+		return data.locks
 	}
+})
 
-	return <Page id={id} />
-
+export function clientLoader({ params }: Route.ClientLoaderArgs) {
+	void queryClient.query(userQuery(params.id))
+	void queryClient.query(userStatsQuery(params.id))
+	void queryClient.query(userProjectsQuery(params.id))
+	void queryClient.query(userLocksQuery(params.id))
+	return null
 }
 
-function Page(props: { id: string }) {
-	const { pushError } = useErrors()
-
-	const { isPending: userPending, data: user } = useQuery({
-		queryKey: ["user", props.id],
-		queryFn: async () => {
-			const res = await client.api.users[":id"].$get({ param: { id: props.id } })
-			if (!res.ok) {
-				const err = await res.json();
-				pushError(err.message);
-
-				throw new Error(err.message)
-			}
-			const data = await res.json()
-
-			return data.user
-		}
-
-	})
-	const { data: stats } = useQuery({
-		queryKey: ["stats", props.id],
-		queryFn: async () => {
-			const res = await client.api.users[":id"].stats.$get({ param: { id: props.id } })
-			if (!res.ok) {
-				const err = await res.json();
-				pushError(err.message);
-
-				throw new Error(err.message)
-			}
-
-			const data = await res.json()
-
-			return data.stats
-		}
-
-	})
-
-	const { data: projects } = useQuery({
-		queryKey: ["userProjects", props.id],
-		queryFn: async () => {
-			const res = await client.api.users[":id"].projects.$get({ param: { id: props.id } })
-			if (!res.ok) {
-				const err = await res.json();
-				pushError(err.message);
-
-				throw new Error(err.message)
-			}
-
-			const data = await res.json()
-
-			return data.userProjects
-		}
-
-	})
-
-	const { data: locks } = useQuery({
-		queryKey: ["userLocks", props.id],
-		queryFn: async () => {
-			const res = await client.api.users[":id"].locks.$get({ param: { id: props.id } })
-			if (!res.ok) {
-				const err = await res.json();
-				pushError(err.message);
-
-				throw new Error(err.message)
-			}
-
-			const data = await res.json()
-
-			return data.locks
-
-		}
-	})
+export default function UserProfile({ params }: Route.ComponentProps) {
+	const { isPending: userPending, data: user } = useQuery(userQuery(params.id))
+	const { data: stats } = useQuery(userStatsQuery(params.id))
+	const { data: projects } = useQuery(userProjectsQuery(params.id))
+	const { data: locks } = useQuery(userLocksQuery(params.id))
 
 
 	if (!user && !userPending) {

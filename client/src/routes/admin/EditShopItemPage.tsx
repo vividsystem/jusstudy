@@ -4,24 +4,20 @@ import { client } from "@client/lib/api-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useState } from "react"
-import { Navigate, useNavigate, useParams } from "react-router"
+import { Navigate, useNavigate } from "react-router"
 import type { AddRegionAvailability, AddVariantRegionAvailability, ShopItemWithOptionsPrices } from "@shared/validation"
+import type { Route } from "./+types/EditShopItemPage"
 
-export default function EditShopItemPage() {
-	const { id } = useParams()
+export default function EditShopItemPage({ params }: Route.ComponentProps) {
 	const { pushError } = useErrors()
 	const navigate = useNavigate()
 
 
 	const { isPending, /*error,*/ data: shopItem } = useQuery({
-		queryKey: ["shopItems", id],
+		queryKey: ["shopItem", params.id],
 		queryFn: async () => {
-			if (!id) {
-				pushError("ItemId undefined")
-				throw new Error("ItemId undefined")
-			}
 			const res = await client.api.shop.items[":itemId"].$get({
-				param: { itemId: id }
+				param: { itemId: params.id }
 			})
 			if (!res.ok) {
 				const data = await res.json()
@@ -34,13 +30,13 @@ export default function EditShopItemPage() {
 
 			const itemData = await res.json()
 
-			const regionsRes = await client.api.shop.items[":itemId"].availabilities.$get({ param: { itemId: id } })
+			const regionsRes = await client.api.shop.items[":itemId"].availabilities.$get({ param: { itemId: params.id } })
 			const avData = await regionsRes.json()
 			return { ...itemData.item, createdAt: new Date(itemData.item.createdAt), availabilities: avData.availabilities }
 		},
 	})
 
-	if (!isPending && !shopItem || !id) {
+	if (!isPending && !shopItem) {
 		return <Navigate to={"/admin/shop/items"} />
 	}
 
