@@ -14,18 +14,18 @@ export interface DialogHandle {
 	close: () => void
 }
 
-export default function Dialog(props: DialogProps) {
+export default function Dialog({ ref, blurBg, children, onOpen, onClose }: DialogProps) {
 	const dialogRef: Ref<HTMLDialogElement> = useRef(null);
 	const open = () => {
-		if (props.onOpen) {
-			props.onOpen()
+		if (onOpen) {
+			onOpen()
 		}
 		dialogRef.current?.showModal();
 	}
 	const close = () => {
 		dialogRef.current?.close();
 	}
-	useImperativeHandle(props.ref, () => {
+	useImperativeHandle(ref, () => {
 		return {
 			open, close
 		}
@@ -33,15 +33,15 @@ export default function Dialog(props: DialogProps) {
 
 	return <div className="group">
 		<dialog
-			className={`border border-dark-red bg-egg-yellow text-dark-red p-4 rounded-md self-center justify-self-center flex flex-col gap-2 z-8001 not-open:hidden ${props.blurBg ? "backdrop:backdrop-blur-md" : ""}`}
+			className={`border border-dark-red bg-egg-yellow text-dark-red p-4 rounded-md self-center justify-self-center flex flex-col gap-2 z-8001 not-open:hidden ${blurBg ? "backdrop:backdrop-blur-md" : ""}`}
 			ref={dialogRef}
 			closedby="any"
-			onClose={props.onClose}
+			onClose={onClose}
 		>
 			<div onClick={() => close()} className="ml-auto">
 				<X className="ml-auto" />
 			</div>
-			{props.children}
+			{children}
 		</dialog >
 	</div>
 }
