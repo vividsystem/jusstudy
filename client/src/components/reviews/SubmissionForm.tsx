@@ -116,7 +116,7 @@ export default function ReviewSubmissionForm(props: SubmissionFormProps) {
 			</Button>
 			<button
 				className="bg-red-400 w-fit rounded-2xl p-4"
-				onClick={dialog.current?.open}
+				onClick={() => dialog.current?.open}
 			>
 				<Lock className="size-8" />
 			</button>
@@ -138,7 +138,7 @@ export default function ReviewSubmissionForm(props: SubmissionFormProps) {
 				</Button>
 				<Button
 					className="border-2 border-dark-red"
-					onClick={dialog.current?.close}
+					onClick={() => dialog.current?.close}
 				>
 					Cancel
 
