@@ -1,28 +1,35 @@
 import ProjectPreviewCard from "@client/components/ProjectPreviewCard";
 import { client } from "@client/lib/api-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react"
 import { Link } from "react-router";
 
 
-export default function Projects() {
-	const { pushError } = useErrors()
-	const { /*isPending, error,*/ data } = useQuery({
-		queryKey: ["userProjects"],
-		queryFn: async () => {
-			const res = await client.api.projects.$get()
-			if (!res.ok) {
-				const data = await res.json();
-				pushError(data.message)
-
-				throw new Error(data.message);
-			}
-
+export const userProjectsQuery = queryOptions({
+	queryKey: ["userProjects"],
+	queryFn: async () => {
+		const { pushError } = useErrors()
+		const res = await client.api.projects.$get()
+		if (!res.ok) {
 			const data = await res.json();
-			return data
-		},
-	})
+			pushError(data.message)
+
+			throw new Error(data.message);
+		}
+
+		const data = await res.json();
+		return data
+	}
+})
+
+export function clientLoader() {
+	void queryClient.query(userProjectsQuery)
+	return null
+}
+
+export default function Projects() {
+	const { data } = useQuery(userProjectsQuery)
 	return (
 		<main className="w-full p-4">
 			<div className="flex flex-row items-center justify-between w-full py-4 text-dark-brown">

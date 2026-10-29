@@ -3,12 +3,14 @@ import { DevlogCard } from "@client/components/devlogs/Card";
 import ProjectCard from "@client/components/ProjectCard";
 import { client } from "@client/lib/api-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
+import { queryClient } from "@client/lib/query-client";
 import { formatDate, secondsToFormatTime } from "@client/lib/time";
 import { useUser } from "@client/lib/useUser";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import type { InferResponseType } from "hono";
 import { BookOpen, Clock, DollarSign, Ship } from "lucide-react";
 import { Navigate, useParams } from "react-router"
+import type { Route } from "./+types/ProjectDetails";
 
 type DevlogResponse = InferResponseType<typeof client.api.projects[":id"]["devlogs"]["$get"]>
 type ShipResponse = InferResponseType<typeof client.api.projects[":id"]["ships"]["$get"]>
@@ -26,6 +28,7 @@ interface ProjectTimelineProps {
 	}
 	isOwner?: boolean
 }
+
 export function ProjectTimeline(props: ProjectTimelineProps) {
 	const { pushError } = useErrors()
 	const { data: ratings } = useQuery({
@@ -124,83 +127,87 @@ export function RatingCard({ rating }: { rating: Ratings[number] }) {
 	</div>)
 }
 
+export const projectQuery = (id: string) => queryOptions({
+	queryKey: ["project", id],
+	queryFn: async () => {
+		const { pushError } = useErrors()
+		const res = await client.api.projects[":id"].$get({
+			param: {
+				id
+			}
+		})
+		if (!res.ok) {
+			const data = await res.json()
+			pushError(data.message)
+			throw new Error(data.message)
+		}
 
-
-export default function ProjectDetails() {
-	const { projectId } = useParams()
-	if (!projectId) {
-		return <Navigate to={"/projects"} />
+		const data = await res.json();
+		return data
 	}
-	return <Page projectId={projectId} />
+})
+
+export const projectDevlogsQuery = (projectId: string) => queryOptions({
+	queryKey: ["projectDevlogs", projectId],
+	queryFn: async () => {
+		const { pushError } = useErrors()
+		const res = await client.api.projects[":id"].devlogs.$get({
+			param: {
+				id: projectId
+			}
+		})
+		if (!res.ok) {
+			const data = await res.json()
+			pushError(data.message)
+
+			throw new Error(data.message)
+		}
+
+		const data = await res.json();
+		return data.devlogs
+	}
+})
+
+export const projectShipsQuery = (projectId: string) => queryOptions({
+	queryKey: ["projectShips", projectId],
+	queryFn: async () => {
+		const { pushError } = useErrors()
+		const res = await client.api.projects[":id"].ships.$get({
+			param: {
+				id: projectId
+			}
+		})
+		if (!res.ok) {
+			const data = await res.json()
+			pushError(data.message)
+
+			throw new Error(data.message)
+		}
+
+		const data = await res.json();
+		return data.ships
+	}
+})
+
+export function clientLoader({ params }: Route.ClientLoaderArgs) {
+	void queryClient.query(projectQuery(params.projectId))
+	return null
 }
-function Page({ projectId }: { projectId: string }) {
+
+
+
+export default function ProjectDetails({ params }: Route.ComponentProps) {
 	const { pushError } = useErrors()
 
 	const user = useUser()
-	const { /*isPending, error,*/ data: project } = useQuery({
-		queryKey: ["singleProject", projectId],
-		queryFn: async () => {
-			const res = await client.api.projects[":id"].$get({
-				param: {
-					id: projectId
-				}
-			})
-			if (!res.ok) {
-				const data = await res.json()
-				pushError(data.message)
-				throw new Error(data.message)
-			}
+	const { data: project } = useQuery(projectQuery(params.projectId))
+	const { data: devlogs } = useQuery(projectDevlogsQuery(params.projectId))
+	const { data: ships } = useQuery(projectShipsQuery(params.projectId))
 
-			const data = await res.json();
-			return data
-		},
-	})
-
-	const { /*isPending, error,*/ data: devlogs } = useQuery({
-		queryKey: ["projectDevlogs", projectId],
-		queryFn: async () => {
-
-
-			const res = await client.api.projects[":id"].devlogs.$get({
-				param: {
-					id: projectId
-				}
-			})
-			if (!res.ok) {
-				const data = await res.json()
-				pushError(data.message)
-
-				throw new Error(data.message)
-			}
-
-			const data = await res.json();
-			return data.devlogs
-		},
-	})
-
-	const { data: ships } = useQuery({
-		queryKey: ["projectShips", projectId],
-		queryFn: async () => {
-			const res = await client.api.projects[":id"].ships.$get({
-				param: {
-					id: projectId
-				}
-			})
-			if (!res.ok) {
-				const data = await res.json()
-				pushError(data.message)
-
-				throw new Error(data.message)
-			}
-
-			const data = await res.json();
-			return data.ships
-		},
-	})
 	const { mutate: shipProject } = useMutation({
 		mutationFn: async () => {
 			const res = await client.api.projects[":id"].ships.$post({
-				param: { id: projectId }
+				param: { id: params.projectId }
 			})
 			if (!res.ok) {
 				const data = await res.json()
