@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AlertCircle, ChevronRight, X } from "lucide-react";
-import { useErrors, type AppError } from "@client/lib/context/ErrorContext";
+import { useErrors } from "@client/lib/context/ErrorContext";
+import type { AppError } from "@client/lib/errors";
 
 // ─── Single Toast ─────────────────────────────────────────────────────────────
 

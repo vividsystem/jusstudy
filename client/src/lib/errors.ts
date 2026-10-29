@@ -16,12 +16,15 @@ let counter = 0
 
 const emit = () => listeners.forEach((l) => l())
 
+const EMPTY: AppError[] = []
 export const errorStore = {
 	subscribe(listener: () => void) {
 		listeners.add(listener)
 		return () => listeners.delete(listener)
 	},
-	getSnapshot: () => errors
+	getSnapshot: () => errors,
+	getServerSnapshot: () => EMPTY
+
 }
 export function pushError(
 	message: string,

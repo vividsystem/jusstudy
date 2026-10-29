@@ -25,6 +25,6 @@ export interface ErrorContextValue {
 }
 
 export function useErrors(): ErrorContextValue {
-	const errors = useSyncExternalStore(errorStore.subscribe, errorStore.getSnapshot)
+	const errors = useSyncExternalStore(errorStore.subscribe, errorStore.getSnapshot, errorStore.getServerSnapshot)
 	return { errors, pushError, dismissError, dismissAll }
 }

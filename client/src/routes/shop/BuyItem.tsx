@@ -1,7 +1,6 @@
 import Button from "@client/components/Button"
 import { Input } from "@client/components/Input"
 import { client } from "@client/lib/api-client"
-import { authClient } from "@client/lib/auth-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
 import { queryClient } from "@client/lib/query-client"
 import { useUser } from "@client/lib/useUser"
@@ -14,15 +13,14 @@ import type { Route } from "./+types/BuyItem"
 type ShopItem = Extract<InferResponseType<typeof client.api.shop.items[":itemId"]["$get"]>, { item: unknown }>["item"]
 
 export default function BuyItem({ params: { itemId } }: Route.ComponentProps) {
-	const { refetch } = authClient.useSession()
 	const user = useUser();
 	if (!user.regionId) {
 		return <Navigate to="/onboarding" />
 	}
-	return (<RegionWrapper regionId={user.regionId} itemId={itemId} userCoins={user.coins} refetch={refetch} />)
+	return (<RegionWrapper regionId={user.regionId} itemId={itemId} userCoins={user.coins} />)
 }
 
-function RegionWrapper({ regionId, itemId, userCoins, refetch }: { regionId: string, itemId: string, userCoins: number, refetch: () => void }) {
+function RegionWrapper({ regionId, itemId, userCoins }: { regionId: string, itemId: string, userCoins: number }) {
 	const { pushError } = useErrors()
 	const navigate = useNavigate()
 	const { data: item } = useQuery({
@@ -55,7 +53,7 @@ function RegionWrapper({ regionId, itemId, userCoins, refetch }: { regionId: str
 	return (
 		<main className="flex flex-col items-center p-4 w-full min-h-screen">
 			{item ? (
-				<ShopItemContainer item={item} regionId={regionId} userCoins={userCoins} availability={item.availabilities.find(a => a.regionId === regionId)!} refetch={refetch} />
+				<ShopItemContainer item={item} regionId={regionId} userCoins={userCoins} availability={item.availabilities.find(a => a.regionId === regionId)!} />
 			)
 				: (
 					<p>loading</p>
