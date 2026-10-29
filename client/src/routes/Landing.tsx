@@ -5,6 +5,7 @@ import Button from "@client/components/Button";
 import RewardBox from "@client/components/RewardBox";
 import { useState } from "react";
 import { ChevronDown, ChevronLeft } from "lucide-react";
+import { useSearchParams } from "react-router";
 
 const rewardItems = [
 	{ src: "/reward/book.webp", label: "Book Grant" },
@@ -18,6 +19,8 @@ const rewardItems = [
 	{ src: "/reward/ipad.webp", label: "Tablet Grant" },
 	{ src: "/reward/codecrafters.webp", label: "Code Crafters Membership" },
 ] as const;
+
+const rotations = [3, -4, 2, -5, 4, -2, 5, -3, 2, -4]
 
 const LandingContent = () => (
 	<>
@@ -59,10 +62,8 @@ const LandingContent = () => (
 );
 
 
-const rewardItemsWithRotations = rewardItems.map((item) => {
-	const magnitude = Math.floor(Math.random() * 5) + 2;
-	const sign = Math.random() < 0.5 ? -1 : 1;
-	return { ...item, rotation: sign * magnitude };
+const rewardItemsWithRotations = rewardItems.map((item, i) => {
+	return { ...item, rotation: rotations[i % rotations.length]! };
 });
 
 function MarqueeRow({ items, direction }: {
@@ -157,14 +158,18 @@ function Footer() {
 		</footer>
 	)
 }
-function Landing() {
+export default function Component() {
 
 	const login = async (ev: React.MouseEvent) => {
 		ev.preventDefault();
+
+		const [params] = useSearchParams()
+		const raw = params.get("redirectTo")
+		const redirectTo = raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/home"
 		await authClient.signIn.social({
 			provider: "hackclub-auth",
 			newUserCallbackURL: clientURL("/onboarding").toString(),
-			callbackURL: clientURL("/home").toString()
+			callbackURL: clientURL(redirectTo).toString()
 		});
 	};
 
@@ -195,5 +200,3 @@ function Landing() {
 		</div >
 	);
 }
-
-export default Landing;

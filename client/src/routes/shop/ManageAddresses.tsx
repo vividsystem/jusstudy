@@ -3,6 +3,7 @@ import { client } from "@client/lib/api-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
 import { useQuery } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
+import { Link } from "react-router"
 
 export default function ManageAddresses() {
 	const { pushError } = useErrors()
@@ -41,7 +42,7 @@ export default function ManageAddresses() {
 							</p>
 						</div>
 					))
-				) : <p className="text-4xl text-beige">no addresses found. <a href="/addresses/new" className="underline underline-offset-2 bold">create a new one</a></p>
+				) : <p className="text-4xl text-beige">no addresses found. <Link to="/addresses/new" className="underline underline-offset-2 bold" prefetch="viewport">create a new one</Link></p>
 			}
 		</main>
 	)

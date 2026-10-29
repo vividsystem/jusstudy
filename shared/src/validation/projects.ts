@@ -1,4 +1,4 @@
-import { projectCategoryValues } from "@server/db/schema"
+import { projectCategoryValues } from "@shared/vars"
 import z from "zod"
 
 

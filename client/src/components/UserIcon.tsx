@@ -1,6 +1,6 @@
-import { authClient } from "@client/lib/auth-client";
+import { useUser } from "@client/lib/useUser";
 import { User } from "lucide-react";
-import { Navigate } from "react-router";
+import { Link } from "react-router";
 
 
 export function Avatar(props: { imageURL?: string | null, size?: number, hideMissing?: boolean }) {
@@ -24,18 +24,11 @@ export function Avatar(props: { imageURL?: string | null, size?: number, hideMis
 }
 
 export default function UserIcon() {
-	const {
-		data
-	} = authClient.useSession()
-	if (!data) {
-		return <Navigate to={"/"} />
-	}
-
-
+	const user = useUser();
 
 	return (
-		<a href="/settings">
-			<Avatar imageURL={data.user.image} />
-		</a>
+		<Link to="/settings" prefetch="intent">
+			<Avatar imageURL={user.image} />
+		</Link>
 	)
 }

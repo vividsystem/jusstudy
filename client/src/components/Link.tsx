@@ -1,4 +1,5 @@
-import { MoveUpRight } from "lucide-react"
+import { Link as RouterLink } from "react-router";
+import { MoveUpRight } from "lucide-react";
 
 
 interface TextLinkProps {
@@ -22,20 +23,21 @@ interface LinkProps {
 }
 // behaviour: 
 // external links get opened in new tab 
-// w/o refferer i.e. w/o the option to click on return on the browser and go back
+// w/o referrer i.e. w/o the option to click on return on the browser and go back
 export default function Link(props: LinkProps) {
-	return <a
-		href={props.href}
-		target={props.external ? "_blank" : "_self"}
-		rel={props.external ? "norefferer" : undefined} // see https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel
-		className={`underline flex  items-center ${props.className}`}
+	const styling = `underline flex  items-center ${props.className}`
+	return props.href.startsWith("/") && !props.href.startsWith("/guides") && !props.href.startsWith("/api") ?
+		<RouterLink to={props.href} prefetch="intent" className={styling}>
+			{props.children}
+		</RouterLink> : <a
+			href={props.href}
+			target={props.external ? "_blank" : "_self"}
+			rel={props.external ? "norefferer" : undefined} // see https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel
+			className={styling}
 
-	>
-		{props.children}
-		{props.external && (
+		>
+			{props.children}
 			<MoveUpRight />
-		)}
-
-	</a>
+		</a>
 
 }

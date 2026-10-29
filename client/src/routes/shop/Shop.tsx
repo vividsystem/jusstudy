@@ -2,6 +2,7 @@ import RegionSelector from "@client/components/RegionSelector"
 import ShopItemBox from "@client/components/ShopItemBox"
 import { client } from "@client/lib/api-client"
 import { authClient } from "@client/lib/auth-client"
+import { useUser } from "@client/lib/useUser"
 import type { ShopRegion } from "@shared/validation"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
@@ -9,10 +10,7 @@ import { Navigate } from "react-router"
 
 
 export default function Shop() {
-	const { data } = authClient.useSession()
-	if (data == null) {
-		return <Navigate to={"/"} />
-	}
+	const user = useUser()
 	if (!data.user.regionId) {
 		return <Navigate to={"/onboarding"} />
 	}
@@ -29,7 +27,7 @@ export default function Shop() {
 	})
 
 
-	return regions ? <Page userCoins={data.user.coins} regions={regions} userRegion={data.user.regionId} /> : <p>loading regions</p>
+	return regions ? <Page userCoins={user.coins} regions={regions} userRegion={user.regionId} /> : <p>loading regions</p>
 }
 function Page({ userCoins, userRegion, regions }: { userCoins: number, userRegion: string, regions: ShopRegion[] }) {
 	const [selectedRegion, setSelectedRegion] = useState(userRegion)
@@ -51,9 +49,9 @@ function Page({ userCoins, userRegion, regions }: { userCoins: number, userRegio
 				<div className="flex gap-2 items-center">
 
 					<RegionSelector regions={regions} region={selectedRegion} setRegion={setSelectedRegion} onChange={() => refetchItems()} />
-					<a className="text-4xl bg-dark-brown border-egg-yellow border-4 text-beige rounded-2xl w-fit p-4 flex flex-row items-center gap-12" href="/shop/orders">
+					<Link className="text-4xl bg-dark-brown border-egg-yellow border-4 text-beige rounded-2xl w-fit p-4 flex flex-row items-center gap-12" to="/shop/orders" prefetch="viewport">
 						<h2>View orders</h2>
-					</a>
+					</Link>
 				</div>
 			</div>
 

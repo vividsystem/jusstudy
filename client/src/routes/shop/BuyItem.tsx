@@ -3,28 +3,26 @@ import { Input } from "@client/components/Input"
 import { client } from "@client/lib/api-client"
 import { authClient } from "@client/lib/auth-client"
 import { useErrors } from "@client/lib/context/ErrorContext"
+import { queryClient } from "@client/lib/query-client"
+import { useUser } from "@client/lib/useUser"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import type { InferResponseType } from "hono"
 import { useState } from "react"
-import { Navigate, useParams, useNavigate } from "react-router"
+import { Navigate, useParams, useNavigate, useRevalidator } from "react-router"
 
 type ShopItem = Extract<InferResponseType<typeof client.api.shop.items[":itemId"]["$get"]>, { item: unknown }>["item"]
 
 export default function BuyItem() {
-	const { data, refetch } = authClient.useSession()
+	const { refetch } = authClient.useSession()
 	const { itemId } = useParams()
-
-	if (data == null) {
-		return <Navigate to={"/"} />
-	} else if (!data.user.regionId) {
-		return <Navigate to={"/onboarding"} />
+	const user = useUser();
+	if (!user.regionId) {
+		return <Navigate to="/onboarding" />
 	} else if (!itemId) {
-		return <Navigate to={"/shop"} />
+		return <Navigate to="/shop" />
 	}
 
-
-
-	return (<RegionWrapper regionId={data.user.regionId} itemId={itemId} userCoins={data.user.coins} refetch={refetch} />)
+	return (<RegionWrapper regionId={user.regionId} itemId={itemId} userCoins={user.coins} refetch={refetch} />)
 }
 
 function RegionWrapper({ regionId, itemId, userCoins, refetch }: { regionId: string, itemId: string, userCoins: number, refetch: () => void }) {
@@ -78,10 +76,10 @@ interface ShopItemContainerProps {
 	availability: ShopItem["availabilities"][number]
 	userCoins: number
 	regionId: string
-	refetch: () => void
 }
 
-export function ShopItemContainer({ item, userCoins, regionId, availability, refetch }: ShopItemContainerProps) {
+export function ShopItemContainer({ item, userCoins, regionId, availability }: ShopItemContainerProps) {
+	const { revalidate } = useRevalidator();
 
 	const navigate = useNavigate()
 	const [quantity, setQuantity] = useState(1)
@@ -158,7 +156,9 @@ export function ShopItemContainer({ item, userCoins, regionId, availability, ref
 				pushError(data.message)
 				throw new Error(data.message)
 			}
-			refetch()
+
+			await queryClient.invalidateQueries({ queryKey: ["session"] })
+			revalidate()
 		},
 	})
 

@@ -4,6 +4,7 @@ import { BookOpen, Pencil, Clock } from "lucide-react"
 import Button from "./Button"
 import type { InferResponseType } from "hono"
 import ProjectBanner from "./ProjectBanner"
+import { Link } from "react-router"
 
 type ProjectResponse = InferResponseType<typeof client.api.projects[":id"]["$get"]>
 type Project = Extract<ProjectResponse, { project: unknown }>
@@ -22,9 +23,9 @@ export default function ProjectCard({ project, nDevlogs, editable }: ProjectCard
 				<h1 className="text-6xl w-fit">{project.name}</h1>
 				<div className="flex flex-row gap-4">
 					{editable && (
-						<a href={`/projects/${project.id}/edit`}>
+						<Link to={`/projects/${project.id}/edit`} prefetch="viewport">
 							<Pencil className="size-8" />
-						</a>
+						</Link>
 					)}
 				</div>
 			</div>

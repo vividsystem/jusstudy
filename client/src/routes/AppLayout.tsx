@@ -1,24 +1,35 @@
 import BugDialog from "@client/components/BugDialog";
 import UserIcon from "@client/components/UserIcon";
-import { authClient } from "@client/lib/auth-client";
 import { Bug } from "lucide-react";
 import { useState } from "react";
-import { Navigate, Outlet, useLocation } from "react-router";
+import { NavLink, Outlet } from "react-router";
+import type { Route } from "./+types/AppLayout";
+import { authMiddleware } from "@client/lib/middleware";
+import { userContext } from "@client/lib/context";
 
 export function Link(props: { name: string, route: string, className: string }) {
-	const location = useLocation()
 	return (
-		<li className={`${props.className} ${location.pathname == props.route ? "bg-egg-yellow" : ""}`}><a href={props.route} className="text-3xl lg:text-4xl 2xl:text-6xl">{props.name}</a></li>
+		<li className={props.className}>
+			<NavLink
+				to={props.route}
+				prefetch="intent"
+				className={({ isActive }) => `text-3xl lg:text-4xl 2xl:text-6xl ${isActive ? "bg-egg-yellow" : ""}`}
+			>
+				{props.name}
+			</NavLink>
+		</li >
+
 	)
 }
 
+export const clientMiddleware: Route.ClientMiddlewareFunction[] = [authMiddleware]
 
-export default function AppLayout() {
-	const { data } = authClient.useSession()
+export async function clientLoader({ context }: Route.ClientLoaderArgs) {
+	return { user: context.get(userContext)! }
+}
+
+export default function AppLayout({ loaderData }: Route.ComponentProps) {
 	const [showBugDialog, setShowBugDialog] = useState(false)
-	if (data == null) {
-		return <Navigate to={"/"} />
-	}
 	return (
 		<div className="flex flex-row">
 			<header className="w-1/4 2xl:w-1/6 flex flex-col justify-between h-screen p-4">
@@ -30,10 +41,10 @@ export default function AppLayout() {
 					<Link className="-rotate-5" route="/shop" name="Shop" />
 					<Link className="rotate-3" route="/vote" name="Voting" />
 					<Link className="" route="/rankings" name="Rankings" />
-					{data.user.type != "participant" && (
+					{loaderData.user.type != "participant" && (
 						<Link className="" route="/reviews" name="Reviews" />
 					)}
-					{data.user.type == "admin" && (
+					{loaderData.user.type == "admin" && (
 						<Link className="" route="/admin" name="Admin" />
 					)}
 				</ul>
