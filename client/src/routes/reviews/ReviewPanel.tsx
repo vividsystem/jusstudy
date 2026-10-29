@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { client } from "@client/lib/api-client";
 import type { ProjectCategories, ProjectShipStatus } from "@server/db/schema";
 import { Search, X } from "lucide-react";
-import { type InferResponseType } from "hono";
+import type { InferResponseType } from "hono";
 import { PreviewReviewCard, CardSkeleton } from "@client/components/reviews/ReviewCard";
 import { useErrors } from "@client/lib/context/ErrorContext";
 
