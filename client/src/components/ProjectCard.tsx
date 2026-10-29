@@ -7,10 +7,10 @@ import ProjectBanner from "./ProjectBanner"
 import { Link } from "react-router"
 
 type ProjectResponse = InferResponseType<typeof client.api.projects[":id"]["$get"]>
-type Project = Extract<ProjectResponse, { project: unknown }>
+type Project = Extract<ProjectResponse, { project: unknown }>["project"]
 
-type ProjectCardProps = Project &
-{
+type ProjectCardProps = {
+	project: Project
 	editable: boolean
 	nDevlogs: number
 }
