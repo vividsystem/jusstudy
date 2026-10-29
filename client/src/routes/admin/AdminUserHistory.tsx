@@ -3,7 +3,6 @@ import Dialog, { type DialogHandle } from "@client/components/Dialog";
 import { ProjectPreviewCardSkeleton, UserHistoryProjectCard } from "@client/components/ProjectPreviewCard";
 import { Avatar } from "@client/components/UserIcon";
 import { client } from "@client/lib/api-client";
-import { useErrors } from "@client/lib/context/ErrorContext";
 import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import type { InferResponseType } from "hono";
 import { Gavel, PieChart } from "lucide-react";
@@ -72,12 +71,9 @@ function UserProfileSkeleton() {
 export const userLocksQuery = (userId: string) => queryOptions({
 	queryKey: ["userLocks", userId],
 	queryFn: async () => {
-		const { pushError } = useErrors()
 		const res = await client.api.users[":id"].locks.$get({ param: { id: userId } })
 		if (!res.ok) {
 			const err = await res.json();
-			pushError(err.message);
-
 			throw new Error(err.message)
 		}
 
@@ -126,7 +122,6 @@ interface ProjectsGridProps {
 function ProjectsGrid({ projects, locks }: ProjectsGridProps) {
 	const [id, setId] = useState<string>()
 	const unlockDialog = useRef<DialogHandle>(null)
-	const { pushError } = useErrors()
 
 
 	const { mutate: unlock } = useMutation({
@@ -136,8 +131,6 @@ function ProjectsGrid({ projects, locks }: ProjectsGridProps) {
 			if (!res.ok) {
 
 				const err = await res.json();
-				pushError(err.message);
-
 				throw new Error(err.message)
 			}
 			setId(undefined)
@@ -198,15 +191,12 @@ interface UserProfileCardProps {
 }
 
 function UserProfileCard({ user, stats }: UserProfileCardProps) {
-	const { pushError } = useErrors()
 	const banDialog = useRef<DialogHandle>(null)
 	const { mutate: banUser } = useMutation({
 		mutationFn: async () => {
 			const res = await client.api.users[":id"].ban.$post({ param: { id: user.id } })
 			if (!res.ok) {
 				const err = await res.json();
-				pushError(err.message);
-
 				throw new Error(err.message)
 			}
 		}

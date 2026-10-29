@@ -1,7 +1,6 @@
 import Button from "@client/components/Button"
 import { ImageUpload } from "@client/components/FileUpload"
 import { client } from "@client/lib/api-client"
-import { useErrors } from "@client/lib/context/ErrorContext"
 import { secondsToFormatTime } from "@client/lib/time"
 import { NewDevlogRequestSchema } from "@shared/validation/devlogs"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -13,7 +12,6 @@ import { projectQuery } from "./ProjectDetails"
 
 export default function NewDevlog({ params: { projectId } }: Route.ComponentProps) {
 	const navigate = useNavigate()
-	const { pushError } = useErrors()
 
 	const [images, setImages] = useState<File[]>([])
 	const [form, setForm] = useState<{
@@ -23,15 +21,11 @@ export default function NewDevlog({ params: { projectId } }: Route.ComponentProp
 	const { mutate: createDevlog } = useMutation({
 		mutationFn: async () => {
 			if (images.length < 1) {
-				pushError("You have to add atleast one attachment")
 				throw new Error("You have to add atleast one attachment")
 			}
 			const parsed = NewDevlogRequestSchema.safeParse(form)
 			if (!parsed.success) {
-				const e = z.prettifyError(parsed.error)
-				pushError(e.toString())
-
-				throw e
+				throw new Error(z.prettifyError(parsed.error))
 			}
 			const res = await client.api.projects[":id"].devlogs.$post({
 				json: parsed.data,
@@ -41,8 +35,6 @@ export default function NewDevlog({ params: { projectId } }: Route.ComponentProp
 			})
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
-
 				throw new Error(data.message)
 			}
 
@@ -56,8 +48,6 @@ export default function NewDevlog({ params: { projectId } }: Route.ComponentProp
 			})
 			if (!imageRes.ok) {
 				const data = await imageRes.json()
-				pushError(data.message)
-
 				throw new Error(data.message)
 			}
 

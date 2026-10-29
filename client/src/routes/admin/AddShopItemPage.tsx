@@ -2,7 +2,6 @@ import ShopItemForm, { OptionsForm, RegionForm, type NewOption } from "@client/c
 import Button from "@client/components/Button"
 import { ItemImageUpload } from "@client/components/FileUpload"
 import { client } from "@client/lib/api-client"
-import { useErrors } from "@client/lib/context/ErrorContext"
 import type { AddRegionAvailability } from "@shared/validation"
 import { NewShopItemRequestSchema } from "@shared/validation"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -13,7 +12,6 @@ import z from "zod"
 
 export default function AddShopItemPage() {
 	const [file, setFile] = useState<File>()
-	const { pushError } = useErrors()
 	const navigate = useNavigate()
 	const [opts, setOpts] = useState<NewOption[]>([])
 	const [newItem, setNewItem] = useState<Partial<z.infer<typeof NewShopItemRequestSchema>>>({})
@@ -36,21 +34,15 @@ export default function AddShopItemPage() {
 				options: opts
 			})
 			if (!parsed.success) {
-				const e = z.prettifyError(parsed.error)
-				pushError(e.toString())
-
-				throw e
+				throw new Error(z.prettifyError(parsed.error))
 			}
 			if (!file) {
-				pushError("An Icon needs to be added!")
-
 				throw new Error("An Icon needs to be added!")
 			}
 
 			const res = await client.api.shop.items.$post({ json: parsed.data })
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
 				throw new Error(data.message)
 			}
 

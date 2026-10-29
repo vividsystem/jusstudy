@@ -1,6 +1,5 @@
 import ProjectPreviewCard from "@client/components/ProjectPreviewCard";
 import { client } from "@client/lib/api-client";
-import { useErrors } from "@client/lib/context/ErrorContext";
 import { queryClient } from "@client/lib/query-client";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react"
@@ -10,12 +9,9 @@ import { Link } from "react-router";
 export const userProjectsQuery = queryOptions({
 	queryKey: ["userProjects"],
 	queryFn: async () => {
-		const { pushError } = useErrors()
 		const res = await client.api.projects.$get()
 		if (!res.ok) {
 			const data = await res.json();
-			pushError(data.message)
-
 			throw new Error(data.message);
 		}
 

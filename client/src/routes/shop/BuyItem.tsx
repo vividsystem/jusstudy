@@ -29,7 +29,6 @@ function RegionWrapper({ regionId, itemId, userCoins, refetch }: { regionId: str
 		queryKey: ["shopItem", itemId],
 		queryFn: async () => {
 			if (!itemId) {
-				pushError("ItemId undefined")
 				throw new Error("ItemId undefined")
 			}
 			const res = await client.api.shop.items[":itemId"].$get({
@@ -37,7 +36,6 @@ function RegionWrapper({ regionId, itemId, userCoins, refetch }: { regionId: str
 			})
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
 				if (res.status == 404) {
 					navigate("/shop")
 				}
@@ -98,7 +96,6 @@ export function ShopItemContainer({ item, userCoins, regionId, availability }: S
 
 
 	const [addressId, setAddressId] = useState("")
-	const { pushError } = useErrors()
 
 	const { data: addresses } = useQuery({
 		queryKey: ["address"],
@@ -106,7 +103,6 @@ export function ShopItemContainer({ item, userCoins, regionId, availability }: S
 			const res = await client.api.users.addresses.$get()
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
 				throw new Error(data.message)
 			}
 			const data = await res.json()
@@ -117,12 +113,10 @@ export function ShopItemContainer({ item, userCoins, regionId, availability }: S
 	const { mutate: buyItem } = useMutation({
 		mutationFn: async () => {
 			if (addressId == "") {
-				pushError("Select a valid address")
 				throw new Error("Select a valid address")
 			}
 
 			if (opts.length !== item.options.length) {
-				pushError("Select variants for all options!")
 				throw new Error("Select variants for all options!")
 
 			}
@@ -133,7 +127,6 @@ export function ShopItemContainer({ item, userCoins, regionId, availability }: S
 			}, {} as Record<string, string>)
 
 			if (Object.values(optRecord).some((v) => v === "")) {
-				pushError("Select variants for all options!")
 				throw new Error("Select variants for all options!")
 			}
 
@@ -150,7 +143,6 @@ export function ShopItemContainer({ item, userCoins, regionId, availability }: S
 			})
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
 				throw new Error(data.message)
 			}
 

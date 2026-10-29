@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig } from "eslint/config"
 
 export default defineConfig([
-	{ ignores: ['dist', 'client-dist'] },
+	{ ignores: ['dist', 'client-dist', '.react-router'] },
 	{
 		extends: [js.configs.recommended, ...tseslint.configs.recommended],
 		files: ['**/*.{ts,tsx}'],

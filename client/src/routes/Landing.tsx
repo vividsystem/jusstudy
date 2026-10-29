@@ -159,11 +159,10 @@ function Footer() {
 	)
 }
 export default function Component() {
+	const [params] = useSearchParams()
 
 	const login = async (ev: React.MouseEvent) => {
 		ev.preventDefault();
-
-		const [params] = useSearchParams()
 		const raw = params.get("redirectTo")
 		const redirectTo = raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/home"
 		await authClient.signIn.social({

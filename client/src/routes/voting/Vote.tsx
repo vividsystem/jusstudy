@@ -2,7 +2,6 @@ import Button from "@client/components/Button"
 import { DevlogCard } from "@client/components/devlogs/Card"
 import Rating from "@client/components/Rating"
 import { client } from "@client/lib/api-client"
-import { useErrors } from "@client/lib/context/ErrorContext"
 import { secondsToFormatTime } from "@client/lib/time"
 import { STAR_BUDGET } from "@shared/vars"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -35,21 +34,17 @@ const defaultVote: VoteState = {
 export default function VotePage() {
 	const [votes, setVotes] = useState<Record<number, VoteState>>({})
 	const [index, setIndex] = useState(0);
-	const { pushError } = useErrors()
 	const { data, isPending, refetch } = useQuery({
 		queryKey: ["vote"],
 		queryFn: async () => {
 			const res = await client.api.vote.rounds.active.$get()
 			if (!res.ok && res.status != 404) {
 				const data = await res.json()
-				pushError(data.message)
 				throw new Error(data.message)
 			} else if (res.status == 404) {
 				const createRoundRes = await client.api.vote.rounds.$post()
 				if (!createRoundRes.ok) {
 					const data = await createRoundRes.json()
-					pushError(data.message)
-
 					throw new Error(data.message)
 				}
 
@@ -75,7 +70,6 @@ export default function VotePage() {
 			})
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
 				throw new Error(data.message)
 			}
 			startNew()
@@ -174,14 +168,12 @@ interface VoteCardProps {
 }
 export function VoteCard({ project, vote, setVoteRating: setVote, setVoteFeedback: setFeedback }: VoteCardProps) {
 	//add a dialog w/devlogs
-	const { pushError } = useErrors()
 	const { data, isLoading } = useQuery({
 		queryKey: ["devlogs", project.id],
 		queryFn: async () => {
 			const res = await client.api.projects[":id"].devlogs.$get({ param: { id: project.id } })
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
 				throw new Error(data.message)
 			}
 

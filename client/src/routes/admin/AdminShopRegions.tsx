@@ -25,8 +25,6 @@ export default function AdminShopRegions() {
 			const res = await client.api.shop.regions.$post({ json: { name } })
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
-
 				throw new Error(data.message)
 			}
 			const data = await res.json()

@@ -28,17 +28,13 @@ export default function NewProjectPage() {
 		mutationFn: async () => {
 			const parsed = NewProjectRequestSchema.safeParse(form)
 			if (!parsed.success) {
-				const e = z.prettifyError(parsed.error)
-				pushError(e.toString())
-				throw e;
+				throw new Error(z.prettifyError(parsed.error))
 			}
 			const res = await client.api.projects.$post({
 				json: parsed.data
 			})
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
-
 				throw new Error(data.message);
 			}
 

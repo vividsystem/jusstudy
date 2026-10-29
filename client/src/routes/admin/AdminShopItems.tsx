@@ -2,7 +2,6 @@ import Button from "@client/components/Button"
 import Dialog, { type DialogHandle } from "@client/components/Dialog"
 import { AdminShopItemBox } from "@client/components/ShopItemBox"
 import { client } from "@client/lib/api-client"
-import { useErrors } from "@client/lib/context/ErrorContext"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
 import { useState, useRef } from "react"
@@ -40,7 +39,6 @@ export default function AdminShopItems() {
 }
 
 function RegionalItems({ regions }: { regions: { id: string, name: string }[] }) {
-	const { pushError } = useErrors()
 	const navigate = useNavigate()
 
 	const { isPending: itemsPending, data: shopItems } = useQuery({
@@ -60,7 +58,6 @@ function RegionalItems({ regions }: { regions: { id: string, name: string }[] })
 			const res = await client.api.shop.items[":itemId"].retire.$post({ param: { itemId: idToDelete } })
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
 				throw new Error(data.message)
 			}
 

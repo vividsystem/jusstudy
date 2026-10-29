@@ -1,17 +1,14 @@
 import { client } from "@client/lib/api-client"
-import { useErrors } from "@client/lib/context/ErrorContext"
 import { useQuery } from "@tanstack/react-query"
 export default function AdminStatsPage() {
 
-	const { pushError } = useErrors()
 	const { data: stats, isPending } = useQuery({
 		queryKey: ["adminStats"],
 		queryFn: async () => {
 			const res = await client.api.admin.stats.$get()
 			if (!res.ok) {
 				const data = await res.json()
-				pushError(data.message)
-				throw data.message
+				throw new Error(data.message)
 			}
 
 			const data = await res.json()
