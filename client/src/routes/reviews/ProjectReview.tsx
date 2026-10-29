@@ -1,4 +1,4 @@
-import { Navigate, useParams } from "react-router";
+import { Navigate } from "react-router";
 import Button from "@client/components/Button";
 import { ArrowLeft } from "lucide-react";
 import { client } from "@client/lib/api-client";
@@ -7,20 +7,9 @@ import { useErrors } from "@client/lib/context/ErrorContext";
 import ReviewCard from "@client/components/reviews/ReviewCard";
 import ReviewSubmissionForm from "@client/components/reviews/SubmissionForm";
 import ReviewHistory from "@client/components/reviews/History";
+import type { Route } from "./+types/ProjectReview";
 
-export default function ProjectReview() {
-	const { id } = useParams();
-	if (!id) {
-		return <Navigate to="/reviews" />;
-	}
-
-	return <Page id={id} />
-}
-interface PageProps {
-	id: string,
-}
-function Page({ id }: PageProps) {
-
+export default function ProjectReview({ params: { id } }: Route.ComponentProps) {
 	const { pushError } = useErrors()
 
 	const { data, isPending } = useQuery({

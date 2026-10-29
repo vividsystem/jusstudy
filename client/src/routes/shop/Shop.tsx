@@ -42,11 +42,11 @@ export function clientLoader({ context }: Route.ClientLoaderArgs) {
 
 export default function Shop() {
 	const user = useUser()
+	const { data: regions } = useQuery(shopRegionsQuery)
 	if (!user.regionId) {
 		return <Navigate to={"/onboarding"} />
 	}
 
-	const { data: regions } = useQuery(shopRegionsQuery)
 
 
 	return regions ? <Page userCoins={user.coins} regions={regions} userRegion={user.regionId} /> : <p>loading regions</p>

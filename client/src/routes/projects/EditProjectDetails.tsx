@@ -9,18 +9,13 @@ import { UpdateProjectRequestSchema } from "@shared/validation/projects";
 import { projectCategoryValues } from "@shared/vars";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Navigate, useNavigate, useParams } from "react-router";
+import { useNavigate } from "react-router";
 import z from "zod";
+import type { Route } from "./+types/EditProjectDetails";
+import { projectQuery } from "./ProjectDetails";
 
-export default function EditProjectDetails() {
-	const { projectId } = useParams()
-	if (!projectId) {
-		return <Navigate to={"/projects"} />
-	}
+export default function EditProjectDetails({ params }: Route.ComponentProps) {
 
-	return <Page projectId={projectId} />
-}
-function Page({ projectId }: { projectId: string }) {
 	const [form, setForm] = useState<{
 		name?: string,
 		description?: string,
@@ -34,30 +29,13 @@ function Page({ projectId }: { projectId: string }) {
 	const { pushError } = useErrors()
 	const [hackatimeProjects, setHackatimeProjects] = useState<string[]>([])
 
-	const { isPending, /*error,*/ data } = useQuery({
-		queryKey: ["singleProject", projectId],
-		queryFn: async () => {
-			const res = await client.api.projects[":id"].$get({
-				param: {
-					id: projectId
-				}
-			})
-			if (!res.ok) {
-				const data = await res.json()
-				pushError(data.message)
-				throw new Error(data.message)
-			}
-
-			const data = await res.json();
-			return data
-		}
-	})
+	const { isPending, data: project } = useQuery(projectQuery(params.projectId))
 	const { mutate: updateProject } = useMutation({
 		mutationFn: async () => {
 			if (file) {
 				const res = await client.api.projects[":id"].banner.$put({
 					form: { banner: file },
-					param: { id: projectId }
+					param: { id: params.projectId }
 				})
 				if (!res.ok) {
 					const data = await res.json()
@@ -80,7 +58,7 @@ function Page({ projectId }: { projectId: string }) {
 				const res = await client.api.projects[":id"].$patch({
 					json: parsed.data,
 					param: {
-						id: projectId!
+						id: params.projectId
 					}
 				})
 				if (!res.ok) {
@@ -96,7 +74,7 @@ function Page({ projectId }: { projectId: string }) {
 			for (const proj of hackatimeProjects) {
 				await client.api.projects[":id"].link.$post({
 					param: {
-						id: projectId,
+						id: params.projectId,
 					},
 					json: {
 						id: proj
@@ -113,14 +91,14 @@ function Page({ projectId }: { projectId: string }) {
 			{!isPending ? (
 				<>
 					<div className="flex flex-col bg-dark-red rounded-4xl p-4 gap-8 w-1/2">
-						<BannerUpload onUpdate={(f) => setFile(f)} fallbackUrl={data?.project.banner} />
+						<BannerUpload onUpdate={(f) => setFile(f)} fallbackUrl={project?.banner} />
 						<Input
 							type="text"
 							placeholder="Super duper great project name"
 							label={"Project name"}
 							name="name"
 							onInput={(name) => setForm({ ...form, name })}
-							defaultValue={data?.project.name}
+							defaultValue={project?.name}
 						/>
 						<Input
 							type="text"
@@ -128,7 +106,7 @@ function Page({ projectId }: { projectId: string }) {
 							label={"Description"}
 							name="description"
 							onInput={(description) => setForm({ ...form, description })}
-							defaultValue={data?.project.description || undefined}
+							defaultValue={project?.description || undefined}
 						/>
 
 						{/* TODO: add project banner upload */}
@@ -137,7 +115,7 @@ function Page({ projectId }: { projectId: string }) {
 
 						<div>
 							<label>Category</label>
-							<select className="border-2 border-egg-yellow p-4 w-full rounded-2xl" onChange={(ev) => setForm({ ...form, category: ev.currentTarget.value as ProjectCategories })} defaultValue={data?.project.category || undefined}>
+							<select className="border-2 border-egg-yellow p-4 w-full rounded-2xl" onChange={(ev) => setForm({ ...form, category: ev.currentTarget.value as ProjectCategories })} defaultValue={project?.category || undefined}>
 								{projectCategoryValues.map(category => (
 									<option value={category} key={category}>{category}</option>
 								))}
@@ -150,7 +128,7 @@ function Page({ projectId }: { projectId: string }) {
 							label={"Demo link"}
 							name="demo-url"
 							onInput={(demoLink) => setForm({ ...form, demoLink })}
-							defaultValue={data?.project.demoLink || undefined}
+							defaultValue={project?.demoLink || undefined}
 						/>
 						<Input
 							type="url"
@@ -158,7 +136,7 @@ function Page({ projectId }: { projectId: string }) {
 							label={"Repository Link"}
 							name="repo-url"
 							onInput={(repository) => setForm({ ...form, repository })}
-							defaultValue={data?.project.repository || undefined}
+							defaultValue={project?.repository || undefined}
 						/>
 
 
@@ -170,7 +148,7 @@ function Page({ projectId }: { projectId: string }) {
 						<Button onClick={(ev) => {
 							ev.preventDefault()
 							updateProject()
-							navigate(`/projects/${projectId}`)
+							navigate(`/projects/${params.projectId}`)
 						}} className="bg-green-700">
 							Update Project
 						</Button>

@@ -1,6 +1,7 @@
 import ProjectPreviewCard from "@client/components/ProjectPreviewCard";
 import { client } from "@client/lib/api-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
+import { queryClient } from "@client/lib/query-client";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react"
 import { Link } from "react-router";

@@ -2,7 +2,7 @@ import { describeRoute, validator as zValidator } from "hono-openapi";
 import db from "@server/db";
 import { projects, projectShips } from "@server/db/schema/main";
 import { projectStats, ratings, userStats, votingRoundProjects, votingRounds } from "@server/db/schema/voting";
-import { balanceCategories, calculatePayout, SIGMA_THRESHOLD, STAR_BUDGET, weightedSample } from "@server/voting";
+import { balanceCategories, calculatePayout, SIGMA_THRESHOLD, weightedSample } from "@server/voting";
 import { and, desc, eq, isNull, notInArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { ActiveRoundResponseSchema, AlreadyExistingSessionResponseSchema, NewVoteRoundResponseSchema, ProjectRatingsResponseSchema, PublishVoteRequestSchema } from "@shared/validation"
@@ -19,6 +19,7 @@ import { notifyVotingFinished } from "@server/lib/notify";
 import { users } from "@server/db/schema";
 import { HTTPException } from "hono/http-exception";
 import { loggedIn } from "@server/middleware/auth";
+import { STAR_BUDGET } from "@shared/vars"
 
 const CANDIDATE_POOL_SIZE = 50;
 export const VOTES_FOR_PAYOUT_PER_SHIP = 10;

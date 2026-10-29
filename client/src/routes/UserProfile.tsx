@@ -3,13 +3,15 @@ import ProjectPreviewCard, { ProjectPreviewCardSkeleton } from "@client/componen
 import { Avatar } from "@client/components/UserIcon";
 import { client } from "@client/lib/api-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import type { InferResponseType } from "hono";
 import { Clock, PieChart } from "lucide-react";
 import { useState } from "react";
-import { Navigate, useParams } from "react-router";
+import { Navigate } from "react-router";
 import { secondsToFormatTime } from "@client/lib/time";
 import { DevlogCard } from "@client/components/devlogs/Card";
+import type { Route } from "./+types/UserProfile";
+import { queryClient } from "@client/lib/query-client";
 
 
 export function CharacterSkeleton() {
@@ -78,90 +80,92 @@ function UserProfileSkeleton() {
 	)
 }
 
+export const userQuery = (id: string) => queryOptions({
+	queryKey: ["user", id],
+	queryFn: async () => {
+		const { pushError } = useErrors()
+		const res = await client.api.users[":id"].$get({ param: { id } })
+		if (!res.ok) {
+			const err = await res.json();
+			pushError(err.message);
 
-export default function UserProfile() {
-	const { id } = useParams()
-	if (!id) {
-		return <Navigate to={"/home"} />
+			throw new Error(err.message)
+		}
+		const data = await res.json()
+
+		return data.user
 	}
+})
 
-	return <Page id={id} />
+export const userStatsQuery = (id: string) => queryOptions({
+	queryKey: ["userStats", id],
+	queryFn: async () => {
+		const { pushError } = useErrors()
+		const res = await client.api.users[":id"].stats.$get({ param: { id: id } })
+		if (!res.ok) {
+			const err = await res.json();
+			pushError(err.message);
 
+			throw new Error(err.message)
+		}
+
+		const data = await res.json()
+
+		return data.stats
+	}
+})
+
+export const userProjectsQuery = (userId: string) => queryOptions({
+	queryKey: ["userProjects", userId],
+	queryFn: async () => {
+		const { pushError } = useErrors()
+		const res = await client.api.users[":id"].projects.$get({ param: { id: userId } })
+		if (!res.ok) {
+			const err = await res.json();
+			pushError(err.message);
+
+			throw new Error(err.message)
+		}
+
+		const data = await res.json()
+
+		return data.userProjects
+	}
+})
+
+export const userDevlogsQuery = (userId: string) => queryOptions({
+	queryKey: ["userDevlogs", userId],
+	queryFn: async () => {
+		const { pushError } = useErrors()
+		const res = await client.api.users[":id"].devlogs.$get({ param: { id: userId } })
+		if (!res.ok) {
+			const err = await res.json();
+			pushError(err.message);
+
+			throw new Error(err.message)
+		}
+
+		const data = await res.json()
+
+		return data.devlogs
+	}
+})
+
+export function clientLoader({ params }: Route.ClientLoaderArgs) {
+	void queryClient.query(userQuery(params.id))
+	void queryClient.query(userStatsQuery(params.id))
+	void queryClient.query(userProjectsQuery(params.id))
+	void queryClient.query(userDevlogsQuery(params.id))
+	return null
 }
 
-function Page(props: { id: string }) {
-	const { pushError } = useErrors()
+export default function UserProfile({ params }: Route.ComponentProps) {
 	const [showDevlogs, setShowDevlogs] = useState(true)
 
-	const { isPending: userPending, data: user } = useQuery({
-		queryKey: ["user", props.id],
-		queryFn: async () => {
-			const res = await client.api.users[":id"].$get({ param: { id: props.id } })
-			if (!res.ok) {
-				const err = await res.json();
-				pushError(err.message);
-
-				throw new Error(err.message)
-			}
-			const data = await res.json()
-
-			return data.user
-		}
-
-	})
-	const { data: stats } = useQuery({
-		queryKey: ["stats", props.id],
-		queryFn: async () => {
-			const res = await client.api.users[":id"].stats.$get({ param: { id: props.id } })
-			if (!res.ok) {
-				const err = await res.json();
-				pushError(err.message);
-
-				throw new Error(err.message)
-			}
-
-			const data = await res.json()
-
-			return data.stats
-		}
-
-	})
-
-	const { data: projects } = useQuery({
-		queryKey: ["userProjects", props.id],
-		queryFn: async () => {
-			const res = await client.api.users[":id"].projects.$get({ param: { id: props.id } })
-			if (!res.ok) {
-				const err = await res.json();
-				pushError(err.message);
-
-				throw new Error(err.message)
-			}
-
-			const data = await res.json()
-
-			return data.userProjects
-		}
-
-	})
-
-	const { data: devlogs } = useQuery({
-		queryKey: ["userDevlogs", props.id],
-		queryFn: async () => {
-			const res = await client.api.users[":id"].devlogs.$get({ param: { id: props.id } })
-			if (!res.ok) {
-				const err = await res.json();
-				pushError(err.message);
-
-				throw new Error(err.message)
-			}
-
-			const data = await res.json()
-
-			return data.devlogs
-		}
-
-	})
+	const { isPending: userPending, data: user } = useQuery(userQuery(params.id))
+	const { data: stats } = useQuery(userStatsQuery(params.id))
+	const { data: projects } = useQuery(userProjectsQuery(params.id))
+	const { data: devlogs } = useQuery(userDevlogsQuery(params.id))
 
 	if (!user && !userPending) {
 		return <Navigate to={"/home"} />
