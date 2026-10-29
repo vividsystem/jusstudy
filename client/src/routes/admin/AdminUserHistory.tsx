@@ -223,7 +223,7 @@ function UserProfileCard({ user, stats }: UserProfileCardProps) {
 							banDialog.current?.close()
 						}}
 					><Gavel />Ban</Button>
-					<Button className="border" onClick={banDialog.current?.close}>Cancel</Button>
+					<Button className="border" onClick={() => banDialog.current?.close}>Cancel</Button>
 				</div>
 			</Dialog>
 			<div className="flex flex-col gap-4 items-center p-4">
@@ -263,7 +263,7 @@ function UserProfileCard({ user, stats }: UserProfileCardProps) {
 			<div className="flex items-center justify-center">
 				<Button
 					className="flex items-center bg-red-400 gap-2"
-					onClick={banDialog.current?.open}
+					onClick={() => banDialog.current?.open}
 				><Gavel /> Ban</Button>
 			</div>
 		</div>
