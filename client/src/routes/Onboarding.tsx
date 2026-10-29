@@ -4,10 +4,12 @@ import { authClient } from "@client/lib/auth-client"
 import { clientURL } from "@client/lib/urls"
 import { useQuery } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
-import { Navigate } from "react-router"
 import { client } from "@client/lib/api-client"
+import { queryClient } from "@client/lib/query-client"
+import { useRevalidator } from "react-router"
 
 function Onboarding() {
+	const { revalidate } = useRevalidator()
 	const [region, setRegion] = useState<string>()
 	const { data: accounts } = useQuery({
 		queryKey: ["userAccounts"],
@@ -28,16 +30,14 @@ function Onboarding() {
 
 	const connected = useMemo(() => accounts?.some((a) => a.providerId === "hackatime"), [accounts])
 
-	const { data: session } = authClient.useSession()
-	if (!session) {
-		return <Navigate to={"/"} />
-	}
-
-	useEffect(() => {
+	useMemo(async () => {
 		if (region) {
-			authClient.updateUser({
+			await authClient.updateUser({
 				regionId: region
 			})
+
+			await queryClient.invalidateQueries({ queryKey: ["session"] })
+			revalidate()
 		}
 
 	}, [region])

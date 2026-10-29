@@ -1,7 +1,7 @@
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react"
 import { serverURL } from "./urls";
-import { typeValues } from "@server/db/schema";
+import { userTypeValues } from "@shared/vars";
 
 
 const SERVER_URL = serverURL("/api/auth").toString()
@@ -39,7 +39,7 @@ export const authClient = createAuthClient({
 					input: false
 				},
 				type: {
-					type: [...typeValues],
+					type: [...userTypeValues],
 					required: true,
 					input: false,
 				},

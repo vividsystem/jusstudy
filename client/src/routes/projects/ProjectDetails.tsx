@@ -2,9 +2,9 @@ import Button from "@client/components/Button";
 import { DevlogCard } from "@client/components/devlogs/Card";
 import ProjectCard from "@client/components/ProjectCard";
 import { client } from "@client/lib/api-client";
-import { authClient } from "@client/lib/auth-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
 import { formatDate, secondsToFormatTime } from "@client/lib/time";
+import { useUser } from "@client/lib/useUser";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { InferResponseType } from "hono";
 import { BookOpen, Clock, DollarSign, Ship } from "lucide-react";
@@ -136,7 +136,7 @@ export default function ProjectDetails() {
 function Page({ projectId }: { projectId: string }) {
 	const { pushError } = useErrors()
 
-	const { data: sessionDetails } = authClient.useSession()
+	const user = useUser()
 	const { /*isPending, error,*/ data: project } = useQuery({
 		queryKey: ["singleProject", projectId],
 		queryFn: async () => {
@@ -214,7 +214,7 @@ function Page({ projectId }: { projectId: string }) {
 
 
 	const isOwner = () => {
-		return sessionDetails != null && sessionDetails.user != null && sessionDetails.user.id == project?.project.creatorId
+		return user.id == project?.project.creatorId
 	}
 
 	return (

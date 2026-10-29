@@ -3,6 +3,7 @@ import { text, timestamp, boolean, index, pgTable, integer, pgEnum, customType, 
 import { addresses, projectReviews } from "./main";
 import { userStats } from "./voting";
 import { shopOrders, shopRegions } from "./shop";
+import { userTypeValues } from "@shared/vars";
 
 
 const tsvector = customType<{ data: string }>({
@@ -10,8 +11,7 @@ const tsvector = customType<{ data: string }>({
 		return "tsvector";
 	},
 });
-export const typeValues = ["participant", "reviewer", "fraud", "admin"] as const
-export const userType = pgEnum("user_types", typeValues)
+export const userType = pgEnum("user_types", userTypeValues)
 export type UserType = typeof userType.enumValues[number]
 export const users = pgTable("users", {
 	id: text("id").primaryKey(),

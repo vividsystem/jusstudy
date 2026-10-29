@@ -3,6 +3,7 @@ import { client } from "@client/lib/api-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react"
+import { Link } from "react-router";
 
 
 export default function Projects() {
@@ -26,9 +27,9 @@ export default function Projects() {
 		<main className="w-full p-4">
 			<div className="flex flex-row items-center justify-between w-full py-4 text-dark-brown">
 				<h1 className="text-9xl">Your Projects</h1>
-				<a href="/projects/new" className="w-fit bg-light-brown rounded-4xl border-4">
+				<Link to="/projects/new" className="w-fit bg-light-brown rounded-4xl border-4" prefetch="viewport">
 					<Plus className="size-24" />
-				</a>
+				</Link>
 			</div>
 
 			<div className="grid 2xl:grid-cols-5 grid-cols-3 gap-4">

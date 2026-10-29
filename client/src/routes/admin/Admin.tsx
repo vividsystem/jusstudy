@@ -2,6 +2,7 @@ import Button from "@client/components/Button"
 import { Input } from "@client/components/Input"
 import { useUserSearch } from "@client/lib/userSearch"
 import { useState } from "react"
+import { Link } from "react-router";
 
 export default function AdminPage() {
 	const [query, setQuery] = useState("");
@@ -19,7 +20,7 @@ export default function AdminPage() {
 				<Input type="text" placeholder="User ID/Slack ID/Email/Real Name/..." label={""} name="q" onInput={(v) => setQuery(v)} />
 				<div className="flex flex-col pt-4">
 					{data?.results.map((user) => (
-						<a key={user.id} className="flex flex-row items-center gap-2 border-dark-red border-2 rounded-2xl p-4" href={`/admin/user-history/${user.id}`}>
+						<Link key={user.id} className="flex flex-row items-center gap-2 border-dark-red border-2 rounded-2xl p-4" to={`/admin/user-history/${user.id}`} prefetch="intent">
 							{user.image && (
 								<img alt="user pfp" src={user.image} className="size-20 rounded-full" />
 							)}
@@ -27,7 +28,7 @@ export default function AdminPage() {
 							<span className="border border-dark-red rounded-full p-1 text-xl">{user.type}</span>
 
 							<strong className="blur hover:blur-none">{user.name}</strong>
-						</a>
+						</Link>
 					))}
 					{data && data.results.length === 0 && (
 						<p>No users found for "{data.query}"</p>

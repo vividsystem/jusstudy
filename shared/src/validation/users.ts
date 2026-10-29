@@ -1,4 +1,4 @@
-import { typeValues } from "@server/db/schema";
+import { userTypeValues } from "@shared/vars";
 import z from "zod";
 import { orderSchema } from "./orders";
 import { projectSchema } from "./projects";
@@ -14,7 +14,7 @@ export const userSchema = z.object({
 	verificationStatus: z.string().nonempty(),
 	nickname: z.string().nonempty(),
 	slackId: z.string().nonempty(),
-	type: z.enum(typeValues),
+	type: z.enum(userTypeValues),
 	image: z.url().nullable(),
 	//searchColumn
 })

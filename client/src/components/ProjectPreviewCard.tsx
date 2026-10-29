@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { client } from "@client/lib/api-client"
 import { secondsToFormatTime, timeAgo } from "@client/lib/time"
 import type { InferResponseType } from "hono"
@@ -10,7 +11,7 @@ interface ProjectCardProps {
 }
 export default function ProjectPreviewCard({ project, nDevlogs }: ProjectCardProps) {
 	return (
-		<a href={`/projects/${project.id}`} className="p-4 border-4 bg-dark-red text-egg-yellow text-4xl rounded-4xl">
+		<Link to={`/projects/${project.id}`} className="p-4 border-4 bg-dark-red text-egg-yellow text-4xl rounded-4xl">
 			<ProjectBanner url={project.banner} />
 			<h2 className="text-5xl text-beige">{project.name}</h2>
 			{project.description && (
@@ -26,7 +27,7 @@ export default function ProjectPreviewCard({ project, nDevlogs }: ProjectCardPro
 				<Clock className="size-8" />
 				<span>{secondsToFormatTime(project.totalTime)}</span>
 			</div>
-		</a>
+		</Link>
 	)
 }
 
@@ -37,7 +38,7 @@ interface UserHistoryProjectCardProps extends ProjectCardProps {
 export function UserHistoryProjectCard({ locks, project, nDevlogs, ...props }: UserHistoryProjectCardProps) {
 	const lock = locks?.find((l) => l.unlockedAt === null)
 	return (
-		<a href={`/projects/${project.id}`} className="p-4 border-4 bg-dark-red text-egg-yellow text-4xl rounded-4xl">
+		<Link to={`/projects/${project.id}`} className="p-4 border-4 bg-dark-red text-egg-yellow text-4xl rounded-4xl" prefetch="viewport">
 			<div className="flex items-center justify-between">
 				<h2 className="text-5xl text-beige">{project.name}</h2>
 				{lock && (
@@ -77,7 +78,7 @@ export function UserHistoryProjectCard({ locks, project, nDevlogs, ...props }: U
 				<Clock className="size-8" />
 				<span>{secondsToFormatTime(project.totalTime)}</span>
 			</div>
-		</a >
+		</Link >
 	)
 
 }

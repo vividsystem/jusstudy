@@ -1,4 +1,4 @@
-import { shipStatusValues } from "@server/db/schema";
+import { shipStatusValues } from "@shared/vars";
 import z, { uuid } from "zod";
 
 export const projectShipSchema = z.object({

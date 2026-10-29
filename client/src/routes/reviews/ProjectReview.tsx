@@ -1,5 +1,4 @@
 import { Navigate, useParams } from "react-router";
-import { authClient } from "@client/lib/auth-client";
 import Button from "@client/components/Button";
 import { ArrowLeft } from "lucide-react";
 import { client } from "@client/lib/api-client";
@@ -10,14 +9,9 @@ import ReviewSubmissionForm from "@client/components/reviews/SubmissionForm";
 import ReviewHistory from "@client/components/reviews/History";
 
 export default function ProjectReview() {
-
-	const { data: session } = authClient.useSession();
 	const { id } = useParams();
 	if (!id) {
 		return <Navigate to="/reviews" />;
-	}
-	if (session == null || session.user.type == "participant") {
-		return <Navigate to="/" />;
 	}
 
 	return <Page id={id} />

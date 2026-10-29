@@ -4,8 +4,9 @@ import HackatimeProjectSelector from "@client/components/HackatimeProjectSelecto
 import { Input } from "@client/components/Input";
 import { client } from "@client/lib/api-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
-import { projectCategoryValues, type ProjectCategories } from "@server/db/schema";
+import { type ProjectCategories } from "@server/db/schema";
 import { UpdateProjectRequestSchema } from "@shared/validation/projects";
+import { projectCategoryValues } from "@shared/vars";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";

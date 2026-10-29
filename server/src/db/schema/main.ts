@@ -3,8 +3,8 @@ import { users } from "./auth";
 import { relations } from "drizzle-orm";
 import { shopOrders } from "./shop";
 import { timeEntries, timeHackatimeLinks } from "./time";
+import { projectCategoryValues, shipStatusValues } from "@shared/vars";
 
-export const projectCategoryValues = ["CAD", "Game Development", "Web Development", "PCB Design", "App Development", "Desktop App Development"] as const
 export const categoryEnum = pgEnum("category", projectCategoryValues)
 
 export type ProjectCategories = typeof categoryEnum.enumValues[number]
@@ -123,7 +123,6 @@ export const projectReviewRelations = relations(projectReviews, ({ one }) => ({
 }))
 
 
-export const shipStatusValues = ["pre-initial", "voting", "pre-fraud", "failed", "pre-payout", "finished"] as const
 export const shipStatus = pgEnum("ship_status", shipStatusValues)
 export type ProjectShipStatus = typeof shipStatus.enumValues[number]
 

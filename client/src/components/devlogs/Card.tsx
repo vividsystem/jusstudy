@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Avatar } from "../UserIcon"
 import { formatDate, secondsToFormatTime } from "@client/lib/time"
 import { ArrowLeft, ArrowRight } from "lucide-react"
+import { Link } from "react-router"
 
 
 type DevlogResponse = InferResponseType<typeof client.api.projects[":id"]["devlogs"]["$get"]>
@@ -31,16 +32,16 @@ export function DevlogCard({ devlog, project, user }: DevlogCardProps) {
 			<div className="flex flex-col items-start text-egg-yellow">
 				<div className="flex flex-row gap-2 items-center">
 					{user && (
-						<a className="flex flex-row gap-2 items-center" href={`/users/${user.id}`}>
+						<Link className="flex flex-row gap-2 items-center" to={`/users/${user.id}`} prefetch="viewport">
 							{user.image && (
 								<Avatar size={8} imageURL={user.image} />
 							)}
 							<span>{user.nickname}</span>
-						</a>
+						</Link>
 					)}
 
 					<p>logged {secondsToFormatTime(devlog.timeLogged)} for {project ? (
-						<a className="underline underline-offset-2" href={`/projects/${project.id}`}>{project.name}</a>
+						<Link className="underline underline-offset-2" to={`/projects/${project.id}`} prefetch="viewport">{project.name}</Link>
 					) : (
 						<span className="bg-egg-yellow h-6 w-32 animate-pulse rounded-md inline-block" />
 					)}</p>

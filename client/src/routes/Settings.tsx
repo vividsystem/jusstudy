@@ -1,9 +1,11 @@
 import Button from "@client/components/Button";
 import { authClient } from "@client/lib/auth-client";
+import { queryClient } from "@client/lib/query-client";
 import { clientURL } from "@client/lib/urls";
+import { useUser } from "@client/lib/useUser";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Navigate, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 export default function Settings() {
 	const navigate = useNavigate()
@@ -16,11 +18,7 @@ export default function Settings() {
 	})
 
 	const connected = useMemo(() => accounts?.some((a) => a.providerId === "hackatime"), [accounts])
-
-	const { data: session } = authClient.useSession()
-	if (!session) {
-		return <Navigate to={"/"} />
-	}
+	const user = useUser()
 
 
 	return <main className="w-full p-4 min-h-screen flex flex-col gap-2">
@@ -28,10 +26,10 @@ export default function Settings() {
 
 		<div className="border-4 w-fit rounded-md bg-egg-yellow border-dark-red p-2 text-dark-red flex flex-col">
 			<h2 className="text-2xl">Personal Information</h2>
-			<span>{session.user.name}</span>
+			<span>{user.name}</span>
 
-			<span>{session.user.email}</span>
-			<span>{session.user.nickname}</span>
+			<span>{user.email}</span>
+			<span>{user.nickname}</span>
 
 		</div>
 		<div className="border-4 w-fit rounded-md bg-egg-yellow border-dark-red p-2 text-dark-red">
@@ -55,6 +53,7 @@ export default function Settings() {
 			onClick={async (ev) => {
 				ev.preventDefault()
 				await authClient.signOut()
+				queryClient.clear()   // drops the session AND the previous user's cached API data
 				navigate("/")
 			}}
 		>

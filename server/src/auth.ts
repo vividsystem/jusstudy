@@ -2,10 +2,11 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { genericOAuth } from "better-auth/plugins";
 import db from "./db";
-import { accounts, sessions, typeValues, users, userStats, verifications } from "./db/schema";
+import { accounts, sessions, users, userStats, verifications } from "./db/schema";
 import { getSlackUserInformation } from "./lib/slack";
 import { ENV } from "@server/lib/config";
 import { APIError, createAuthMiddleware } from "better-auth/api";
+import { userTypeValues } from "@shared/vars";
 
 
 export const PROVIDER_FIELDS = ["yswsEligible", "verificationStatus", "slackId", "nickname", "banned"] as const
@@ -156,7 +157,7 @@ export const auth = betterAuth({
 				index: true
 			},
 			type: {
-				type: [...typeValues],
+				type: [...userTypeValues],
 				defaultValue: "participant",
 				required: true,
 				input: false,

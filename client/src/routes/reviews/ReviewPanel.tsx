@@ -1,7 +1,5 @@
 import { useState, useMemo } from "react";
-import { Navigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { authClient } from "@client/lib/auth-client";
 import { client } from "@client/lib/api-client";
 import type { ProjectCategories, ProjectShipStatus } from "@server/db/schema";
 import { Search, X } from "lucide-react";
@@ -66,10 +64,8 @@ function FilterPill({
 	);
 }
 
-// ── Main Page ──────────────────────────────────────────────────────────────
 export default function ReviewPortal() {
 	const { pushError } = useErrors();
-	const { data: session } = authClient.useSession();
 
 	const { data: queryData, isPending } = useQuery({
 		queryKey: ["pendingReviews"],
@@ -84,11 +80,6 @@ export default function ReviewPortal() {
 			return data.pendingProjects;
 		},
 	});
-
-	// Auth guard — renders after hooks to satisfy Rules of Hooks
-	if (session == null || session.user.type == "participant") {
-		return <Navigate to="/" />;
-	}
 
 	const pendingProjects = queryData ?? [];
 
