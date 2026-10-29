@@ -11,6 +11,7 @@ import {
 } from "react-router";
 import { queryClient } from "./lib/query-client";
 import Loading from "./components/Loading";
+import { isRouteErrorResponse } from "react-router";
 
 export function Layout({
 	children,
@@ -51,7 +52,11 @@ export function Layout({
 				<Links />
 			</head>
 			<body className="bg-[url(/background.webp)] bg-blend-screen m-0 p-0 overflow-x-hidden h-fit">
-				{children}
+				<QueryClientProvider client={queryClient}>
+					<ErrorProvider>
+						{children}
+					</ErrorProvider>
+				</QueryClientProvider>
 				<ScrollRestoration />
 				<Scripts />
 			</body>
@@ -60,15 +65,28 @@ export function Layout({
 }
 
 export default function Root() {
-	return <QueryClientProvider client={queryClient}>
-		<ErrorProvider><Outlet /></ErrorProvider>
-	</QueryClientProvider>;
+	return <Outlet />;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-	// build this
-	return <p>{error}</p>
+	let title = "Something went wrong"
+	let message = "An unexpected error occurred."
 
+	if (isRouteErrorResponse(error)) {
+		title = error.status === 404 ? "Page not found" : `Error ${error.status}`
+		message = typeof error.data === "string" ? error.data : error.statusText
+	} else if (error instanceof Error) {
+		message = error.message
+	}
+
+	return (
+		<main className="…">
+			<h1>{title}</h1>
+			<p>{message}</p>
+			<a href="/home">Back to home</a>  {/* use plain <a> so that it completely resets if something is broken*/}
+			{import.meta.env.DEV && error instanceof Error && <pre>{error.stack}</pre>}
+		</main>
+	)
 }
 
 export function HydrateFallback() { return <Loading /> }
