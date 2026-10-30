@@ -12,7 +12,8 @@ export function Link(props: { name: string, route: string, className: string }) 
 		<li className={props.className}>
 			<NavLink
 				to={props.route}
-				prefetch="intent"
+				prefetch={props.route != "/guides" ? "intent" : "none"}
+				reloadDocument={props.route == "/guides"}
 				className={({ isActive }) => `text-3xl lg:text-4xl 2xl:text-6xl ${isActive ? "bg-egg-yellow" : ""}`}
 			>
 				{props.name}
