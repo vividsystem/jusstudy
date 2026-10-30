@@ -93,6 +93,7 @@ Closes #123
 - Separate subject from body with a blank line
 - Wrap body at 72 characters
 - Explain what and why, not how
+- WHEN YOU COMMIT SVGS run them through `bunx svgo file.svg`
 
 ## Pull Request Process
 
