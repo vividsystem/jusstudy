@@ -20,6 +20,7 @@ export default function RewardBox(props: RewardBoxProps) {
 				alt=""
 				className={`max-w-full h-auto max-h-16 sm:max-h-24 lg:max-h-40 2xl:max-h-48 object-contain ${imagePadding}`}
 				onContextMenu={(e) => e.preventDefault()}
+				loading="lazy"
 			/>
 			<span className={`w-full ${labelPadding} text-[10px] sm:text-xs lg:text-lg 2xl:text-xl font-bold text-[#432818] text-center leading-tight`}>
 				{props.label}

@@ -25,7 +25,7 @@ const rotations = [3, -4, 2, -5, 4, -2, 5, -3, 2, -4]
 const LandingContent = () => (
 	<>
 		<div className="height-32">
-			<img src="/logo_landing.svg" />
+			<img src="/logo_landing.svg" alt="jus'study logo" />
 		</div>
 
 		<p className="text-base sm:text-lg lg:text-5xl 2xl:text-6xl text-[#282828]">
@@ -143,7 +143,7 @@ function FAQ() {
 function Footer() {
 	return (
 		<footer className="relative h-fit w-full">
-			<img src="/ColorBanner_5.svg" alt="Banner" className="w-full h-auto block z-10 top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} />
+			<img src="/ColorBanner_5.svg" alt="Banner" className="w-full h-auto block z-10 top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} loading="lazy" />
 			<div className='flex flex-col items-center justify-end z-20 w-full h-full inset-0 absolute py-20'>
 				<h2 className="text-white lg:text-5xl py-2">Our staff</h2>
 				<div className="grid grid-flow-col-dense gap-4 px-4">
@@ -173,7 +173,7 @@ export default function Component() {
 	};
 
 	return (
-		<div className="w-full">
+		<main className="w-full">
 			<div className="max-h-screen mb-40">
 				<img src="/ColorBanner_1.svg" alt="Banner" className="w-full h-auto block -z-10 absolute top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} />
 				<HackclubLogo />
@@ -196,6 +196,6 @@ export default function Component() {
 			<RewardCarousel />
 			<FAQ />
 			<Footer />
-		</div >
+		</main >
 	);
 }
