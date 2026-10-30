@@ -1,4 +1,5 @@
 import Button from "@client/components/Button"
+import PageHeader from "@client/components/PageHeaders"
 import { client } from "@client/lib/api-client"
 import { formatDate } from "@client/lib/time"
 import { useQuery } from "@tanstack/react-query"
@@ -59,7 +60,7 @@ export default function ShopOrders() {
 
 	return (
 		<main className="w-full min-h-screen p-4 flex flex-col gap-4 items-center">
-			<h1 className="text-7xl">My orders</h1>
+			<PageHeader>My orders</PageHeader>
 			<Button className="text-4xl bg-dark-brown text-light-brown">back to shop</Button>
 			<div className="flex flex-col items-center w-full">
 				{isPending ? <p>loading...</p> : (

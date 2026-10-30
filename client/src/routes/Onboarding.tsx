@@ -7,6 +7,7 @@ import { useMemo, useState } from "react"
 import { client } from "@client/lib/api-client"
 import { queryClient } from "@client/lib/query-client"
 import { useRevalidator } from "react-router"
+import PageHeader from "@client/components/PageHeaders"
 
 function Onboarding() {
 	const { revalidate } = useRevalidator()
@@ -38,7 +39,7 @@ function Onboarding() {
 
 
 	return <main className="w-full p-4 min-h-screen flex flex-col gap-2">
-		<h1 className="text-4xl">Welcome!</h1>
+		<PageHeader>Welcome!</PageHeader>
 
 		<div className="border-4 w-fit rounded-md bg-egg-yellow border-dark-red p-2 text-dark-red">
 			<h2 className="text-2xl">Region</h2>

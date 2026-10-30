@@ -13,6 +13,7 @@ import { useNavigate } from "react-router";
 import z from "zod";
 import type { Route } from "./+types/EditProjectDetails";
 import { projectQuery } from "./ProjectDetails";
+import PageHeader from "@client/components/PageHeaders";
 
 export default function EditProjectDetails({ params }: Route.ComponentProps) {
 
@@ -83,7 +84,7 @@ export default function EditProjectDetails({ params }: Route.ComponentProps) {
 	return (
 		<main className="flex flex-col items-center text-4xl text-egg-yellow w-full min-h-screen gap-16">
 
-			<h1 className="text-8xl bg-dark-red p-4 rounded-4xl">Update Project</h1>
+			<PageHeader>Update Project</PageHeader>
 			{!isPending ? (
 				<>
 					<div className="flex flex-col bg-dark-red rounded-4xl p-4 gap-8 w-1/2">

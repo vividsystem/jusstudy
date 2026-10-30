@@ -1,5 +1,6 @@
 import Button from "@client/components/Button"
 import Dialog, { type DialogHandle } from "@client/components/Dialog"
+import PageHeader from "@client/components/PageHeaders"
 import { AdminShopItemBox } from "@client/components/ShopItemBox"
 import { client } from "@client/lib/api-client"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -22,7 +23,7 @@ export default function AdminShopItems() {
 		<main className="w-full min-h-screen p-4 text-4xl flex flex-col gap-4">
 
 			<div className="flex flex-row justify-between items-center">
-				<h1 className="text-4xl">Shop Admin Panel</h1>
+				<PageHeader>Shop Admin Panel</PageHeader>
 				<Button href="/admin/shop/items/new" className="w-fit border-dark-red bg-egg-yellow border-4"><Plus /></Button>
 
 			</div>

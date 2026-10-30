@@ -9,6 +9,7 @@ import { Link, Navigate } from "react-router"
 import type { Route } from "./+types/Shop"
 import { userContext } from "@client/lib/context"
 import { queryClient } from "@client/lib/query-client"
+import PageHeader from "@client/components/PageHeaders"
 
 export const shopItemsQuery = (regionId: string) => queryOptions({
 	queryKey: ["shopRegionalItems", regionId],
@@ -60,7 +61,7 @@ function Page({ userCoins, userRegion, regions }: { userCoins: number, userRegio
 	return (
 		<main className="w-full min-h-screen p-4">
 			<div className="flex flex-row py-4 justify-between items-center">
-				<h1 className="text-6xl">Shop</h1>
+				<PageHeader>Shop</PageHeader>
 
 				<span className="text-4xl">{userCoins} Books</span>
 

@@ -11,20 +11,20 @@ interface ProjectCardProps {
 }
 export default function ProjectPreviewCard({ project, nDevlogs }: ProjectCardProps) {
 	return (
-		<Link to={`/projects/${project.id}`} className="p-4 border-4 bg-dark-red text-egg-yellow text-4xl rounded-4xl">
+		<Link to={`/projects/${project.id}`} className="p-4 border-4 bg-dark-red text-egg-yellow rounded-4xl">
 			<ProjectBanner url={project.banner} />
-			<h2 className="text-5xl text-beige">{project.name}</h2>
+			<h2 className="text-2xl lg:text-4xl 2xl:text-5xl text-beige">{project.name}</h2>
 			{project.description && (
-				<span className="line-clamp-3">{project.description}</span>
+				<span className="line-clamp-3 lg:text-2xl mb-2 lg:mb-4 text-md">{project.description}</span>
 			)}
 			{nDevlogs && (
-				<div className="flex flex-items items-center gap-4">
-					<BookOpen className="size-8" />
+				<div className="flex flex-items items-center gap-2">
+					<BookOpen className="lg:size-8 size-4" />
 					<span>{nDevlogs} devlogs</span>
 				</div>
 			)}
-			<div className="flex flex-items items-center gap-4">
-				<Clock className="size-8" />
+			<div className="flex flex-items items-center gap-2 lg:text-2xl">
+				<Clock className="lg:size-8 size-6" />
 				<span>{secondsToFormatTime(project.totalTime)}</span>
 			</div>
 		</Link>

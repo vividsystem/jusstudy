@@ -72,7 +72,7 @@ export default function ProjectReview({ params: { id } }: Route.ComponentProps) 
 
 
 	return (
-		<div className="min-h-screen w-full">
+		<main className="min-h-screen w-full">
 			{/* ── Header ── */}
 			<header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur-xl">
 				<div className="max-w-350 mx-auto px-6 py-4 flex items-center gap-4">
@@ -101,6 +101,6 @@ export default function ProjectReview({ params: { id } }: Route.ComponentProps) 
 
 				<ReviewHistory reviews={reviews} />
 			</div>
-		</div>
+		</main>
 	);
 }

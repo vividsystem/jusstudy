@@ -1,5 +1,6 @@
 import Button from "@client/components/Button";
 import { Input } from "@client/components/Input";
+import PageHeader from "@client/components/PageHeaders";
 import { client } from "@client/lib/api-client";
 import { useErrors } from "@client/lib/context/ErrorContext";
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -36,7 +37,7 @@ export default function AdminShopRegions() {
 
 	return (
 		<main className="w-full min-h-screen p-4">
-			<h1 className="text-4xl">Regions</h1>
+			<PageHeader>Regions</PageHeader>
 			<div className="flex items-center gap-4">
 				<Input type="text" placeholder="LATAM" className="w-fit" label="Name" onInput={(v) => setName(v)} name="name" />
 				<Button onClick={() => {

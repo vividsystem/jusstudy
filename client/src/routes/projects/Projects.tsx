@@ -1,3 +1,4 @@
+import PageHeader from "@client/components/PageHeaders";
 import ProjectPreviewCard from "@client/components/ProjectPreviewCard";
 import { client } from "@client/lib/api-client";
 import { queryClient } from "@client/lib/query-client";
@@ -30,13 +31,13 @@ export default function Projects() {
 	return (
 		<main className="w-full p-4">
 			<div className="flex flex-row items-center justify-between w-full py-4 text-dark-brown">
-				<h1 className="text-9xl">Your Projects</h1>
-				<Link to="/projects/new" className="w-fit bg-light-brown rounded-4xl border-4" prefetch="viewport">
-					<Plus className="size-24" />
+				<PageHeader>Your projects</PageHeader>
+				<Link to="/projects/new" className="w-fit bg-light-brown rounded-xl lg:rounded-3xl border-3 lg:border-4" prefetch="viewport">
+					<Plus className="size-8 lg:size-16" />
 				</Link>
 			</div>
 
-			<div className="grid 2xl:grid-cols-5 grid-cols-3 gap-4">
+			<div className="grid 2xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
 				{data?.projects.length == 0 ? (
 					"You don't have any projects yet"
 

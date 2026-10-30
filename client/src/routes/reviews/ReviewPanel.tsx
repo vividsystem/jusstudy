@@ -5,6 +5,7 @@ import type { ProjectCategories, ProjectShipStatus } from "@server/db/schema";
 import { Search, X } from "lucide-react";
 import type { InferResponseType } from "hono";
 import { PreviewReviewCard, CardSkeleton } from "@client/components/reviews/ReviewCard";
+import PageHeader from "@client/components/PageHeaders";
 
 type PendingReviewResponse = InferResponseType<
 	typeof client.api.reviews.pending["$get"]
@@ -151,9 +152,7 @@ function ReviewPortalContent({
 			<header className="sticky top-0 z-40 border-b backdrop-blur-xl">
 				<div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
 					<div className="flex items-center gap-3">
-						<div>
-							<h1 className="text-4xl font-bold text-dark-brown leading-none">Review Portal</h1>
-						</div>
+						<PageHeader>Review Portal</PageHeader>
 					</div>
 
 					<div className="flex items-center gap-2 p-4 rounded-2xl bg-dark-red border text-xl text-light-brown">

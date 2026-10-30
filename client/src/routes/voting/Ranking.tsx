@@ -1,3 +1,4 @@
+import PageHeader from "@client/components/PageHeaders"
 import { Avatar } from "@client/components/UserIcon"
 import { client } from "@client/lib/api-client"
 import { useQuery } from "@tanstack/react-query"
@@ -7,8 +8,8 @@ export default function RankingPage() {
 	const [userActive, setUserActive] = useState(true)
 	return (
 		<main className="flex flex-col gap-4 w-full p-4">
-			<h1 className="text-7xl text-dark-brown">Ranking</h1>
-			<div className="w-full flex flex-row text-5xl">
+			<PageHeader>Ranking</PageHeader>
+			<div className="w-full flex flex-row text-3xl">
 				<h2 className={`bg-dark-brown text-light-brown p-4 border-b-light-brown border-b-8 ${userActive ? "bg-dark-red" : ""}`} onClick={() => setUserActive(true)}>Users</h2>
 				<h2 className={`bg-dark-brown text-light-brown p-4 border-b-light-brown border-b-8 ${!userActive ? "bg-dark-red" : ""}`} onClick={() => setUserActive(false)}>Projects</h2>
 			</div>

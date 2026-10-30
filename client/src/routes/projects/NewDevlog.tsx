@@ -9,6 +9,7 @@ import { useNavigate } from "react-router"
 import z from "zod"
 import type { Route } from "./+types/NewDevlog"
 import { projectQuery } from "./ProjectDetails"
+import PageHeader from "@client/components/PageHeaders"
 
 export default function NewDevlog({ params: { projectId } }: Route.ComponentProps) {
 	const navigate = useNavigate()
@@ -58,7 +59,7 @@ export default function NewDevlog({ params: { projectId } }: Route.ComponentProp
 
 	return (
 		<main className="p-4 w-full min-h-screen flex flex-col items-center gap-4">
-			<h1 className="text-6xl text-dark-brown">New Devlog ({project?.unloggedTime ? secondsToFormatTime(project.unloggedTime) : "time not available"})</h1>
+			<PageHeader>New Devlog ({project?.unloggedTime ? secondsToFormatTime(project.unloggedTime) : "time not available"})</PageHeader>
 			<textarea onInput={(ev) => setForm({ content: ev.currentTarget.value })} className="w-1/2 bg-dark-red min-h-1/2 rounded-4xl p-4 text-egg-yellow" placeholder="Write about what you did..." minLength={100}>
 			</textarea>
 			<ImageUpload onUpdate={(fs) => setImages(fs)} />
