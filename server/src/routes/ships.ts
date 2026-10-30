@@ -8,7 +8,7 @@ import type { Env } from "..";
 import { getShipTime } from "@server/db/helpers/time";
 import { internalServerError, messageResponse, missingPermissionsError, notFoundError, successResponse, unauthorizedError } from "@server/lib/responses";
 import { describeRoute } from "hono-openapi";
-import { NewShipResponseSchema, ProjectShipsResponseSchema, ShipByIdResponseSchema } from "@shared/validation";
+import { NewShipResponseSchema, ProjectShipsResponseSchema, ShipByIdResponseSchema, UserShipsResponseSchema } from "@shared/validation";
 import { getHackatimeAccessToken } from "@server/lib/auth";
 import { notifyShipCreate } from "@server/lib/notify";
 import { loggedIn, loggedInAndEligible } from "@server/middleware/auth";
@@ -51,6 +51,28 @@ export const shipsRoute = new Hono<Env>()
 
 			return c.json({ ship: { ...ship.ship, timeShipped: time.data } }, 200)
 		})
+
+	.get(
+		"/",
+		describeRoute({
+			responses: {
+				200: successResponse(UserShipsResponseSchema),
+				401: unauthorizedError,
+			}
+		}),
+		loggedIn,
+		async (c) => {
+			const user = c.get("user")
+
+			const ships = await db
+				.select({ ...getTableColumns(projectShips), projectName: projects.name })
+				.from(projectShips)
+				.innerJoin(projects, eq(projects.id, projectShips.projectId))
+				.where(eq(projects.creatorId, user.id))
+
+			return c.json({ ships }, 200)
+		}
+	)
 	.route("/:id/reviews", shipReviewsRoute)
 
 
