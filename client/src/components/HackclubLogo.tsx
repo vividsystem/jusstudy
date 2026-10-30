@@ -1,5 +1,3 @@
-import './HackclubLogo.css';
-
 export default function HackclubLogo() {
 	return (
 		<a className="hackclub-anchor" href="https://hackclub.com" tabIndex={-1}>
