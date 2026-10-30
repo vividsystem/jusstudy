@@ -25,7 +25,7 @@ const rotations = [3, -4, 2, -5, 4, -2, 5, -3, 2, -4]
 const LandingContent = () => (
 	<>
 		<div className="height-32">
-			<img src="/logo_landing.svg" alt="jus'study logo" />
+			<img src="/logo_landing.svg" alt="jus'study logo" fetchPriority="high" />
 		</div>
 
 		<p className="text-base sm:text-lg lg:text-5xl 2xl:text-6xl text-[#282828]">
@@ -175,7 +175,7 @@ export default function Component() {
 	return (
 		<main className="w-full">
 			<div className="max-h-screen mb-40">
-				<img src="/ColorBanner_1.svg" alt="Banner" className="w-full h-auto block -z-10 absolute top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} />
+				<img src="/ColorBanner_1.svg" alt="Banner" className="w-full h-auto block -z-10 absolute top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} fetchPriority="high" />
 				<HackclubLogo />
 				{import.meta.env.VITE_HIDE_LOGIN !== "yes" && (
 					<button
