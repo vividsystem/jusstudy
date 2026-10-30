@@ -7,6 +7,8 @@ import { useState } from "react";
 import { ChevronDown, ChevronLeft } from "lucide-react";
 import { useSearchParams } from "react-router";
 
+import colorBanner1 from "@client/assets/ColorBanner_1.svg";
+
 const rewardItems = [
 	{ src: "/reward/book.webp", label: "Book Grant" },
 	{ src: "/reward/chair.webp", label: "Office Chair" },
@@ -175,7 +177,7 @@ export default function Component() {
 	return (
 		<main className="w-full">
 			<div className="max-h-screen mb-40">
-				<img src="/ColorBanner_1.svg" alt="Banner" className="w-full h-auto block -z-10 absolute top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} fetchPriority="high" />
+				<img src={colorBanner1} alt="Banner" className="w-full h-auto block -z-10 absolute top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} fetchPriority="high" />
 				<HackclubLogo />
 				{import.meta.env.VITE_HIDE_LOGIN !== "yes" && (
 					<button
