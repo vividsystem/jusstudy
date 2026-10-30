@@ -13,8 +13,6 @@ import { queryClient } from "./lib/query-client";
 import Loading from "./components/Loading";
 import { isRouteErrorResponse } from "react-router";
 import aladinLatin from "@fontsource/aladin/files/aladin-latin-400-normal.woff2?url";
-import averiaSerifLibreLatin from "@fontsource/averia-serif-libre/files/averia-serif-libre-latin-400-normal.woff2?url"
-import averiaSerifLibreLatinItalic from "@fontsource/averia-serif-libre/files/averia-serif-libre-latin-400-italic.woff2?url"
 
 export const links: Route.LinksFunction = () => [
 	{
@@ -22,20 +20,6 @@ export const links: Route.LinksFunction = () => [
 		as: "font",
 		type: "font/woff2",
 		href: aladinLatin,
-		crossOrigin: "anonymous",
-	},
-	{
-		rel: "preload",
-		as: "font",
-		type: "font/woff2",
-		href: averiaSerifLibreLatin,
-		crossOrigin: "anonymous",
-	},
-	{
-		rel: "preload",
-		as: "font",
-		type: "font/woff2",
-		href: averiaSerifLibreLatinItalic,
 		crossOrigin: "anonymous",
 	},
 ];
@@ -69,10 +53,8 @@ export function Layout({
 				<meta name="apple-mobile-web-app-title" content="Jus'STUDY" />
 				<link rel="apple-touch-icon" href="/logo.png" />
 				<link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
-				<link rel="preload" as="image" href="/background.webp" fetchPriority="high" />
+				{/*<link rel="preload" as="image" href="/background.webp" fetchPriority="high" />*/}
 
-				<link rel="stylesheet"
-					href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:ital,wght@0,400;1,400&family=Aladin&display=swap" />
 				<Meta />
 				<Links />
 			</head>

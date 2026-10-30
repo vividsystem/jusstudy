@@ -46,9 +46,6 @@ body {
 	font-family: "Aladin", system-ui;
 }
 
-.title-font {
-	font-family: "Averia Serif Libre", serif;
-}
 @keyframes marquee-left {
   from   { transform: translateX(0%); }
   to { transform: translateX(-50%); }
