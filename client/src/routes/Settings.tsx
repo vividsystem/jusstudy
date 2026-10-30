@@ -1,4 +1,5 @@
 import Button from "@client/components/Button";
+import PageHeader from "@client/components/PageHeaders";
 import { authClient } from "@client/lib/auth-client";
 import { queryClient } from "@client/lib/query-client";
 import { clientURL } from "@client/lib/urls";
@@ -22,7 +23,7 @@ export default function Settings() {
 
 
 	return <main className="w-full p-4 min-h-screen flex flex-col gap-2">
-		<h1 className="text-4xl">Settings</h1>
+		<PageHeader>Settings</PageHeader>
 
 		<div className="border-4 w-fit rounded-md bg-egg-yellow border-dark-red p-2 text-dark-red flex flex-col">
 			<h2 className="text-2xl">Personal Information</h2>

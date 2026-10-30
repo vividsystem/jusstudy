@@ -11,11 +11,11 @@ export function Avatar(props: { imageURL?: string | null, size?: number, hideMis
 		<div>
 			{props.imageURL ? (
 				<div className="w-fit rounded-full">
-					<img src={props.imageURL} className={`size-${String(props.size || 24)} rounded-full`} />
+					<img src={props.imageURL} className={`size-${String(props.size || 20)} rounded-full`} />
 				</div>
 			) : (
 				<div className="bg-gray-600 w-fit rounded-full p-4">
-					<User className={`size-${String(props.size || 24 - 6)} animate-pulse`} />
+					<User className={`size-${String(props.size || 20 - 6)} animate-pulse`} />
 				</div>
 			)}
 

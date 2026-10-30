@@ -11,6 +11,7 @@ import { projectCategoryValues } from "@shared/vars";
 import z from "zod";
 import { useErrors } from "@client/lib/context/ErrorContext";
 import { BannerUpload } from "@client/components/FileUpload";
+import PageHeader from "@client/components/PageHeaders";
 
 export default function NewProjectPage() {
 	const navigate = useNavigate()
@@ -71,8 +72,7 @@ export default function NewProjectPage() {
 
 	return (
 		<main className="flex flex-col items-center text-4xl text-egg-yellow w-full min-h-screen gap-16 p-4">
-
-			<h1 className="text-8xl bg-dark-red p-4 rounded-4xl">Create a new Project</h1>
+			<PageHeader>Create a new project</PageHeader>
 			<div className="flex flex-col bg-dark-red rounded-4xl p-4 gap-8 w-1/2">
 				<BannerUpload onUpdate={(f) => setFile(f)} />
 				<Input

@@ -1,5 +1,6 @@
 import Button from "@client/components/Button"
 import { DevlogCard } from "@client/components/devlogs/Card"
+import PageHeader from "@client/components/PageHeaders"
 import { client } from "@client/lib/api-client"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useState } from "react"
@@ -29,8 +30,8 @@ export default function ExplorePage() {
 	}
 	return (
 		<main className="w-full p-4 min-h-screen flex flex-col gap-2 text-dark-red">
+			<PageHeader>Explore</PageHeader>
 
-			<h1 className="text-4xl text-bold">Explore</h1>
 			{devlogs?.length === 0 && (
 				<p className="text-2xl text-dark-brown">There isn't anything to explore yet</p>
 			)}

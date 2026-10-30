@@ -1,4 +1,5 @@
 import Button from "@client/components/Button"
+import PageHeader from "@client/components/PageHeaders"
 import { client } from "@client/lib/api-client"
 import { useQuery } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
@@ -20,7 +21,7 @@ export default function ManageAddresses() {
 	return (
 		<main className="w-full min-h-screen">
 			<div className="flex flex-row items-center justify-between py-4 pr-4">
-				<h1 className="text-7xl">Addresses</h1>
+				<PageHeader>Addresses</PageHeader>
 				<Button className="border-dark-red border-4 w-fit h-fit bg-egg-yellow" href="/addresses/new"><Plus className="size-8" /></Button>
 			</div>
 

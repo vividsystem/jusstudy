@@ -26,15 +26,15 @@ const rotations = [3, -4, 2, -5, 4, -2, 5, -3, 2, -4]
 
 const LandingContent = () => (
 	<>
-		<div className="height-32">
+		<div className="flex lg:h-32 overflow-clip">
 			<img src="/logo_landing.svg" alt="jus'study logo" />
 		</div>
 
-		<p className="text-base sm:text-lg lg:text-5xl 2xl:text-6xl text-[#282828]">
+		<p className="text-base sm:text-lg lg:text-4xl 2xl:text-5xl text-[#282828]">
 			A Hack Club <span>You Ship, We Ship</span> where students build projects that help with studying, focus, learning, or school life, and earn prizes for shipping real work.
 		</p>
 
-		<ul className="text-sm sm:text-md lg:text-3xl 2xl:text-4xl list-disc list-inside space-y-2 lg:space-y-4 font-bold text-[#282828]">
+		<ul className="text-sm sm:text-md lg:text-2xl 2xl:text-3xl list-disc list-inside space-y-2 lg:space-y-4 font-bold text-[#282828]">
 			<li className="whitespace-normal">Build apps, tools, hardware, or experiments related to something you're studying</li>
 			<li className="whitespace-normal">Upload your project with a short write-up</li>
 			<li className="whitespace-normal">Earn prizes based on effort, creativity, and usefulness</li>
@@ -103,8 +103,8 @@ export function RewardCarousel() {
 function FAQSection({ question, answer }: { question: string, answer: React.ReactNode }) {
 	const [open, setOpen] = useState(false)
 	return (
-		<div className="border-dark-red border-2 text-dark-red bg-egg-yellow rounded-4xl text-3xl lg:text-5xl w-full">
-			<div className="flex flex-row justify-between items-center p-4" onClick={() => setOpen(!open)}>
+		<div className="border-dark-red border-2 text-dark-red bg-egg-yellow rounded-2xl lg:rounded-4xl text-xl sm:text-2xl md:text-3xl lg:text-3xl w-full">
+			<div className="flex flex-row justify-between items-center p-2 lg:p-4" onClick={() => setOpen(!open)}>
 				<h3>{question}</h3>
 				{open ? (
 					<ChevronDown className="size-8" />
@@ -125,7 +125,7 @@ function FAQ() {
 		<div className="w-full flex flex-col items-center py-16">
 
 			<h2 className="text-4xl lg:text-8xl">FAQ</h2>
-			<div className="flex flex-col gap-4 w-1/2">
+			<div className="flex flex-col gap-4 sm:w-2/3 md:w-1/2">
 				<FAQSection question="What is this?" answer={(<p>
 					Jus'STUDY is a YSWS event organized by high schoolers for high schoolers. It is focused specifically on improving the way we learn. Whether it's a software app to track your grades or a hardware device to keep your desk organised, if it helps you study, it belongs here.
 				</p>)} />
@@ -146,7 +146,7 @@ function Footer() {
 	return (
 		<footer className="relative h-fit w-full">
 			<img src="/ColorBanner_5.svg" alt="Banner" className="w-full h-auto block z-10 top-0 left-0 right-0" onContextMenu={(e) => e.preventDefault()} loading="lazy" />
-			<div className='flex flex-col items-center justify-end z-20 w-full h-full inset-0 absolute py-20'>
+			<div className='flex flex-col items-center justify-end z-20 w-full h-full inset-0 absolute py-10 md:py-20'>
 				<h2 className="text-white lg:text-5xl py-2">Our staff</h2>
 				<div className="grid grid-flow-col-dense gap-4 px-4">
 					<img src="/signatures/michael.webp" alt='signature' className="max-h-30 w-auto object-contain self-start" loading="lazy" />
@@ -182,14 +182,14 @@ export default function Component() {
 				{import.meta.env.VITE_HIDE_LOGIN !== "yes" && (
 					<button
 						onClick={login}
-						className="fixed top-8 right-8 lg:top-12 lg:right-12 text-xl lg:text-3xl 2xl:text-4xl underline opacity-80 hover:opacity-100 transition-opacity cursor-pointer text-[#282828]"
+						className="fixed top-8 right-8 lg:top-12 lg:right-12 text-xl lg:text-3xl 2xl:text-4xl underline opacity-80 hover:opacity-100 transition-opacity cursor-pointer text-[#282828] z-20"
 					>
 						Login
 					</button>
 				)}
 
 				<div className="left-0 w-full pointer-events-none">
-					<div className="pointer-events-auto flex flex-col w-5/6 mx-auto mt-32 sm:mt-48 lg:mt-64 2xl:mt-80 gap-6 lg:gap-8 2xl:gap-10">
+					<div className="pointer-events-auto flex flex-col w-5/6 mx-auto mt-24 sm:mt-48 lg:mt-42 2xl:mt-72 gap-6 lg:gap-8 2xl:gap-10">
 						<LandingContent />
 					</div>
 				</div>
