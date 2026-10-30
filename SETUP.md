@@ -103,6 +103,7 @@ Make sure you setup a firewall like `ufw` and only allow `8080` and block the gr
 If you want to run a postgres instance as well you can use the `postgres` service for an easily deployable option.
 BEWARE: you have to apply the sql schema to the database before deploying!
 You will have to populate the secrets(in `secrets/`): `pg_superuser_password`, `pg_migrator_password`, `pg_readonly_password`, `pg_app_password`.
+When using `--build` you have to add `VITE_CLIENT_URL` and `VITE_SERVER_URL` to your root .env
 ```bash
 docker compose -f prod.compose.yml up frontend -d
 ```
@@ -117,4 +118,8 @@ then restart your containers
 To migrate in prod (all containers have to be up to date):
 ```bash
 docker compose -f prod.compose.yml run --rm migrate
+```
+To force-recreate the images:
+```bash
+docker compose -f prod.compose.yml up --force-recreate frontend -d
 ```

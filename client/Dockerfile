@@ -31,9 +31,10 @@ FROM nginx:stable-alpine3.23 AS runtime
 # React Router uses client-side routing — all requests must fall back to
 # index.html so the router can handle the path, otherwise a hard refresh
 # on /some/route returns a 404 from nginx.
+# RUN rm -rf /usr/share/nginx/html/*
 COPY --from=builder /app/client/dist /usr/share/nginx/html/docs
-COPY --from=builder /app/client/client-dist /usr/share/nginx/html
+COPY --from=builder /app/client/client-dist/client /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 3500
+EXPOSE 8080
