@@ -69,12 +69,15 @@ services:
       - pg_migrator_password
   frontend:
     image: vividsystem/jusstudy-frontend:latest
+    env_file: "./client/.env"
     build:
       context: ./
       dockerfile: ./client/Dockerfile
+      args:
+        VITE_CLIENT_URL: ${VITE_CLIENT_URL}
+        VITE_SERVER_URL: ${VITE_SERVER_URL}
     ports:
       - "8080:8080"
-    env_file: "./client/.env"
     environment:
       - NODE_ENV=production
     networks: 
