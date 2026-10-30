@@ -3,7 +3,7 @@ import db from "@server/db";
 import { devlogAttachments, devlogs, projects, timeEntries, timeHackatimeLinks, users } from "@server/db/schema";
 import { singleProjectTime } from "@server/hackatime/client";
 import { DevlogResponseSchema, NewDevlogRequestSchema, NewDevlogResponseSchema, RecentDevlogsResponseSchema } from "@shared/validation";
-import { and, desc, eq, getTableColumns, sum } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, sql, sum } from "drizzle-orm";
 import { Hono } from "hono";
 import type { Env } from "..";
 import { uploadDevlogAttachmentToCDN, validImageFormats } from "@server/lib/cdn";
@@ -242,7 +242,7 @@ export const projectDevlogsRoute = new Hono<Env>()
 				await tx
 					.update(projects)
 					.set({
-						totalTime: sum(timeEntries.duration)
+						totalTime: sql`${projects.totalTime} + ${duration}`
 					})
 					.from(timeEntries)
 					.where(and(
