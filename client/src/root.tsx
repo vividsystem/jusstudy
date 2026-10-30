@@ -41,6 +41,7 @@ export function Layout({
 				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 				<title>Jus'STUDY</title>
+				<meta property="description" content="A YSWS where students build projects that help others study!" />
 
 				<meta property="og:title" content="Jus'STUDY" />
 				<meta property="og:description" content="A YSWS where students build projects that help others study!" />
