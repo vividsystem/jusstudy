@@ -27,7 +27,7 @@ const rotations = [3, -4, 2, -5, 4, -2, 5, -3, 2, -4]
 const LandingContent = () => (
 	<>
 		<div className="height-32">
-			<img src="/logo_landing.svg" alt="jus'study logo" fetchPriority="high" />
+			<img src="/logo_landing.svg" alt="jus'study logo" />
 		</div>
 
 		<p className="text-base sm:text-lg lg:text-5xl 2xl:text-6xl text-[#282828]">
