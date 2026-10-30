@@ -55,7 +55,9 @@ export default [
 				route("shop/items/:id/edit", "routes/admin/EditShopItemPage.tsx"),
 			]),
 		]),
+
+		route("*", "routes/NotFound.tsx"),
 	]),
 
-	route("*", "routes/NotFound.tsx"),
+	// route("*", "routes/NotFound.tsx"),
 ] satisfies RouteConfig

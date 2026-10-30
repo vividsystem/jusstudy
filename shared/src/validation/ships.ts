@@ -14,6 +14,10 @@ export const NewShipSchema = z.object({
 	projectId: uuid(),
 })
 
+export const UserShipsResponseSchema = z.object({
+	ships: z.array(projectShipSchema.extend({ projectName: z.string().nonempty() }))
+})
+
 export const ShipByIdResponseSchema = z.object({
 	ship: projectShipSchema.extend({
 		timeShipped: z.number().nonnegative()
