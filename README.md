@@ -1,7 +1,11 @@
 # Jus'STUDY
 A study focused [YSWS](https://ysws.hackclub.com/)
 
+![Jus'Study Landing Page Screenshot](media/landing-screenshot.png)
 
+
+## Service architecure
+![Jus'Study Service Architecture Flow Diagram](media/jusstudy_service_architecture.png)
 
 ## How it works
 1. A user creates a project
